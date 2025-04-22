@@ -7,7 +7,7 @@ function App() {
         <div className='App'>
             <div className=" center flex bg-red-500 ">
                 <h1 className="text-2xl">
-                    Testing
+                    Testing 1.2.3
                 </h1>
             </div>
         </div>
