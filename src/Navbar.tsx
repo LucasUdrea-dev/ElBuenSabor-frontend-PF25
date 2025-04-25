@@ -28,11 +28,11 @@ export default function Navbar() {
             <div>
 
                 {estaLogeado ? (
-                    <div className="h-20 grid grid-cols-[3fr_1fr] items-center">
+                    <div className="m-0 grid grid-cols-[3fr_1fr] items-center">
 
-                        <div className="grid grid-cols-[3rem_10rem]">
+                        <div className="grid grid-cols-[3rem_10rem] items-center m-auto p-2 border-white border-1">
                             <img src="./img/miniUsuario.jpg" alt="foto usuario" />
-                            <button className="items-center" type="button"> <label className="text-white">Nombre Apellido V</label></button>
+                            <button className="items-center text-white h-20 m-0" type="button">Nombre Apellido V</button>
                         </div>
     
                         <div>
