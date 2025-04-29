@@ -3,3 +3,7 @@
 button:hover{
     cursor: pointer;
 }
+
+body{
+    font-family: Lato;
+}
