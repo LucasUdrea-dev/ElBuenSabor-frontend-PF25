@@ -4,15 +4,18 @@ import './index.css'
 import App from './App.tsx'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Inicio from './Inicio.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<App/>}>
-          <Route path=''/>
+          <Route path='/inicio' element={<Inicio/>}/>
+          <Route path='/catalogo'/>
+          <Route path='*' element={<Inicio/>}/>
         </Route>
       </Routes>
     </BrowserRouter> 
-  </StrictMode>,
+  </StrictMode>
 )
