@@ -28,7 +28,7 @@ export default function Inicio() {
     //General
     const titulos = "text-6xl"
     //Como funciona
-    const secciones = "bg-[#F2B28C80] mx-auto h-auto w-2/3 rounded-4xl text-center my-15 p-[5%]"
+    const secciones = "bg-[#F2B28C80] mx-auto h-auto w-2/3 rounded-4xl text-center mt-15 p-[5%]"
     const imgComoFunciona = "rounded-[20rem] w-75 h-75 m-auto object-cover"
     const subtitulos = "m-3 text-4xl"
     const parrafo = "m-3 text-2xl"
@@ -37,10 +37,10 @@ export default function Inicio() {
 
         <>
         
-        <div className="bg-[#333333] h-full w-1/1 text-white font-[Playfair_Display]">
+        <div className="bg-[#333333] h-full w-1/1 text-white font-[Playfair_Display] py-10">
 
             {/* Carrusel de promociones */}
-            <div className="grid grid-cols-[2fr_2fr] p-[67px] gap-5">
+            <div className="grid grid-cols-[2fr_2fr] p-10 gap-5">
 
                 <div className="flex flex-col text-center">
 
@@ -58,7 +58,7 @@ export default function Inicio() {
             </div>
 
             {/* Como funciona*/}
-            <div className={secciones}>
+            <div id="comoFunciona" className={secciones}>
 
                 <div>
                     <h1 className={titulos}>¿Como funciona?</h1>
@@ -83,7 +83,7 @@ export default function Inicio() {
             </div>
 
             {/*Sobre nosotros */}
-            <div className={secciones}>
+            <div id="sobreNosotros" className={secciones}>
                 
                 <div className="grid grid-cols-[3fr_2fr] gap-5">
 
@@ -114,7 +114,7 @@ export default function Inicio() {
 
             
             {/**Contactanos */}
-            <div className={secciones}>
+            <div id="contacto" className={secciones}>
                 <div className="text-left grid grid-rows-[1fr_5fr] gap-10">
                     <div>
                         <h1 className={titulos}>Contactanos</h1>
