@@ -1,27 +1,33 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import DesplegableUsuario from "./DesplegableUsuario.tsx"
+import RegistroModal from "./Registro.tsx"
 
 export default function Navbar() {
     
     const [estaLogeado, setEstaLogeado] = useState(false)
     const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] = useState(false)
+    const [isRegistroModalOpen, setRegistroModalOpen] = useState(false)
 
-    useEffect(()=>{
-        
+    useEffect(() => {
         setEstaLogeado(true)
-
     }, [])
 
-    const cambiarDesplegableUsuario = ()=>{
-
+    const cambiarDesplegableUsuario = () => {
         setMostrarDesplegableUsuario(!mostrarDesplegableUsuario)
-
     }
 
-    const cerrarSesion = ()=>{
+    const cerrarSesion = () => {
         setEstaLogeado(false)
         setMostrarDesplegableUsuario(false)
+    }
+
+    //modales de registro (Apertura y cierre)
+    const abrirRegistroModal = () => {
+        setRegistroModalOpen(true) 
+    }
+    const cerrarRegistroModal = () => {
+        setRegistroModalOpen(false) 
     }
 
     return (
@@ -84,22 +90,20 @@ export default function Navbar() {
                 ) : (
 
                     <div>
+                            <Link to={"iniciarSesion"}>
+                                <button className="text-white font-bold p-1" type="button">Iniciar Sesion</button>
+                            </Link>
 
-                        <Link to={"iniciarSesion"}>
-                            <button className="text-white font-bold p-1" type="button">Iniciar Sesion</button>
-                        </Link>
-                        <Link to={"registrarse"}>
-                            <button className="bg-white rounded-lg m-5 p-1" type="button">Registrarse</button>
-                        </Link>
-
-                    </div>
-
-                )}
-
+                            
+                            <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
+                                Registrarse
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-        
+
+            <RegistroModal isOpen={isRegistroModalOpen} onClose={cerrarRegistroModal} />
         </>
     )
-
 }
