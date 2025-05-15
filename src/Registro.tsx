@@ -11,6 +11,8 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [repetirContrasena, setRepetirContrasena] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -51,7 +53,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       });
 
       console.log("Usuario registrado:", response.data);
-      onClose(); 
+      onClose();
     } catch (err) {
       console.error("Error al registrar usuario:", err);
       setError("Hubo un problema al registrar al usuario. Verifica los datos ingresados.");
@@ -63,94 +65,143 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 
 
-// Renderizado del modal de registro
+  // Renderizado del modal de registro
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Registrarte</h2>
+        <h2 className="text-2xl font-bold mb-6 font-lato text-center">Registrate</h2>
+
+
         {error && <div className="mb-4 text-red-500">{error}</div>}
         <form onSubmit={handleRegistro}>
           <div className="mb-4">
-            <label className="block mb-2">Nombre Completo</label>
+            <label className="block mb-2 font-lato">Nombre Completo</label>
             <input
               type="text"
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              onChange={(e) => {
+                const valor = e.target.value;
+                //solo letras (mayúsculas o minúsculas)
+                if (/^[a-zA-Z\s]*$/.test(valor)) {
+                  setNombre(valor);
+                }
+              }}
+              className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
           </div>
 
+
           <div className="mb-4">
-            <label className="block mb-2">Teléfono</label>
+            <label className="block mb-2 font-lato">Teléfono</label>
             <input
-              type="text"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
-              required
-            />
+                type="tel"
+                value={telefono}
+                onChange={(e) => {
+                  // Permitir sólo números
+                  const valor = e.target.value;
+                  if (/^[0-9]*$/.test(valor)) {
+                    setTelefono(valor);
+                  }
+                }}
+                className="w-full p-2 border border-gray-300 rounded font-lato"
+                required
+              />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2">Email</label>
+            <label className="block mb-2 font-lato">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Contraseña</label>
+
+          
+          <div className="mb-4 relative">
+            <label className="block mb-2 font-lato">Contraseña</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={contrasena}
               onChange={(e) => setContrasena(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-13 transform -translate-y-1/2"
+            >
+              <img
+                
+                
+                src={`public/svg/${
+                  showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
+                }`}
+                alt="Visibilidad"
+                className="w-6 h-6"
+              />
+            </button>
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Repetir Contraseña</label>
+
+
+          <div className="mb-4 relative">
+            <label className="block mb-2 font-lato">Repetir Contraseña</label>
             <input
-              type="password"
+              type={showRepeatPassword ? "text" : "password"}
               value={repetirContrasena}
               onChange={(e) => setRepetirContrasena(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+              className="absolute right-2 top-13 transform -translate-y-1/2"
+            >
+              <img
+                src={`public/svg/${
+                  showRepeatPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
+                }`}
+                alt="Visibilidad"
+                className="w-6 h-6"
+              />
+            </button>
           </div>
 
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 w-full mb-4"
+            className="bg-[#0A76E1] text-white py-2 px-4 rounded-full hover:bg-[#0A5BBE] w-full mb-4 font-lato"
           >
-            Registrarse
+            Registrate
           </button>
 
-          <div className="text-center mb-4">o ingresa con</div>
+          <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
 
-          <div className="flex justify-between mb-4">
-            <button className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
-              Google
+          <div className="flex justify-center mb-4 space-x-10">
+            <button className="">
+              <img src="public/svg/devicon_facebook.svg" alt="" className="w-10 h-10" />
+
             </button>
-            <button className="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800">
-              Facebook
+            <button className="">
+              <img src="public/svg/flat-color-icons_google.svg" alt="" className="w-10 h-10" />
+
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="relative">
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-500 underline"
-            >
-              Cancelar
+              className="absolute top-[-655px] right-0 text-gray-500 mb-4 font-lato"> X
+
+
             </button>
           </div>
         </form>
