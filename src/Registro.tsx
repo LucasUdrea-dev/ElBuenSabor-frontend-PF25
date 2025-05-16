@@ -70,10 +70,12 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 font-lato text-center">Registrate</h2>
+        <h2 className="text-2xl font-bold mb-6 font-lato text-center -mt-4">Registrate</h2>
 
-
-        {error && <div className="mb-4 text-red-500">{error}</div>}
+        <div className="h-13">
+        {error && <div className="mb-4 text-red-500 font-lato ">{error}</div>}
+        </div>
+        
         <form onSubmit={handleRegistro}>
           <div className="mb-4">
             <label className="block mb-2 font-lato">Nombre Completo</label>
@@ -151,7 +153,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 
 
-          <div className="mb-4 relative">
+          <div className=" h-25 mb-4 relative">
             <label className="block mb-2 font-lato">Repetir Contraseña</label>
             <input
               type={showRepeatPassword ? "text" : "password"}
@@ -175,6 +177,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             </button>
           </div>
 
+          
           <button
             type="submit"
             className="bg-[#0A76E1] text-white py-2 px-4 rounded-full hover:bg-[#0A5BBE] w-full mb-4 font-lato"
@@ -199,7 +202,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-[-655px] right-0 text-gray-500 mb-4 font-lato"> X
+              className="absolute bottom-172 right-0 text-gray-500 mb-4 font-lato"> X
 
 
             </button>

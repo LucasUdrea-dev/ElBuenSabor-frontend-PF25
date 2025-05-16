@@ -2,12 +2,15 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import DesplegableUsuario from "./DesplegableUsuario.tsx"
 import RegistroModal from "./Registro.tsx"
+import InicioSesionUs from "./InicioSesionUser.tsx"
 
 export default function Navbar() {
     
     const [estaLogeado, setEstaLogeado] = useState(false)
     const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] = useState(false)
     const [isRegistroModalOpen, setRegistroModalOpen] = useState(false)
+    const [isInicioSesionUsOpen, setInicioSesionUsOpen] = useState(false)
+
 
     useEffect(() => {
         setEstaLogeado(true)
@@ -28,6 +31,14 @@ export default function Navbar() {
     }
     const cerrarRegistroModal = () => {
         setRegistroModalOpen(false) 
+    }
+
+    //modales de registro (Apertura y cierre)
+    const abrirInicioSesionUs = () => {
+        setInicioSesionUsOpen(true) 
+    }
+    const cerrarInicioSesionUs = () => {
+        setInicioSesionUsOpen(false) 
     }
 
     return (
@@ -90,9 +101,10 @@ export default function Navbar() {
                 ) : (
 
                     <div>
-                            <Link to={"iniciarSesion"}>
-                                <button className="text-white font-bold p-1" type="button">Iniciar Sesion</button>
-                            </Link>
+                            {/*<Link to={"iniciarSesion" No se si sea necesario teniendo en cuenta que es modal}>*/}
+                                <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
+                                    Iniciar Sesion</button>
+                            {/*</Link>*/}
 
                             
                             <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
@@ -104,6 +116,8 @@ export default function Navbar() {
             </div>
 
             <RegistroModal isOpen={isRegistroModalOpen} onClose={cerrarRegistroModal} />
+            <InicioSesionUs isOpen={isInicioSesionUsOpen} onClose={cerrarInicioSesionUs} />
+
         </>
     )
 }
