@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "./firebaseConfig";
 
 
 //url ejemplo
@@ -40,6 +42,29 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       setError("Email o contraseña incorrectos.");
     }
   };
+
+  //Inico con Google y Facebook
+  const handleGoogleLogin = async () => {
+      const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          console.log("Usuario con Google:", result.user);
+          // Aquí se podría enviar el usuario al backend
+        } catch (error) {
+          console.error("Error al iniciar sesión con Google:", error);
+        }
+    };
+  
+    const handleFacebookLogin = async () => {
+        const provider = new FacebookAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          console.log("Usuario con Facebook:", result.user);
+        } catch (error) {
+          console.error("Error al iniciar sesión con Facebook:", error);
+        }
+    };
+  
 
   if (!isOpen) return null;
 
@@ -105,10 +130,10 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
 
           <div className="flex justify-center mb-4 space-x-10">
-            <button className="">
+            <button onClick={handleFacebookLogin}>
               <img src="public/svg/devicon_facebook.svg" alt="" className="w-10 h-10" />
             </button>
-            <button className="">
+              <button onClick={handleGoogleLogin}>
               <img src="public/svg/flat-color-icons_google.svg" alt="" className="w-10 h-10" />
             </button>
           </div>

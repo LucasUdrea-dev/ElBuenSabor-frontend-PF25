@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SliderImagenes from "./SliderImagenes";
 import { Link } from "react-router-dom";
 
+
 interface Ejemplo{
     nombre: string
     imagen: string
