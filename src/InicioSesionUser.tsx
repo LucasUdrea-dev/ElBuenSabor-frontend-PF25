@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
+import RecuperarContrasena from "./RecuperarContrasena";
 
 
 //url ejemplo
@@ -12,6 +13,8 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [contrasena, setContrasena] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
+
 
   useEffect(() => {
     if (!isOpen) {
@@ -63,6 +66,17 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         } catch (error) {
           console.error("Error al iniciar sesión con Facebook:", error);
         }
+    };
+
+
+    // función para abrir el modal de recuperación de contraseña:
+    const handleOpenRecuperar = () => {
+          setIsRecuperarOpen(true);
+    };
+
+
+    const handleCloseRecuperar = () => {
+          setIsRecuperarOpen(false);
     };
   
 
@@ -124,7 +138,13 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           </button>
 
           <div className="text-center mb-4 font-lato">
-            <a href="#" className="text-blue-500">¿Olvidó su contraseña?</a>
+            <button 
+              type="button" 
+              onClick={handleOpenRecuperar} 
+              className="text-blue-500"
+            >
+              ¿Olvidó su contraseña?
+            </button>
           </div>
 
           <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
@@ -149,6 +169,10 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           </div>
         </form>
       </div>
+
+      
+            <RecuperarContrasena isOpen={isRecuperarOpen} onClose={handleCloseRecuperar} />
+
     </div>
   );
 };
