@@ -5,6 +5,8 @@ import App from './App.tsx'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Inicio from './Inicio.tsx'
+import DireccionesUser from './DireccionesUser.tsx'
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -13,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/' element={<App/>}>
           <Route path='/inicio' element={<Inicio/>}/>
           <Route path='/catalogo'/>
+          <Route path='/misDirecciones' element={<DireccionesUser />} />
           <Route path='*' element={<Inicio/>}/>
         </Route>
       </Routes>
