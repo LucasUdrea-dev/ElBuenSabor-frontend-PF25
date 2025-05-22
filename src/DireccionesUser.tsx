@@ -1,20 +1,34 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import AgregarDireccion from './AgregarDireccion';
+import EliminarDireccion from './EliminarDireccion';
+import EditDireccion from './EditDireccion';
+
+
 
 type Direccion = {
   id: number;
-  etiqueta: string; 
   calle: string;
   numero: string;
+  piso?: string;
+  depto?: string;
   ciudad: string;
-  provincia: string;
+  localidad: string;
+  alias: string;
+  aclaraciones?: string;
+  latitud?: string;
+  longitud?: string;
 };
 
 export default function DireccionesUser() {
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [isAgregarDireccionOpen, setAgregarDireccionOpen] = useState(false);
+  const [isEliminarDireccionOpen, setEliminarDireccionOpen] = useState(false);
+  const [direccionAEliminar, setDireccionAEliminar] = useState<number | null>(null);
+  const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
+  const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
+
 
 
   // Simula ID de usuario actual (debería venir de contexto o props)
@@ -25,8 +39,8 @@ export default function DireccionesUser() {
   useEffect(() => {
     // Simulamos la carga de datos
     const direccionesSimuladas: Direccion[] = [
-      { id: 1, etiqueta: 'Casa', calle: 'Av. Siempre Viva', numero: '742', ciudad: 'Springfield', provincia: 'Illinois' },
-      { id: 2, etiqueta: 'Trabajo', calle: 'Calle Falsa', numero: '123', ciudad: 'Springfield', provincia: 'Illinois' },
+      { id: 1, alias: 'Casa', calle: 'Av. Siempre Viva', numero: '742', ciudad: 'Springfield', localidad: 'Illinois' },
+      { id: 2, alias: 'Trabajo', calle: 'Calle Falsa', numero: '123', ciudad: 'Springfield', localidad: 'Illinois' },
     ];
 
     // Simulamos un retraso en la carga
@@ -52,17 +66,20 @@ export default function DireccionesUser() {
   }, [apiUrl, idUsuario]);
 
 
-  const eliminarDireccion = async (id: number) => {
-    const confirmacion = window.confirm('¿Estás seguro de que deseas eliminar esta dirección?');
-    if (confirmacion) {
-      try {
-        await axios.delete(`${apiUrl}/${id}`);
-        setDirecciones((prev) => prev.filter((d) => d.id !== id));
-      } catch (error) {
-        console.error('Error al eliminar la dirección:', error);
-      }
-    }
-  };
+  //funcion para eliminar una direccion
+  const eliminarDireccion = async () => {
+  if (direccionAEliminar === null) return;
+
+  try {
+    await axios.delete(`${apiUrl}/${direccionAEliminar}`);
+    setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
+  } catch (error) {
+    console.error('Error al eliminar la dirección:', error);
+  } finally {
+    setEliminarDireccionOpen(false);
+    setDireccionAEliminar(null);
+  }
+};
 
    //modales de agregar direccion (Apertura y cierre)
     const abrirAgregarDireccion = () => {
@@ -104,21 +121,36 @@ export default function DireccionesUser() {
                   className="flex items-center justify-between bg-[#FAF8F5] text-[#262626] px-4 py-3 rounded-xl"
                 >
                   <div>
-                    <p className="font-bold">{dir.etiqueta}</p>
+                    <p className="font-bold">{dir.alias}</p>
                     <p className="text-sm">
-                      {dir.calle} {dir.numero}, {dir.ciudad}, {dir.provincia}
+                      {dir.calle} {dir.numero}, {dir.ciudad}, {dir.localidad}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded flex items-center gap-1">
+
+
+
+                    <button 
+                    
+                    onClick={() => {
+                      setDireccionAEditar(dir);
+                      setEditarDireccionOpen(true);
+                    }}
+                    
+                    className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded flex items-center gap-1">
                       ✏️ Editar
                     </button>
+
                     <button
-                      onClick={() => eliminarDireccion(dir.id)}
+                      onClick={() => {
+                        setDireccionAEliminar(dir.id);
+                        setEliminarDireccionOpen(true);
+                      }}
                       className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded flex items-center gap-1"
                     >
                       🗑 Eliminar
                     </button>
+
                   </div>
                 </div>
               ))}
@@ -136,6 +168,30 @@ export default function DireccionesUser() {
       </div>
 
           <AgregarDireccion isOpen={isAgregarDireccionOpen} onClose={cerrarAgregarDireccion} />
+
+
+          <EliminarDireccion
+              isOpen={isEliminarDireccionOpen}
+              onClose={() => {
+                setEliminarDireccionOpen(false);
+                setDireccionAEliminar(null);
+              }}
+              onConfirm={eliminarDireccion}
+            />
+
+
+            <EditDireccion
+              isOpen={isEditarDireccionOpen}
+              direccion={direccionAEditar}
+              onClose={() => {
+                setEditarDireccionOpen(false);
+                setDireccionAEditar(null);
+              }}
+              onDireccionActualizada={() => {
+                // Aquí podrías volver a llamar a fetchDirecciones o actualizar el estado manualmente
+                window.location.reload(); // Provisorio
+              }}
+            />
 
     </div>
   );

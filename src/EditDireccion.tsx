@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+type Direccion = {
+  id: number;
+  calle: string;
+  numero: string;
+  piso?: string;
+  depto?: string;
+  ciudad: string;
+  localidad: string;
+  alias: string;
+  aclaraciones?: string;
+  latitud?: string;
+  longitud?: string;
+};
+
 type Errors = {
   calle?: string;
   numero?: string;
@@ -10,11 +24,18 @@ type Errors = {
   general?: string;
 };
 
-const API_URL_CIUDADES = "http://localhost:8080/api/ciudades"; // Cambia esta URL a la de tu backend
-const API_URL_LOCALIDADES = "http://localhost:8080/api/localidades"; // Cambia esta URL a la de tu backend
-const API_URL_AGREGAR_DIRECCION = "http://localhost:8080/api/direcciones"; // Cambia esta URL a la de tu backend
+const API_URL_CIUDADES = "http://localhost:8080/api/ciudades";
+const API_URL_LOCALIDADES = "http://localhost:8080/api/localidades";
+const API_URL_EDITAR_DIRECCION = "http://localhost:8080/api/direcciones";
 
-const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  direccion: Direccion | null;
+  onDireccionActualizada: () => void;
+}
+
+const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccionActualizada }) => {
   const [calle, setCalle] = useState("");
   const [numero, setNumero] = useState("");
   const [piso, setPiso] = useState("");
@@ -28,61 +49,67 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const [ciudades, setCiudades] = useState<string[]>([]);
   const [localidades, setLocalidades] = useState<string[]>([]);
   const [errors, setErrors] = useState<Errors>({});
-  
+
+  useEffect(() => {
+    if (isOpen && direccion) {
+      setCalle(direccion.calle || "");
+      setNumero(direccion.numero || "");
+      setPiso(direccion.piso || "");
+      setDepto(direccion.depto || "");
+      setCiudad(direccion.ciudad || "");
+      setLocalidad(direccion.localidad || "");
+      setAlias(direccion.alias || "");
+      setAclaraciones(direccion.aclaraciones || "");
+      setLatitud(direccion.latitud || "");
+      setLongitud(direccion.longitud || "");
+    }
+  }, [isOpen, direccion]);
+
+
+  // cargar solo las localidades correspondientes a la ciudad seleccionada
   useEffect(() => {
     if (isOpen) {
-      // Cargar ciudades y localidades al abrir el modal
-      const fetchCiudades = async () => {
+        const fetchCiudades = async () => {
         const response = await axios.get(API_URL_CIUDADES);
         setCiudades(response.data);
-      };
-
-      const fetchLocalidades = async () => {
-        const response = await axios.get(API_URL_LOCALIDADES);
-        setLocalidades(response.data);
-      };
-
-      fetchCiudades();
-      fetchLocalidades();
+        };
+        fetchCiudades();
     }
-  }, [isOpen]);
+        }, [isOpen]);
+
+    useEffect(() => {
+    if (ciudad) {
+        const fetchLocalidades = async () => {
+        const response = await axios.get(`${API_URL_LOCALIDADES}?ciudad=${ciudad}`);
+        setLocalidades(response.data);
+        };
+        fetchLocalidades();
+    } else {
+        setLocalidades([]);
+    }
+        }, [ciudad]);
+
+
 
   const validarCampos = (): boolean => {
     const nuevosErrores: Errors = {};
 
-    if (!calle.trim()) {
-      nuevosErrores.calle = "La calle es obligatoria.";
-    }
-
-    if (!numero.trim()) {
-      nuevosErrores.numero = "El número es obligatorio.";
-    }
-
-    if (!ciudad.trim()) {
-      nuevosErrores.ciudad = "La ciudad es obligatoria.";
-    }
-
-    if (!localidad.trim()) {
-      nuevosErrores.localidad = "La localidad es obligatoria.";
-    }
-
-    if (!alias.trim()) {
-      nuevosErrores.alias = "El alias es obligatorio.";
-    }
+    if (!calle.trim()) nuevosErrores.calle = "La calle es obligatoria.";
+    if (!numero.trim()) nuevosErrores.numero = "El número es obligatorio.";
+    if (!ciudad.trim()) nuevosErrores.ciudad = "La ciudad es obligatoria.";
+    if (!localidad.trim()) nuevosErrores.localidad = "La localidad es obligatoria.";
+    if (!alias.trim()) nuevosErrores.alias = "El alias es obligatorio.";
 
     setErrors(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleAgregarDireccion = async (e: React.FormEvent) => {
+  const handleEditarDireccion = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validarCampos()) {
-      return;
-    }
+    if (!direccion || !validarCampos()) return;
 
     try {
-      const response = await axios.post(API_URL_AGREGAR_DIRECCION, {
+      const response = await axios.put(`${API_URL_EDITAR_DIRECCION}/${direccion.id}`, {
         calle,
         numero,
         piso,
@@ -95,51 +122,50 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         longitud,
       });
 
-      console.log("Dirección agregada:", response.data);
+      console.log("Dirección actualizada:", response.data);
+      onDireccionActualizada();
       onClose();
     } catch (err) {
-      console.error("Error al agregar dirección:", err);
-      setErrors({ general: "Hubo un problema al agregar la dirección. Verifica los datos ingresados." });
+      console.error("Error al editar dirección:", err);
+      setErrors({ general: "Hubo un problema al editar la dirección." });
     }
   };
 
-  //limpiar campos
-  useEffect(() => {
-    if (!isOpen) {
-      setCalle("");
-      setNumero("");
-      setPiso("");
-      setDepto("");
-      setCiudad("");
-      setLocalidad("");
-      setAlias("");
-      setAclaraciones("");
-      setLatitud("");
-      setLongitud("");
-      setErrors({});
-    }
-  }, [isOpen]);
+    //limpiar campos
+      useEffect(() => {
+        if (!isOpen) {
+          setCalle("");
+          setNumero("");
+          setPiso("");
+          setDepto("");
+          setCiudad("");
+          setLocalidad("");
+          setAlias("");
+          setAclaraciones("");
+          setLatitud("");
+          setLongitud("");
+          setErrors({});
+        }
+      }, [isOpen]);
 
 
-  if (!isOpen) return null;
+  if (!isOpen || !direccion) return null;
 
-
-
-
-  
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
 
-        <h2 className="text-black text-2xl font-lato mb-6 text-center">Agregar una dirección de envío</h2>
+
+        <h2 className="text-black text-2xl font-lato mb-6 text-center">Editar dirección de envío</h2>
 
         {errors.general && (
           <div className="text-red-600 font-lato mb-2 text-center font-lato">{errors.general}</div>
         )}
 
-        <form onSubmit={handleAgregarDireccion}>
+        <form onSubmit={handleEditarDireccion}>
 
-          <div className="mb-4">
+
+            <div className="mb-4">
           <label className="text-black block mb-2">Coordenadas</label>
           <div className="flex justify-between">
             <div className="w-1/2 pr-2">
@@ -306,4 +332,4 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   );
 };
 
-export default AgregarDireccion;
+export default EditDireccion;
