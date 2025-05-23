@@ -47,7 +47,7 @@ export default function Navbar() {
         <div className="bg-[#D93F21] h-15 flex justify-between items-center">
             <div >
 
-                <Link className="h-15 flex items-center text-2xl text-white" key={"inicio"} to={"/inicio"}>
+                <Link className="h-15 flex items-center text-2xl text-white" key={"catalogo"} to={"/catalogo"}>
                     <svg className="h-12 p-0 ml-4" width="50" viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <mask id="mask0_10_65" maskUnits="userSpaceOnUse" x="0" y="27" width="70" height="72">
                     <path d="M0 27.6633H70V98.4738H0V27.6633Z" fill="white"/>
@@ -101,10 +101,11 @@ export default function Navbar() {
                 ) : (
 
                     <div>
-                            {/*<Link to={"iniciarSesion" No se si sea necesario teniendo en cuenta que es modal}>*/}
-                                <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
-                                    Iniciar Sesion</button>
-                            {/*</Link>*/}
+                            
+                            <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
+                                Iniciar Sesion
+                            </button>
+                            
 
                             
                             <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
