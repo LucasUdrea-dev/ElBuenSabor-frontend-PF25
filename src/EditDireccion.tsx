@@ -174,7 +174,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
                 value={latitud}
                 onChange={(e) => setLatitud(e.target.value)}
                 placeholder="Latitud"  
-                className="w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
               />
             </div>
 
@@ -184,7 +184,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
                 value={longitud}
                 onChange={(e) => setLongitud(e.target.value)}
                 placeholder="Longitud"  
-                className="w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
               />
             </div>
           </div>
@@ -197,7 +197,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
               type="text"
               value={calle}
               onChange={(e) => setCalle(e.target.value)}
-              className={`w-full p-2 border rounded font-lato  ${
+              className={`text-black w-full p-2 border rounded font-lato  ${
                 errors.calle ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -211,7 +211,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
               type="text"
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
-              className={`w-full p-2 border rounded ${
+              className={`text-black w-full p-2 border rounded ${
                 errors.numero ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -224,7 +224,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
               type="text"
               value={piso}
               onChange={(e) => setPiso(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className="text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 
@@ -234,7 +234,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
               type="text"
               value={depto}
               onChange={(e) => setDepto(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className="text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 
@@ -293,7 +293,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
               onChange={(e) => setAlias(e.target.value)}
               placeholder="Casa trabajo Oficina"  // Texto dentro de la textbox
 
-              className={`w-full p-2 border rounded placeholder:text-[#878787] ${
+              className={`text-black w-full p-2 border rounded placeholder:text-[#878787] ${
                 errors.alias ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -305,7 +305,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion, onDireccio
             <textarea
               value={aclaraciones}
               onChange={(e) => setAclaraciones(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className="text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 

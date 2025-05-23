@@ -20,7 +20,7 @@ const EliminarDireccion: React.FC<EliminarDireccionProps> = ({ isOpen, onClose, 
         <div className="flex justify-end gap-13 mb-2">
           <button
             onClick={onClose}
-            className="bg-white text-[#0A76E1] py-3 px-3 rounded-full hover:bg-gray-200 border border-[#0A76E1] w-40"
+              className="bg-white text-[#0A76E1] py-3 px-3 rounded-full hover:bg-gray-200 border border-[#0A76E1] w-40"
           >
             Cancelar
           </button>

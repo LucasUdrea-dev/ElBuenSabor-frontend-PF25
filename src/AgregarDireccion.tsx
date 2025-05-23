@@ -148,17 +148,17 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 value={latitud}
                 onChange={(e) => setLatitud(e.target.value)}
                 placeholder="Latitud"  
-                className="w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
               />
             </div>
 
             <div className="w-1/2 pl-2">
               <input
-                type="text"
+                type="text "
                 value={longitud}
                 onChange={(e) => setLongitud(e.target.value)}
                 placeholder="Longitud"  
-                className="w-full p-2 border rounded border-gray-300 placeholder:text-[#878787]"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
               />
             </div>
           </div>
@@ -171,7 +171,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type="text"
               value={calle}
               onChange={(e) => setCalle(e.target.value)}
-              className={`w-full p-2 border rounded font-lato  ${
+              className={`text-black w-full p-2 border rounded font-lato  ${
                 errors.calle ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -185,7 +185,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type="text"
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
-              className={`w-full p-2 border rounded ${
+              className={`text-black w-full p-2 border rounded ${
                 errors.numero ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -198,7 +198,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type="text"
               value={piso}
               onChange={(e) => setPiso(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className=" text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 
@@ -208,7 +208,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type="text"
               value={depto}
               onChange={(e) => setDepto(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className="text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 
@@ -267,7 +267,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               onChange={(e) => setAlias(e.target.value)}
               placeholder="Casa trabajo Oficina"  // Texto dentro de la textbox
 
-              className={`w-full p-2 border rounded placeholder:text-[#878787] ${
+              className={`text-black w-full p-2 border rounded placeholder:text-[#878787] ${
                 errors.alias ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -279,7 +279,7 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             <textarea
               value={aclaraciones}
               onChange={(e) => setAclaraciones(e.target.value)}
-              className="w-full p-2 border rounded border-gray-300"
+              className="text-black w-full p-2 border rounded border-gray-300"
             />
           </div>
 
