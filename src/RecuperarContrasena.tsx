@@ -35,7 +35,7 @@ const RecuperarContrasena = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md font-lato">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm font-lato">
         <h2 className="text-2xl font-bold mb-6 text-center">Recuperar Contraseña</h2>
 
         <p className="mb-6 text-center text-gray-700 font-lato">
