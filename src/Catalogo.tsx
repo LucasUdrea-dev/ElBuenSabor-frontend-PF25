@@ -244,114 +244,90 @@ export default function Catalogo() {
         const insumoPanBrioche: ArticuloInsumo = {
             id: 1,
             precioCompra: 50,
-            articulo: {
-                id: 1,
-                nombre: "Pan Brioche",
-                descripcion: "Pan especial para hamburguesas",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-pan-brioche.jpg",
-                subcategoria: subcategoriaHamburguesas
-            }
+            nombre: "Pan Brioche",
+            descripcion: "Pan especial para hamburguesas",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-pan-brioche.jpg",
+            subcategoria: subcategoriaHamburguesas
         };
 
         const insumoCarneVacuna: ArticuloInsumo = {
             id: 2,
             precioCompra: 200,
-            articulo: {
-                id: 2,
-                nombre: "Carne Vacuna",
-                descripcion: "Carne picada para hamburguesas",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-carne-vacuna.jpg",
-                subcategoria: subcategoriaHamburguesas
-            }
+            nombre: "Carne Vacuna",
+            descripcion: "Carne picada para hamburguesas",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-carne-vacuna.jpg",
+            subcategoria: subcategoriaHamburguesas
         };
 
         const insumoMasaPizza: ArticuloInsumo = {
             id: 3,
             precioCompra: 80,
-            articulo: {
-                id: 3,
-                nombre: "Masa para Pizza",
-                descripcion: "Masa fresca para pizza",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-masa-pizza.jpg",
-                subcategoria: subcategoriaPizzas
-            }
+            nombre: "Masa para Pizza",
+            descripcion: "Masa fresca para pizza",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-masa-pizza.jpg",
+            subcategoria: subcategoriaPizzas
         };
 
         const insumoSalsaTomate: ArticuloInsumo = {
             id: 4,
             precioCompra: 60,
-            articulo: {
-                id: 4,
-                nombre: "Salsa de Tomate",
-                descripcion: "Salsa casera para pizza",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-salsa-tomate.jpg",
-                subcategoria: subcategoriaPizzas
-            }
+            nombre: "Salsa de Tomate",
+            descripcion: "Salsa casera para pizza",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-salsa-tomate.jpg",
+            subcategoria: subcategoriaPizzas
         };
 
         const insumoHarina: ArticuloInsumo = {
             id: 5,
             precioCompra: 30,
-            articulo: {
-                id: 5,
-                nombre: "Harina 000",
-                descripcion: "Harina de trigo",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-harina.jpg",
-                subcategoria: subcategoriaPastasRellenas
-            }
+            nombre: "Harina 000",
+            descripcion: "Harina de trigo",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-harina.jpg",
+            subcategoria: subcategoriaPastasRellenas
         };
 
         const insumoHuevo: ArticuloInsumo = {
             id: 6,
             precioCompra: 20,
-            articulo: {
-                id: 6,
-                nombre: "Huevos",
-                descripcion: "Huevos frescos",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-huevo.jpg",
-                subcategoria: subcategoriaPastasRellenas
-            }
+            nombre: "Huevos",
+            descripcion: "Huevos frescos",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-huevo.jpg",
+            subcategoria: subcategoriaPastasRellenas
         };
 
         // Nuevos insumos para postres y ensaladas
         const insumoAzucar: ArticuloInsumo = {
             id: 7,
             precioCompra: 15,
-            articulo: {
-                id: 7,
-                nombre: "Azúcar",
-                descripcion: "Azúcar refinada",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-azucar.jpg",
-                subcategoria: subcategoriaTortas
-            }
+            nombre: "Azúcar",
+            descripcion: "Azúcar refinada",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-azucar.jpg",
+            subcategoria: subcategoriaTortas
         };
 
         const insumoLechuga: ArticuloInsumo = {
             id: 8,
             precioCompra: 25,
-            articulo: {
-                id: 8,
-                nombre: "Lechuga Fresca",
-                descripcion: "Lechuga de hoja verde",
-                precio: 0,
-                esParaElaborar: true,
-                imagen: "imagen-lechuga.jpg",
-                subcategoria: subcategoriaVegetarianas
-            }
+            nombre: "Lechuga Fresca",
+            descripcion: "Lechuga de hoja verde",
+            precio: 0,
+            esParaElaborar: true,
+            imagen: "imagen-lechuga.jpg",
+            subcategoria: subcategoriaVegetarianas
         };
 
 

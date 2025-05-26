@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Inicio from './Inicio.tsx'
 import Catalogo from './Catalogo.tsx'
 import DireccionesUser from './DireccionesUser.tsx'
+import AdminCatalogo from './AdminCatalogo.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -19,6 +20,10 @@ createRoot(document.getElementById('root')!).render(
           <Route path='/misDirecciones' element={<DireccionesUser />} />
 
           <Route path='*' element={<Inicio/>}/>
+        </Route>
+
+        <Route path='/admin' element={<App/>}>
+          <Route path='/admin/adminCatalogo' element={<AdminCatalogo/>}/>
         </Route>
       </Routes>
     </BrowserRouter> 
