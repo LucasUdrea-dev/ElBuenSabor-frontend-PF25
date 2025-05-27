@@ -11,14 +11,14 @@ export class Promocion {
 }
 
 export class Categoria {
-    id?: number;
+    id?: number = 0;
     denominacion: string = "";
     imagen: string = "";
     subcategorias: Subcategoria[] = [];
 }
 
 export class Subcategoria {
-    id?: number;
+    id?: number = 0;
     denominacion: string = "";
     categoria?: Categoria = new Categoria;
 }
@@ -29,14 +29,14 @@ export class Articulo{
     descripcion: string = "";
     precio: number = 0;
     existe?: boolean = false;
-    esParaElaborar?: boolean;
+    esParaElaborar?: boolean = false;
     imagen: string = "";
     subcategoria: Subcategoria = new Subcategoria();
     unidadMedida?: UnidadMedida = new UnidadMedida();
 }
 
 export class UnidadMedida{
-    id?: number;
+    id?: number = 0;
     unidad: string = ""
 }
 
@@ -64,7 +64,7 @@ export class ArticuloManufacturado extends Articulo{
 }
 
 export class ArticuloManufacturadoDetalleInsumo{
-    id?: number
+    id?: number = 0
     articuloManufacturado: ArticuloManufacturado = new ArticuloManufacturado()
     articuloInsumo: ArticuloInsumo = new ArticuloInsumo()
     cantidad: number = 0

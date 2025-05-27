@@ -640,10 +640,6 @@ export default function AdminCatalogo() {
         setArticulosManufacturadosMostrados(filtrado)
 
     }, [articulosManufacturados, buscador])
-
-    useEffect(()=>{
-        console.log(formManufacturado)
-    },[formManufacturado])
     
     return(
         <>
@@ -705,9 +701,9 @@ export default function AdminCatalogo() {
                                         </div>
                                         <div className="flex justify-around">
                                             <button onClick={()=>setMostrarArticulo(articulo)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
-                                            <button><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
+                                            <button onClick={()=>setFormManufacturado(articulo)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
                                             <button><img className="h-15" src="/svg/LogoBorrar.svg" alt="" /></button>
-                                        </div> 
+                                        </div>
     
                                     </div>
                                 )
