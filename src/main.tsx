@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Inicio from './Inicio.tsx'
 import Catalogo from './Catalogo.tsx'
 import DireccionesUser from './DireccionesUser.tsx'
-import AdminCatalogo from './AdminCatalogo.tsx'
+import AdminCatalogo from './Admin/Manufacturados/AdminCatalogo.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

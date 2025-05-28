@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
-import { ArticuloManufacturado, ArticuloInsumo, ArticuloManufacturadoDetalleInsumo, Subcategoria, UnidadMedida, Categoria } from '../ts/Clases.ts'; // Adjust the path as needed
-import AdminMostrarManufacturado from "./AdminMostrarManufacturado.tsx";
+import { ArticuloManufacturado, ArticuloInsumo, Subcategoria } from '../../../ts/Clases.ts'; // Adjust the path as needed
+
 import AdminFormManufacturado from "./AdminFormManufacturado.tsx";
+import AdminMostrarManufacturado from "./AdminMostrarManufacturado.tsx";
 
 export default function AdminCatalogo() {
 

@@ -1,5 +1,7 @@
-import { ArticuloManufacturado } from "../ts/Clases"
-import { obtenerImagen } from "../ts/Imagen";
+
+import { ArticuloManufacturado } from "../../../ts/Clases";
+import { obtenerImagen } from "../../../ts/Imagen";
+
 
 interface Props{
     articulo: ArticuloManufacturado | null;
