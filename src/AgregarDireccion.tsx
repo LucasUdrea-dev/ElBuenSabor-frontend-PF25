@@ -1,34 +1,57 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {  Direccion, Ciudad, Provincia, Pais } from "../ts/Clases";
+import { z } from "zod";
+
+
 
 type Errors = {
   calle?: string;
   numero?: string;
   ciudad?: string;
-  localidad?: string;
+  provincia?: string;
   alias?: string;
   general?: string;
 };
 
-const API_URL_CIUDADES = "http://localhost:8080/api/ciudades"; // Cambia esta URL a la de tu backend
-const API_URL_LOCALIDADES = "http://localhost:8080/api/localidades"; // Cambia esta URL a la de tu backend
-const API_URL_AGREGAR_DIRECCION = "http://localhost:8080/api/direcciones"; // Cambia esta URL a la de tu backend
+
+const API_URL_CIUDADES = "http://localhost:8080/api/Ciudad"; 
+const API_URL_PROVINCIA = "http://localhost:8080/api/Provincia"; 
+const API_URL_AGREGAR_DIRECCION = "http://localhost:8080/api/Direccion"; 
+
 
 const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [calle, setCalle] = useState("");
   const [numero, setNumero] = useState("");
-  const [piso, setPiso] = useState("");
-  const [depto, setDepto] = useState("");
   const [ciudad, setCiudad] = useState("");
-  const [localidad, setLocalidad] = useState("");
+  const [provincia, setProvincia] = useState("");
   const [alias, setAlias] = useState("");
   const [aclaraciones, setAclaraciones] = useState("");
   const [latitud, setLatitud] = useState("");
   const [longitud, setLongitud] = useState("");
+  const [piso, setPiso] = useState(""); 
+  const [depto, setDepto] = useState(""); 
   const [ciudades, setCiudades] = useState<string[]>([]);
-  const [localidades, setLocalidades] = useState<string[]>([]);
+  const [provincias, setProvincias] = useState<string[]>([]);
   const [errors, setErrors] = useState<Errors>({});
-  
+
+
+
+  const direccionSchema = z.object({
+  calle: z.string().nonempty("La calle es obligatoria.").regex(/^[a-zA-Z0-9\s]+$/, "La calle solo puede contener letras y números."),
+  numero: z.string().nonempty("El número es obligatorio.").regex(/^\d+$/, "El número debe ser solo dígitos."),
+  ciudad: z.string().nonempty("La ciudad es obligatoria."),
+  provincia: z.string().nonempty("La provincia es obligatoria."),
+  alias: z.string().nonempty("El alias es obligatorio."),
+  piso: z.string().optional(),
+  depto: z.string().optional(),
+  latitud: z.string().optional(),
+  longitud: z.string().optional(),
+  aclaraciones: z.string().optional(),
+});
+
+
+
   useEffect(() => {
     if (isOpen) {
       // Cargar ciudades y localidades al abrir el modal
@@ -37,85 +60,133 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         setCiudades(response.data);
       };
 
-      const fetchLocalidades = async () => {
-        const response = await axios.get(API_URL_LOCALIDADES);
-        setLocalidades(response.data);
+      const fetchProvincias = async () => {
+        const response = await axios.get(API_URL_PROVINCIA);
+        setProvincias(response.data);
       };
 
       fetchCiudades();
-      fetchLocalidades();
+      fetchProvincias();
     }
   }, [isOpen]);
 
-  const validarCampos = (): boolean => {
-    const nuevosErrores: Errors = {};
 
-    if (!calle.trim()) {
-      nuevosErrores.calle = "La calle es obligatoria.";
-    }
 
-    if (!numero.trim()) {
-      nuevosErrores.numero = "El número es obligatorio.";
-    }
-
-    if (!ciudad.trim()) {
-      nuevosErrores.ciudad = "La ciudad es obligatoria.";
-    }
-
-    if (!localidad.trim()) {
-      nuevosErrores.localidad = "La localidad es obligatoria.";
-    }
-
-    if (!alias.trim()) {
-      nuevosErrores.alias = "El alias es obligatorio.";
-    }
-
-    setErrors(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
-  const handleAgregarDireccion = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validarCampos()) {
-      return;
-    }
-
-    try {
-      const response = await axios.post(API_URL_AGREGAR_DIRECCION, {
+    const validarCamposConZod = (): boolean => {
+      const resultado = direccionSchema.safeParse({
         calle,
         numero,
-        piso,
-        depto,
         ciudad,
-        localidad,
+        provincia,
         alias,
-        aclaraciones,
         latitud,
         longitud,
+        aclaraciones,
       });
 
-      console.log("Dirección agregada:", response.data);
+      if (!resultado.success) {
+        const erroresZod: Errors = {};
+        resultado.error.errors.forEach((err) => {
+          const campo = err.path[0] as keyof Errors;
+          erroresZod[campo] = err.message;
+        });
+        setErrors(erroresZod);
+        return false;
+      }
+
+      setErrors({});
+      return true;
+    };
+
+
+
+    const verificarDireccionExistente = async (): Promise<boolean> => {
+    try {
+      const response = await axios.get(`${API_URL_AGREGAR_DIRECCION}/existe`, {
+        params: {
+          calle,
+          numero,
+          ciudad,
+          provincia,
+        },
+      });
+
+      return response.data.existe === true; // asumimos que responde { existe: true }
+    } catch (error) {
+      console.error("Error al verificar dirección:", error);
+      setErrors({
+        general: "No se pudo verificar si la dirección ya existe. Intente nuevamente.",
+      });
+      return true; // para prevenir el guardado en caso de error
+    }
+  };
+
+
+
+
+  const handleAgregarDireccion = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!validarCamposConZod()) return;
+
+  const aclaracionesConcatenadas = `Piso: ${piso}, Depto: ${depto}`;
+  setAclaraciones(aclaracionesConcatenadas);
+
+  const yaExiste = await verificarDireccionExistente();
+  if (yaExiste) {
+    setErrors({
+      general: "La dirección ya está registrada.",
+    });
+    return;
+  }
+
+  try {
+    const pais = new Pais();
+    pais.nombre = "Argentina";
+
+    const prov = new Provincia();
+    prov.nombre = provincia;
+    prov.pais = pais;
+
+    const ciu = new Ciudad();
+    ciu.nombre = ciudad;
+    ciu.provincia = prov;
+
+    const nuevaDireccion = new Direccion();
+    nuevaDireccion.nombre_calle = calle;
+    nuevaDireccion.numeracion = numero;
+    nuevaDireccion.latitud = parseFloat(latitud || "0");
+    nuevaDireccion.longitud = parseFloat(longitud || "0");
+    nuevaDireccion.alias = alias;
+    nuevaDireccion.text_area = aclaracionesConcatenadas;
+
+
+    // Enviar la dirección al backend
+      const responseDireccion = await axios.post(API_URL_AGREGAR_DIRECCION, nuevaDireccion);
+      console.log("Dirección agregada:", responseDireccion.data);
       onClose();
     } catch (err) {
       console.error("Error al agregar dirección:", err);
-      setErrors({ general: "Hubo un problema al agregar la dirección. Verifica los datos ingresados." });
+      setErrors({
+        general: "Hubo un problema al agregar la dirección. Verifica los datos ingresados.",
+      });
     }
   };
+
 
   //limpiar campos
   useEffect(() => {
     if (!isOpen) {
       setCalle("");
       setNumero("");
-      setPiso("");
-      setDepto("");
       setCiudad("");
-      setLocalidad("");
+      setProvincia("");
       setAlias("");
       setAclaraciones("");
       setLatitud("");
       setLongitud("");
+      setPiso(""); 
+      setDepto(""); 
       setErrors({});
     }
   }, [isOpen]);
@@ -239,22 +310,22 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           
           
           <div className="w-1/2 pr-2">
-            <label className="text-black block mb-2">Localidad*</label>
+            <label className="text-black block mb-2">Provincia*</label>
             <select
-              value={localidad}
-              onChange={(e) => setLocalidad(e.target.value)}
+              value={provincia}
+              onChange={(e) => setProvincia(e.target.value)}
               className={`w-full p-2 border rounded ${
-                errors.localidad ? "border-red-500" : "border-gray-300"
+                errors.provincia ? "border-red-500" : "border-gray-300"
               }`}
             >
-              <option value="">Seleccionar Localidad</option>
-              {localidades.map((localidad) => (
-                <option key={localidad} value={localidad}>
-                  {localidad}
+              <option value="">Seleccionar provincia</option>
+              {provincias.map((provincia) => (
+                <option key={provincia} value={provincia}>
+                  {provincia}
                 </option>
               ))}
             </select>
-            {errors.localidad && <p className="text-red-500 text-sm mt-1">{errors.localidad}</p>}
+            {errors.provincia && <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>}
           </div>
           </div>
           

@@ -2,111 +2,115 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
+import { z } from "zod";
+import { Usuario } from "../ts/Clases";
+
+
+// Esquema de validación con Zod
+const schema = z.object({
+  nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9]+$/, "Solo números"),
+  email: z.string().email("Formato de email inválido"),
+  contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  repetirContrasena: z.string(),
+}).refine((data) => data.contrasena === data.repetirContrasena, {
+  path: ["repetirContrasena"],
+  message: "Las contraseñas no coinciden",
+});
 
 // URL ejemplo
 const API_URL = "http://localhost:8080/api/usuarios/registrarse";
 
 
-//tipo de los errores
-type Errors = {
-  nombre?: string;
-  telefono?: string;
-  email?: string;
-  contrasena?: string;
-  repetirContrasena?: string;
-  general?: string;
-};
+// Tipo para manejar los errores de validación
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
 
-//estados para manejar los campos del formulario
+//estados para manejar los datos del formulario (names)
 const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [nombre, setNombre] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [email, setEmail] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [repetirContrasena, setRepetirContrasena] = useState("");
+  const [formData, setFormData] = useState({
+    nombre: "",
+    apellido:"",
+    telefono: "",
+    email: "",
+    contrasena: "",
+    repetirContrasena: "",
+  });
+
+
+  // Estado para manejar los errores de validación
+  const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
 
 
   //limpiar
   useEffect(() => {
     if (!isOpen) {
-      setNombre("");
-      setTelefono("");
-      setEmail("");
-      setContrasena("");
-      setRepetirContrasena("");
+      setFormData({ nombre: "", apellido:"", telefono: "", email: "", contrasena: "", repetirContrasena: "" });
       setErrors({});
     }
   }, [isOpen]);
 
 
-
-  //valida los campos del formulario y actualiza el estado de errores.
-  const validarCampos = (): boolean => {
-    const nuevosErrores: Errors = {};
-
-    if (!nombre.trim()) {
-      nuevosErrores.nombre = "El nombre es obligatorio.";
-    } else if (!/^[a-zA-Z\s]*$/.test(nombre.trim())) {
-      nuevosErrores.nombre = "El nombre solo puede contener letras y espacios.";
-    }
-
-    if (!telefono.trim()) {
-      nuevosErrores.telefono = "El teléfono es obligatorio.";
-    } else if (!/^[0-9]+$/.test(telefono.trim())) {
-      nuevosErrores.telefono = "El teléfono solo puede contener números.";
-    }
-
-    if (!email.trim()) {
-      nuevosErrores.email = "El email es obligatorio.";
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email.trim())) {
-      nuevosErrores.email = "El email no tiene un formato válido.";
-    }
-
-    if (!contrasena) {
-      nuevosErrores.contrasena = "La contraseña es obligatoria.";
-    }
-
-    if (!repetirContrasena) {
-      nuevosErrores.repetirContrasena = "Debe repetir la contraseña.";
-    }
-
-    if (contrasena && repetirContrasena && contrasena !== repetirContrasena) {
-      nuevosErrores.repetirContrasena = "Las contraseñas no coinciden.";
-    }
-
-    setErrors(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
+    // Maneja el cambio en los campos del formulario
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
 
 
-  //función para enviar el formulario
+  // Función para validar los campos del formulario
+  const validarCampos = (): boolean => {
+    const result = schema.safeParse(formData);
+    
+    const newErrors = result.success 
+        ? {} 
+        : result.error.issues.reduce((acc, issue) => {
+            acc[issue.path[0] as keyof typeof acc] = issue.message;
+            return acc;
+          }, {} as Errors);
+
+      if (formData.contrasena !== formData.repetirContrasena) {
+        newErrors.repetirContrasena = "Las contraseñas no coinciden.";
+      }
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+
+
+
   const handleRegistro = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validarCampos()) {
-      return;
-    }
+    if (!validarCampos()) return;
+
+    // Adaptar los datos al tipo UsuarioEntidad
+    const usuario: Usuario = {
+      nombre: formData.nombre,
+      apellido:formData.apellido,
+      email: formData.email,
+      telefono: formData.telefono,
+      contrasena: formData.contrasena,
+      repetirContrasena:formData.repetirContrasena
+
+    };
 
     try {
-      const response = await axios.post(API_URL, {
-        nombre,
-        telefono,
-        email,
-        contrasena,
-      });
-
+      const response = await axios.post(API_URL, usuario);
       console.log("Usuario registrado:", response.data);
       onClose();
     } catch (err) {
       console.error("Error al registrar usuario:", err);
-      setErrors({ general: "Hubo un problema al registrar al usuario. Verifica los datos ingresados." });
+      setErrors({ general: "Hubo un problema al registrar al usuario." });
     }
   };
+
+
+
+  
 
   // Login con Google y Facebook
   const handleGoogleLogin = async () => {
@@ -156,8 +160,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <label className="block mb-2 font-lato">Nombre Completo</label>
             <input
               type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              name="nombre"// atributo name
+              value={formData.nombre}// Se enlaza al estado formData
+              onChange={handleChange} // Llama a la función handleChange al cambiar el valor
               className={`w-full p-2 border rounded font-lato ${
                 errors.nombre ? "border-red-500" : "border-gray-300"
               }`}
@@ -166,11 +171,26 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           </div>
 
           <div className="mb-4">
+            <label className="block mb-2 font-lato">Apellido</label>
+            <input
+              type="text"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              className={`w-full p-2 border rounded font-lato ${
+                errors.apellido ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors.apellido && <p className="text-red-500 text-sm mt-1 font-lato ">{errors.apellido}</p>}
+          </div>
+
+          <div className="mb-4">
             <label className="block mb-2 font-lato">Teléfono</label>
             <input
               type="tel"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
               className={`w-full p-2 border rounded font-lato ${
                 errors.telefono ? "border-red-500" : "border-gray-300"
               }`}
@@ -182,8 +202,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <label className="block mb-2 font-lato">Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className={`w-full p-2 border rounded font-lato ${
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
@@ -191,12 +212,17 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             {errors.email && <p className="text-red-500 text-sm mt-1 font-lato">{errors.email}</p>}
           </div>
 
+
+
+
+
           <div className="mb-4 relative">
             <label className="block mb-2 font-lato">Contraseña</label>
             <input
               type={showPassword ? "text" : "password"}
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
+              name="contrasena"
+              value={formData.contrasena}
+              onChange={handleChange}
               className={`w-full p-2 border rounded font-lato ${
                 errors.contrasena ? "border-red-500" : "border-gray-300"
               }`}
@@ -221,8 +247,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <label className="block mb-2 font-lato">Repetir Contraseña</label>
             <input
               type={showRepeatPassword ? "text" : "password"}
-              value={repetirContrasena}
-              onChange={(e) => setRepetirContrasena(e.target.value)}
+              value={formData.repetirContrasena}
+              name="repetirContrasena"
+              onChange={handleChange}
               className={`w-full p-2 border rounded font-lato ${
                 errors.repetirContrasena ? "border-red-500" : "border-gray-300"
               }`}

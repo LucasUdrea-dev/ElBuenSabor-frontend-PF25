@@ -51,3 +51,49 @@ export class Articulo{
     imagen: string = "";
     subcategoria: Subcategoria = new Subcategoria();
 }
+
+export class Usuario{
+    id?: number;
+    nombre: string = "";
+    apellido: string = "";
+    email: string = "";
+    contrasena: string = "";
+    repetirContrasena: string = "";
+    telefono: string = "";
+    existe?: boolean;
+    imagenUsuario?: string;
+    
+}
+
+export class Direccion{
+    id?: number;
+    existe?: boolean;
+    nombre_calle: string = "";
+    numeracion: string = "";
+    latitud: number = 0;
+    longitud: number = 0;
+    alias: string = "";
+    text_area: String ="";
+    ciudad?: Ciudad;
+}
+
+
+export class Ciudad {
+    id?: number; 
+    nombre: string = "";
+    direccionList: Direccion[] = [];
+    provincia?: Provincia; 
+}
+
+export class Provincia {
+    id?: number; 
+    nombre: string = "";
+    pais?: Pais; 
+    ciudadList: Ciudad[] = []; 
+}
+
+export class Pais {
+    id?: number; 
+    nombre: string = "";
+    provincias: Provincia[] = []; 
+}

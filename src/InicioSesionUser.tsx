@@ -1,50 +1,98 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import RecuperarContrasena from "./RecuperarContrasena";
+import { z } from "zod";
 
+
+
+const schema = z.object({
+  email: z.string().min(1, "El email es obligatorio").email("Formato de email inválido"),
+  contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+});
 
 //url ejemplo
 const API_URL = "http://localhost:8080/api/usuarios/iniciarSesion";
 
-const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [email, setEmail] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
 
-  useEffect(() => {
-    if (!isOpen) {
-      setEmail("");
-      setContrasena("");
-      setError("");
-    }
-  }, [isOpen]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!email || !contrasena) {
-      setError("Todos los campos son obligatorios.");
-      return;
-    }
+  //estados para manejar los datos del formulario (names)
+  const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
 
-    try {
-      const response = await axios.post(API_URL, {
-        email,
-        contrasena,
-      });
 
-      console.log("Usuario logueado:", response.data);
-      onClose();
-    } catch (err) {
-      console.error("Error al iniciar sesión:", err);
-      setError("Email o contraseña incorrectos.");
-    }
-  };
+  //Estado para manejar los errores de validación
+    
+    const [errors, setErrors] = useState<Errors>({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
+    const [formData, setFormData] = useState({ email: "", contrasena: "",});
+    const navigate = useNavigate();
+
+
+
+
+
+     //limpiar
+      useEffect(() => {
+        if (!isOpen) {
+          setFormData({ email: "", contrasena: "",});
+          setErrors({});
+        }
+      }, [isOpen]);
+    
+
+       // Maneja el cambio en los campos del formulario
+         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          setFormData({ ...formData, [e.target.name]: e.target.value });
+        };
+      
+
+      // Función para validar los campos del formulario
+        const validarCampos = (): boolean => {
+          const result = schema.safeParse(formData);
+          
+          const newErrors = result.success 
+              ? {} 
+              : result.error.issues.reduce((acc, issue) => {
+                  acc[issue.path[0] as keyof typeof acc] = issue.message;
+                  return acc;
+                }, {} as Errors);
+      
+            setErrors(newErrors);
+            return Object.keys(newErrors).length === 0;
+          };
+      
+      
+      
+      const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validarCampos()) return;
+        try {
+            const response = await axios.post(API_URL, { email: formData.email, contrasena: formData.contrasena });
+
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token); // Almacenar el token
+                onClose(); 
+                navigate('/catalogo'); // Redirigir a la página de catálogo
+            }
+        } catch (err) {
+            console.error("Error al iniciar sesión:", err);
+            if (axios.isAxiosError(err)) {
+              const mensaje = err.response?.data?.message || "Error en el inicio de sesión.";
+              setErrors({ general: mensaje });
+            } else {
+              setErrors({ general: "Error desconocido en el inicio de sesión." });
+            }
+        }
+    };
+
+
+
 
   //Inico con Google y Facebook
   const handleGoogleLogin = async () => {
@@ -84,24 +132,33 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 
 
 
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 font-lato text-center">Iniciar Sesión</h2>
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md relative">
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-9 right-8 text-gray-500 hover:text-gray-700 font-lato"
+        >
+          X
+        </button>
+
+        <h2 className="text-2xl font-bold mb-7 font-lato text-center">Iniciar Sesión</h2>
         
 
-        <div className="h-8">
-        {error && <div className="mb-4 text-red-500 font-lato ">{error}</div>}
-        </div>
+        {errors.general && (
+          <div className="text-red-600 font-lato mb-2 text-center font-lato">{errors.general}</div>
+        )}
 
         <form onSubmit={handleLogin}>
           <div className="mb-4">
             <label className="block mb-2 font-lato">Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
@@ -111,8 +168,9 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             <label className="block mb-2 font-lato">Contraseña</label>
             <input
               type={showPassword ? "text" : "password"}
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
+              name="contrasena"
+              value={formData.contrasena}
+              onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded font-lato"
               required
             />
@@ -158,15 +216,7 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             </button>
           </div>
 
-          <div className="relative">
-            <button
-              type="button"
-              onClick={onClose}
-            className="absolute bottom-103 right-0 text-gray-500 mb-4 font-lato">X
-
-
-            </button>
-          </div>
+          
         </form>
       </div>
 
@@ -177,4 +227,4 @@ const InicioSesionUs = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   );
 };
 
-export default InicioSesionUs;
+export default InicioSesionUser;
