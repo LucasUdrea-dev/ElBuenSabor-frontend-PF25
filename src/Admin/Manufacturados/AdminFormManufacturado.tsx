@@ -119,9 +119,9 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
 
     useEffect(()=>{
         if (articulo) {
+            setIndexCategoria(Number(articulo.subcategoria.categoria?.id))
             setForm(articulo)
             setPreviewImagen(obtenerImagen(articulo.imagen))
-            setIndexCategoria(Number(articulo.subcategoria.categoria?.id))
         }
     },[articulo])
 
@@ -339,11 +339,17 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                                     }} name="subcategoria">
 
                                         {(listaCategorias.length > 0 && indexCategoria) && (
-                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias.map((subcategoria)=>(
-                                            <option key={subcategoria.id} value={subcategoria.id}>{subcategoria.denominacion}</option>
-                                        )))}
+                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias.map((subcategoria)=>{
+                                            if (subcategoria.id == form.subcategoria.id) {
+                                                return <option key={subcategoria.id} value={subcategoria.id} selected>{subcategoria.denominacion}</option>    
+                                            }else{
+                                                return <option key={subcategoria.id} value={subcategoria.id}>{subcategoria.denominacion}</option>
+                                            }
+                                        }))}
 
                                     </select>
+
+                                    <label htmlFor="">{form.subcategoria.id} {form.subcategoria.denominacion}</label>
                                 </div>
 
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
