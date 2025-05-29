@@ -112,7 +112,7 @@ export default function AdminCatalogo() {
         const subHamburguesa = createSubcategoria(2, "Hamburguesas", 2, "Fast Food");
         const subPasta = createSubcategoria(3, "Pastas", 1, "Comida Italiana");
 
-        const datos: ArticuloManufacturado[] = [
+        let datos: ArticuloManufacturado[] = [
             // --- Pizzas ---
             {
                 id: 1,
@@ -625,7 +625,26 @@ export default function AdminCatalogo() {
             }
         ];
 
-        setArticulosManufacturados(datos)
+        // --- Function to add incremental IDs to detalleInsumo ---
+        function addIncrementalIdsToDetalleInsumo(data: ArticuloManufacturado[]) {
+            let detailIdCounter = 1; // Initialize the counter for detalleInsumo IDs
+
+            for (const articulo of data) {
+                if (articulo.detalleInsumos && Array.isArray(articulo.detalleInsumos)) {
+                    for (const detalle of articulo.detalleInsumos) {
+                        // Ensure the id doesn't already exist or you might want to overwrite
+                        // For this request, we'll simply assign it.
+                        detalle.id = detailIdCounter++;
+                    }
+                }
+            }
+            return data;
+        }
+
+        // Call the function to add IDs
+        const datosConIds = addIncrementalIdsToDetalleInsumo(datos);
+
+        setArticulosManufacturados(datosConIds)
     }
 
     useEffect(()=>{
@@ -676,7 +695,7 @@ export default function AdminCatalogo() {
                             <h1>Categoría</h1>
                             <h1>Denominación</h1>
                             <h1>Precio</h1>
-                            <h1>Disponibilidad</h1>
+                            <h1>Publicado</h1>
                             <h1>Acciones</h1>
 
                         </div>
@@ -755,7 +774,7 @@ export default function AdminCatalogo() {
                 {/**Editar, crear manufacturado */}
                 <div className={`${!formManufacturado && "hidden"}`}>
 
-                    <AdminFormManufacturado articulo={formManufacturado} cerrarEditar={cerrarForm}/>
+                    <AdminFormManufacturado articulo={formManufacturado} cargarAdminCatalogo={cargarManufacturados} cerrarEditar={cerrarForm}/>
 
                 </div>
 

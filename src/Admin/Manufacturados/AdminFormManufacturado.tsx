@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
-import { ArticuloManufacturado, Categoria, Subcategoria } from "../../../ts/Clases"
-import { obtenerImagen } from "../../../ts/Imagen";
+import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, Subcategoria } from "../../../ts/Clases"
+import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
+import SelectorInsumo from "./SelectoInsumo";
 
 interface Props{
     articulo: ArticuloManufacturado | null;
     cerrarEditar: ()=> void;
+    cargarAdminCatalogo: ()=>void
 }
 
-export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) {
+export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAdminCatalogo}: Props) {
 
     const [listaCategorias, setListaCategorias] = useState<Categoria[]>([])
     const [form, setForm] = useState<ArticuloManufacturado >(new ArticuloManufacturado())
     const [imagen, setImagen] = useState<File | null>(null)
     const [previewImagen, setPreviewImagen] = useState<string | null>(null)
-    const [indexCategoria, setIndexCategoria] = useState(0)
+    const [indexCategoria, setIndexCategoria] = useState(1)
+    const [seleccionarArticulo, setSeleccionarArticulo] = useState(false)
     const [seccionActiva, setSeccionActiva] = useState(1)
 
     //Carga de categorias
@@ -119,17 +122,81 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
 
     useEffect(()=>{
         if (articulo) {
-            setIndexCategoria(Number(articulo.subcategoria.categoria?.id))
             setForm(articulo)
             setPreviewImagen(obtenerImagen(articulo.imagen))
+            //Si el articulo es para editar, se asigna la categoria del articulo al select
+            if (articulo.subcategoria.id) {
+                setIndexCategoria(Number(articulo.subcategoria.categoria?.id))
+                //Si es un articulo nuevo, se asigna la primera categoria en la lista de categorias
+            }else{
+                setIndexCategoria(Number(listaCategorias[0].id))
+            }
         }
     },[articulo])
 
     const cerrarFormulario = ()=>{
+        cargarAdminCatalogo()
         cerrarEditar()
         setSeccionActiva(1)
         setImagen(null)
         setPreviewImagen(null)
+        setIndexCategoria(1)
+    }
+
+    const handleSubmit = async ()=>{
+
+        try {
+        
+            let formFinal = {...form}
+
+            if (imagen) {
+
+                formFinal = {...formFinal, imagen: imagen.name}
+
+                if (articulo?.imagen){
+                    const borradoExitoso = await borrarImagen(articulo.imagen)
+                    if (!borradoExitoso) {
+                        console.log("Error al borrar la imagen previa")
+                        return;
+                    }
+                }
+
+                let imagenNuevaSubida = await subirImagen(imagen)
+
+                if (!imagenNuevaSubida) {
+                    console.error("Error al subir la nueva imagen")
+                    alert("Error al subir la nueva imagen. Operacion cancelada")
+                    return
+                }
+            }else if (!imagen && articulo?.imagen){
+
+                formFinal = {...formFinal, imagen: articulo.imagen}
+
+            }
+
+            setForm(formFinal)
+
+            const guardadoExitoso = await guardarArticuloManufacturado(formFinal)
+
+            if (guardadoExitoso) {
+                console.log("Se guardo el articulo")
+                cerrarFormulario()
+            }else{
+                console.error("Error al guardar el articulo")
+                alert("Error al guardar el articulo. Operacion cancelada")
+            }
+
+        } catch (error) {
+            console.error("Ocurrio un error en handleSubmit:", error)
+            alert("Ocurrio un error inesperado. Intente de nuevo.")
+        }
+
+        
+
+    }
+    //ACA ME QUEDE
+    const guardarArticuloManufacturado = async (form: ArticuloManufacturado)=>{
+        return true
     }
 
     const handleImagen = (e: React.ChangeEvent<HTMLInputElement>)=>{
@@ -153,6 +220,10 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
 
     const anteriorSeccion = ()=>{
         setSeccionActiva((prev)=> prev - 1)
+    }
+
+    const cerrarSeleccionarArticulo = ()=>{
+        setSeleccionarArticulo(false)
     }
 
     useEffect(()=>{
@@ -283,6 +354,9 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                                         <input onChange={handleImagen} accept="image/*" type="file" />
                                     </div>
                                 </div>
+                                {(!imagen && !articulo?.imagen) && (
+                                    <h4>Debe cargar una imagen</h4>
+                                )}
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                                     <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
                                     <button onClick={(imagen || articulo?.imagen) ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
@@ -323,10 +397,12 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                                     </select>
                                 </div>
 
-                                {/**ME QUEDE ACA, NO LOGRO QUE MUESTRE LA SUBCATEGORIA DEL ARTICULO CUANDO ES PARA EDITAR */}
                                 <div>
                                     <h3>Subcategoria:</h3>
-                                    <select value={form.subcategoria.id} onChange={(e)=>{
+                                    {/**Value se establece en "" para que siempre muestre seleccionar,
+                                     * pero el onChange sigue asignando la subcategoria correctamente
+                                     */}
+                                    <select value={""} onChange={(e)=>{
                                         const buscarSubcat: Subcategoria | undefined = listaCategorias.find((categoria)=> categoria.id === indexCategoria)?.subcategorias.find((subcat)=> subcat.id === Number(e.target.value))
                                         
                                         if (buscarSubcat) {
@@ -337,24 +413,29 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                                             }))
                                         }
                                     }} name="subcategoria">
+                                        <option value="" disabled>Seleccionar...</option>
 
                                         {(listaCategorias.length > 0 && indexCategoria) && (
-                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias.map((subcategoria)=>{
-                                            if (subcategoria.id == form.subcategoria.id) {
-                                                return <option key={subcategoria.id} value={subcategoria.id} selected>{subcategoria.denominacion}</option>    
-                                            }else{
-                                                return <option key={subcategoria.id} value={subcategoria.id}>{subcategoria.denominacion}</option>
-                                            }
+                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias.map((subcategoria)=>{   
+                                            return <option key={subcategoria.id} value={subcategoria.id}>{subcategoria.denominacion}</option>
                                         }))}
 
                                     </select>
 
-                                    <label htmlFor="">{form.subcategoria.id} {form.subcategoria.denominacion}</label>
                                 </div>
-
+                                
+                                <div>
+                                    <label className="">Categorias seleccionadas: {form.subcategoria.id ? `${form.subcategoria.categoria?.denominacion} - ${form.subcategoria.denominacion}` : "Ninguna"}</label>
+                                </div>
+                                
+                                <div>
+                                    {!form.subcategoria.id && (
+                                        <h4>Debe seleccionar las categorias para continuar</h4>
+                                    )}
+                                </div>
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                                     <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={siguienteSeccion} className="bg-[#D93F21]">Siguiente</button>
+                                    <button onClick={form.subcategoria.id ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
                                 </div>
                             </div>
                         </div>
@@ -380,24 +461,67 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                             </div>
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-1000 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`}>
+                                transition-all duration-1000 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`
+                                }>
+                                
                                 <div>
-                                    <h3>Nombre:</h3>
-                                    <input className="w-full" type="text" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-20">
-                                    <div className="flex flex-col">
-                                        <h3>Precio de venta:</h3>
-                                        <input type="number" />
+                                    <div className="grid grid-cols-[2fr_2fr_1fr_1fr] py-5">
+                                        <h3>Insumo:</h3>
+                                        <h3>Cantidad:</h3>
                                     </div>
-                                    <div>
-                                        <h3>Tiempo estimado{"(min)"}:</h3>
-                                        <input type="number" />
-                                    </div>
+                                    {/**Se listan los ingredientes y se modifica
+                                     * la cantidad utilizando el input
+                                     * Luego unidad de medida y boton para borrar ingrediente
+                                     */}
+                                    {form.detalleInsumos.length > 0 && form.detalleInsumos.map((detalle)=>(
+                                        <div key={detalle.articuloInsumo.id} className="grid grid-cols-[2fr_2fr_1fr_1fr] items-center">
+                                            <h3>{detalle.articuloInsumo.nombre}</h3>
+                                            <input value={detalle.cantidad ? detalle.cantidad : ""} onChange={(e)=>{
+                                                setForm((prev)=>{
+                                                    let nuevosDetalles: ArticuloManufacturadoDetalleInsumo[] = []
+
+                                                    //Se crea un nuevo array de detalles
+                                                    //en el que se modifica la cantidad unicamente del detalle
+                                                    //correspondiente al input y luego se asigna el array nuevo
+                                                    //con la modificacion hecha, al objeto form(ArticuloManufacturado)
+                                                    nuevosDetalles = prev.detalleInsumos.map((det)=>
+                                                    det.articuloInsumo.id == detalle.articuloInsumo.id  ?
+                                                    {...det, cantidad: Number(e.target.value)} 
+                                                    : det
+                                                    )
+
+                                                    return {...prev, detalleInsumos: nuevosDetalles}
+
+                                                })
+                                            }} type="number" />
+                                            <h3>{detalle.articuloInsumo.unidadMedida?.unidad}</h3>
+                                            {/**Borra el detalle correspondiente del array 
+                                             * detallesInsumos
+                                             */}
+                                            <button onClick={()=>{
+                                                setForm((prev)=>{
+                                                    return {...prev, detalleInsumos: prev.detalleInsumos.filter((det)=> det.id != detalle.id)}
+                                                })
+                                            }}>
+                                                <img src="/svg/BorrarDetalle.svg" alt="" />
+                                            </button>
+                                        </div>
+                                    ))}   
                                 </div>
+
+                                <div>
+                                    <button onClick={()=>setSeleccionarArticulo(true)} className="bg-white px-2 text-[#D93F21]">Agregar ingrediente</button>
+                                </div>
+
+                                <SelectorInsumo abierto={seleccionarArticulo} cerrar={cerrarSeleccionarArticulo} setForm={setForm}/>
+                                
+                                {form.detalleInsumos.length < 2 && (
+                                    <h4>Debe ingresar por lo menos 2 ingredientes</h4>
+                                )}
+
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                                     <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={siguienteSeccion} className="bg-[#D93F21]">Siguiente</button>
+                                    <button onClick={form.detalleInsumos.length >= 2 ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
                                 </div>
                             </div>
                         </div>
@@ -424,23 +548,40 @@ export default function AdminFormManufacturado({articulo, cerrarEditar}: Props) 
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
                                 transition-all duration-1000 ease-in-out ${seccionActiva == 5 ? "max-h-screen" : "max-h-0"}`}>
-                                <div>
-                                    <h3>Nombre:</h3>
-                                    <input className="w-full" type="text" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-20">
-                                    <div className="flex flex-col">
-                                        <h3>Precio de venta:</h3>
-                                        <input type="number" />
+                                
+                                <div className="w-2/4">
+                                    
+                                    <div className="bg-[#99999959] w-full rounded-2xl flex flex-col gap-1">
+                                        {/**Imagen y tiempo */}
+                                        <div className="relative">
+                                            <img className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl" src={String(previewImagen)} alt="No se encontro la imagen" />
+                                            {form.tiempoEstimado && (
+                                                <div className="absolute bottom-0 left-1/12 bg-white m-auto text-center text-black p-1 rounded-bl-2xl rounded-tr-2xl ">
+                                                    <h1 className="text-xl">{`${form.tiempoEstimado.split(" ")[0]}-${Number(form.tiempoEstimado.split(" ")[0]) + 5}`} min</h1>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/**Nombre, precio, categoria */}
+                                        <div className="w-10/12 m-auto">
+                                            <h1 className="text-3xl">{form.nombre}</h1>
+                                            <div className="flex gap-5">
+                                                <h2>${form.precio}</h2>
+                                                <h2>{form.subcategoria.categoria?.denominacion} - {form.subcategoria.denominacion}</h2>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3>Tiempo estimado{"(min)"}:</h3>
-                                        <input type="number" />
-                                    </div>
+
                                 </div>
-                                <div className="flex gap-5 *:p-2 *:rounded-4xl">
-                                    <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={siguienteSeccion} className="bg-[#D93F21]">Siguiente</button>
+
+
+                                <div className="flex justify-between">
+                                    <div className="grid grid-cols-[1fr_10fr] justify-center items-center">
+                                        <input checked={form.existe} onChange={(e)=>setForm((prev)=> ({...prev, existe: e.target.checked}))} className="h-5" type="checkbox" /><label>¿Desea publicarlo en el catálogo?</label>
+                                    </div>
+                                    <div className="flex justify-center gap-5 *:p-2 *:rounded-4xl">
+                                        <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
+                                        <button onClick={handleSubmit} className="bg-[#D93F21]">Guardar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
