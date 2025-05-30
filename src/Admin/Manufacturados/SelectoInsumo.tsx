@@ -23,7 +23,23 @@ export default function SelectorInsumo({abierto, cerrar, setForm}: Props) {
             insumo.precio = precioCompra * 1.5; // Example: selling price is 1.5 times cost
             insumo.precioCompra = precioCompra;
             insumo.imagen = "no-image.jpg"; // Default for insumos if not specified
-            insumo.unidadMedida = { id: id, unidad: unidad };
+
+            let unidadMedidaId: number;
+            switch (unidad) {
+                case "unidad":
+                    unidadMedidaId = 1;
+                    break;
+                case "gr":
+                    unidadMedidaId = 2;
+                    break;
+                case "ml":
+                    unidadMedidaId = 3;
+                    break;
+                default:
+                    unidadMedidaId = 0; // Or handle unknown units as appropriate
+            }
+
+            insumo.unidadMedida = { id: unidadMedidaId, unidad: unidad };
             insumo.subcategoria = { id: 1, denominacion: "Insumos Varios" }; // Example subcategory
             return insumo;
         };

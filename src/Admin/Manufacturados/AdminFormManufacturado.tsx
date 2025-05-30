@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, Subcategoria } from "../../../ts/Clases"
+import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, Direccion, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
 import SelectorInsumo from "./SelectoInsumo";
+import axios from "axios";
 
 interface Props{
     articulo: ArticuloManufacturado | null;
@@ -146,8 +147,22 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     const handleSubmit = async ()=>{
 
         try {
-        
+            let sucursalPrueba = new Sucursal()
+            sucursalPrueba = {
+                id: 1,
+                nombre: "Principal",
+                existe: true,
+                direccion: new Direccion()
+            }
+            let unidadMedidaManufacturado = new UnidadMedida()
+            unidadMedidaManufacturado = {
+                id: 1,
+                unidad: "unidad"
+            }
+
             let formFinal = {...form}
+            formFinal = {...form, sucursal: sucursalPrueba}
+            formFinal = {...form, unidadMedida: unidadMedidaManufacturado}
 
             if (imagen) {
 
@@ -196,6 +211,20 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     }
     //ACA ME QUEDE
     const guardarArticuloManufacturado = async (form: ArticuloManufacturado)=>{
+        let URL = `http://localhost:8080/api/ArticuloManufacturado`;
+            
+        
+        try {
+            
+            const response = await axios.post(URL, form)
+
+            alert("Manufacturado creado con exito!")
+            console.log("Se guardo el articulo", response.data)
+            cerrarFormulario()
+        } catch (error) {
+            console.error("ERROR", error)
+        }
+
         return true
     }
 
@@ -387,7 +416,10 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                 overflow-hidden
                                 transition-all duration-1000 ease-in-out 
                                 ${seccionActiva == 3 ? "max-h-screen" : "max-h-0"}`}>
-                                
+                                <div>
+                                    <h3>Preparacion:</h3>
+                                    <textarea value={form.preparacion} onChange={(e)=>setForm((prev)=>({...prev, preparacion: e.target.value}))} className="focus:outline-none border-b py-2 w-full" name="preparacion"></textarea>
+                                </div>
                                 <div>
                                     <h3>Categoria:</h3>
                                     <select value={indexCategoria} onChange={(e)=>setIndexCategoria(Number(e.target.value))} name="categoria">
@@ -403,14 +435,19 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                      * pero el onChange sigue asignando la subcategoria correctamente
                                      */}
                                     <select value={""} onChange={(e)=>{
-                                        const buscarSubcat: Subcategoria | undefined = listaCategorias.find((categoria)=> categoria.id === indexCategoria)?.subcategorias.find((subcat)=> subcat.id === Number(e.target.value))
+                                        let buscarSubcat: Subcategoria | undefined = listaCategorias.find((categoria)=> categoria.id === indexCategoria)?.subcategorias.find((subcat)=> subcat.id === Number(e.target.value))
+                                        
                                         
                                         if (buscarSubcat) {
                                             
-                                            setForm((prev)=>({
-                                                ...prev,
-                                                subcategoria: buscarSubcat
-                                            }))
+                                            if (buscarSubcat.categoria) {
+                                                buscarSubcat.categoria.subcategorias = []
+                                                
+                                                setForm((prev)=>({
+                                                    ...prev,
+                                                    subcategoria: buscarSubcat
+                                                }))
+                                            }
                                         }
                                     }} name="subcategoria">
                                         <option value="" disabled>Seleccionar...</option>

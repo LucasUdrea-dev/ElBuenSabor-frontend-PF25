@@ -24,7 +24,7 @@ export class Subcategoria {
 }
 
 export class Articulo{
-    id?: number = 0;
+    id?: number;
     nombre: string = "";
     descripcion: string = "";
     precio: number = 0;
@@ -60,6 +60,7 @@ export class ArticuloInsumo extends Articulo{
 export class ArticuloManufacturado extends Articulo{
     tiempoEstimado: string = "";
     preparacion: string = "";
+    sucursal?: Sucursal = new Sucursal()
     detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = []
 }
 
@@ -68,4 +69,15 @@ export class ArticuloManufacturadoDetalleInsumo{
     articuloManufacturado: ArticuloManufacturado = new ArticuloManufacturado()
     articuloInsumo: ArticuloInsumo = new ArticuloInsumo()
     cantidad: number = 0
+}
+
+export class Sucursal{
+    id?: number = 0
+    nombre: string = ""
+    existe: boolean = false
+    direccion?: Direccion = new Direccion()
+}
+
+export class Direccion{
+    id?: number = 0
 }

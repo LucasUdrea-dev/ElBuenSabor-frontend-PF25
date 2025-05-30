@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ArticuloManufacturado, ArticuloInsumo, Subcategoria } from '../../../ts/Clases.ts'; // Adjust the path as needed
+import { ArticuloManufacturado, ArticuloInsumo, Subcategoria, Sucursal } from '../../../ts/Clases.ts'; // Adjust the path as needed
 
 import AdminFormManufacturado from "./AdminFormManufacturado.tsx";
 import AdminMostrarManufacturado from "./AdminMostrarManufacturado.tsx";
@@ -37,7 +37,23 @@ export default function AdminCatalogo() {
             insumo.precio = precioCompra * 1.5; // Example: selling price is 1.5 times cost
             insumo.precioCompra = precioCompra;
             insumo.imagen = "no-image.jpg"; // Default for insumos if not specified
-            insumo.unidadMedida = { id: id, unidad: unidad };
+
+            let unidadMedidaId: number;
+            switch (unidad) {
+                case "unidad":
+                    unidadMedidaId = 1;
+                    break;
+                case "gr":
+                    unidadMedidaId = 2;
+                    break;
+                case "ml":
+                    unidadMedidaId = 3;
+                    break;
+                default:
+                    unidadMedidaId = 0; // Or handle unknown units as appropriate
+            }
+
+            insumo.unidadMedida = { id: unidadMedidaId, unidad: unidad };
             insumo.subcategoria = { id: 1, denominacion: "Insumos Varios" }; // Example subcategory
             return insumo;
         };
@@ -643,6 +659,10 @@ export default function AdminCatalogo() {
 
         // Call the function to add IDs
         const datosConIds = addIncrementalIdsToDetalleInsumo(datos);
+
+        for (const articulo of datosConIds) {
+            articulo.sucursal = new Sucursal()
+        }
 
         setArticulosManufacturados(datosConIds)
     }
