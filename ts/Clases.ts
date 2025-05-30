@@ -11,32 +11,32 @@ export class Promocion {
 }
 
 export class Categoria {
-    id?: number = 0;
+    id?: number | null = null;
     denominacion: string = "";
     imagen: string = "";
-    subcategorias: Subcategoria[] = [];
+    subcategorias?: Subcategoria[] = [];
 }
 
 export class Subcategoria {
-    id?: number = 0;
+    id?: number | null = null ;
     denominacion: string = "";
     categoria?: Categoria = new Categoria;
 }
 
 export class Articulo{
-    id?: number;
+    id?: number | null = null;
     nombre: string = "";
     descripcion: string = "";
     precio: number = 0;
     existe?: boolean = false;
     esParaElaborar?: boolean = false;
-    imagen: string = "";
+    imagenArticulo: string = "";
     subcategoria: Subcategoria = new Subcategoria();
     unidadMedida?: UnidadMedida = new UnidadMedida();
 }
 
 export class UnidadMedida{
-    id?: number = 0;
+    id?: number | null = null;
     unidad: string = ""
 }
 
@@ -60,24 +60,24 @@ export class ArticuloInsumo extends Articulo{
 export class ArticuloManufacturado extends Articulo{
     tiempoEstimado: string = "";
     preparacion: string = "";
-    sucursal?: Sucursal = new Sucursal()
+    sucursal?: Sucursal = new Sucursal();
     detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = []
 }
 
 export class ArticuloManufacturadoDetalleInsumo{
-    id?: number = 0
-    articuloManufacturado: ArticuloManufacturado = new ArticuloManufacturado()
+    id?: number | null = null
     articuloInsumo: ArticuloInsumo = new ArticuloInsumo()
     cantidad: number = 0
 }
 
 export class Sucursal{
-    id?: number = 0
-    nombre: string = ""
-    existe: boolean = false
-    direccion?: Direccion = new Direccion()
+    id?: number | null = null
+    nombre?: string = ""
+    horaApertura?: string = ""
+    horaCierre?: string = ""
+    existe?: boolean = false
 }
 
 export class Direccion{
-    id?: number = 0
+    id?: number | null = null
 }

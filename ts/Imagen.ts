@@ -40,7 +40,7 @@ export async function borrarImagen(nombreImagen: string) {
 
 export function obtenerImagen(nombreImagen: string) {
     
-    const url: string = `/img/${nombreImagen}`
+    const url: string = `http://localhost:8080/api/imagenes/${nombreImagen}`
 
     return url;
 

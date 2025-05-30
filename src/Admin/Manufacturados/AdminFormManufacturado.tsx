@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, Direccion, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
-import SelectorInsumo from "./SelectoInsumo";
+import SelectorInsumo from "./SelectorInsumo";
 import axios from "axios";
 
 interface Props{
@@ -13,6 +13,7 @@ interface Props{
 export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAdminCatalogo}: Props) {
 
     const [listaCategorias, setListaCategorias] = useState<Categoria[]>([])
+    const [sucursalActual, setSucursalActual] = useState<Sucursal>()
     const [form, setForm] = useState<ArticuloManufacturado >(new ArticuloManufacturado())
     const [imagen, setImagen] = useState<File | null>(null)
     const [previewImagen, setPreviewImagen] = useState<string | null>(null)
@@ -22,109 +23,49 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
     //Carga de categorias
     useEffect(()=>{
-        // Definición de las categorías y subcategorías
-        // Función auxiliar para crear subcategorías (simplificada para este contexto)
-        const createSubcategoria = (id: number, denominacion: string, categoria: Categoria): Subcategoria => ({
-            id,
-            denominacion,
-            categoria,
-        });
-
-        // Array principal que contendrá todas las categorías
-        const categorias: Categoria[] = [];
-
-        // --- Categorías Existentes ---
-
-        // Categoria: Comida Italiana
-        const comidaItaliana: Categoria = {
-            id: 1,
-            denominacion: "Comida Italiana",
-            imagen: "comida-italiana.jpg", // Asumo un nombre de imagen para la categoría
-            subcategorias: []
-        };
-        comidaItaliana.subcategorias.push(
-            createSubcategoria(1, "Pizzas", comidaItaliana),
-            createSubcategoria(2, "Pastas", comidaItaliana)
-        );
-        categorias.push(comidaItaliana);
-
-        // Categoria: Fast Food
-        const fastFood: Categoria = {
-            id: 2,
-            denominacion: "Fast Food",
-            imagen: "fast-food.jpg", // Asumo un nombre de imagen
-            subcategorias: []
-        };
-        fastFood.subcategorias.push(
-            createSubcategoria(3, "Hamburguesas", fastFood)
-        );
-        categorias.push(fastFood);
-
-        // Para la "Subcategoria Insumos Varios", si se necesita una categoría padre
-        // Podríamos crear una categoría general "Insumos" o "Materia Prima"
-        const insumos: Categoria = {
-            id: 3, // Nuevo ID para esta categoría
-            denominacion: "Insumos",
-            imagen: "insumos.jpg",
-            subcategorias: []
-        };
-        insumos.subcategorias.push(
-            createSubcategoria(4, "Insumos Varios", insumos) // Reutilizamos el concepto de subcategoría
-        );
-        categorias.push(insumos);
-
-        // --- Nuevas Categorías ---
-
-        // Categoria: Bebidas
-        const bebidas: Categoria = {
-            id: 4, // Nuevo ID
-            denominacion: "Bebidas",
-            imagen: "bebidas.jpg",
-            subcategorias: []
-        };
-        bebidas.subcategorias.push(
-            createSubcategoria(5, "Gaseosas", bebidas),
-            createSubcategoria(6, "Jugos Naturales", bebidas),
-            createSubcategoria(7, "Cervezas", bebidas)
-        );
-        categorias.push(bebidas);
-
-        // Categoria: Postres
-        const postres: Categoria = {
-            id: 5, // Nuevo ID
-            denominacion: "Postres",
-            imagen: "postres.jpg",
-            subcategorias: []
-        };
-        postres.subcategorias.push(
-            createSubcategoria(8, "Helados", postres),
-            createSubcategoria(9, "Tortas y Tartas", postres),
-            createSubcategoria(10, "Panadería Dulce", postres)
-        );
-        categorias.push(postres);
-
-        // Categoria: Ensaladas
-        const ensaladas: Categoria = {
-            id: 6, // Nuevo ID
-            denominacion: "Ensaladas",
-            imagen: "ensaladas.jpg",
-            subcategorias: []
-        };
-        ensaladas.subcategorias.push(
-            createSubcategoria(11, "Ensaladas Clásicas", ensaladas),
-            createSubcategoria(12, "Ensaladas Gourmet", ensaladas),
-            createSubcategoria(13, "Wraps y Bowls", ensaladas)
-        );
-        categorias.push(ensaladas);
-
-        setListaCategorias(categorias)
+        
+        traerSucursal()
+        traerCategorias()
 
     }, [])
 
+    const traerCategorias = async ()=>{
+        const URLCategorias = "http://localhost:8080/api/Categoria/completas"
+
+        try {
+            
+            const response = await axios.get(URLCategorias)
+            console.log(response.data)
+            setListaCategorias(response.data)
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
     useEffect(()=>{
+        console.log(sucursalActual)
+    }, [sucursalActual])
+
+    const traerSucursal = async ()=>{
+        const URLSucursal = "http://localhost:8080/api/sucursales/1"
+
+        try {
+            
+            const response = await axios.get(URLSucursal)
+            
+            setSucursalActual(response.data)
+
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    useEffect(()=>{
+
         if (articulo) {
             setForm(articulo)
-            setPreviewImagen(obtenerImagen(articulo.imagen))
+            setPreviewImagen(obtenerImagen(articulo.imagenArticulo))
             //Si el articulo es para editar, se asigna la categoria del articulo al select
             if (articulo.subcategoria.id) {
                 setIndexCategoria(Number(articulo.subcategoria.categoria?.id))
@@ -147,29 +88,27 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     const handleSubmit = async ()=>{
 
         try {
-            let sucursalPrueba = new Sucursal()
-            sucursalPrueba = {
-                id: 1,
-                nombre: "Principal",
-                existe: true,
-                direccion: new Direccion()
-            }
+            
             let unidadMedidaManufacturado = new UnidadMedida()
             unidadMedidaManufacturado = {
                 id: 1,
                 unidad: "unidad"
             }
 
+            const sucursalFinal = {...sucursalActual}
+
             let formFinal = {...form}
-            formFinal = {...form, sucursal: sucursalPrueba}
-            formFinal = {...form, unidadMedida: unidadMedidaManufacturado}
+            formFinal = {...formFinal, sucursal: sucursalFinal}
+            formFinal = {...formFinal, unidadMedida: unidadMedidaManufacturado}
+
+            delete formFinal.subcategoria.categoria?.subcategorias
 
             if (imagen) {
 
-                formFinal = {...formFinal, imagen: imagen.name}
+                formFinal = {...formFinal, imagenArticulo: imagen.name}
 
-                if (articulo?.imagen){
-                    const borradoExitoso = await borrarImagen(articulo.imagen)
+                if (articulo?.imagenArticulo){
+                    const borradoExitoso = await borrarImagen(articulo.imagenArticulo)
                     if (!borradoExitoso) {
                         console.log("Error al borrar la imagen previa")
                         return;
@@ -183,9 +122,9 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                     alert("Error al subir la nueva imagen. Operacion cancelada")
                     return
                 }
-            }else if (!imagen && articulo?.imagen){
+            }else if (!imagen && articulo?.imagenArticulo){
 
-                formFinal = {...formFinal, imagen: articulo.imagen}
+                formFinal = {...formFinal, imagenArticulo: articulo.imagenArticulo}
 
             }
 
@@ -211,18 +150,29 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     }
     //ACA ME QUEDE
     const guardarArticuloManufacturado = async (form: ArticuloManufacturado)=>{
-        let URL = `http://localhost:8080/api/ArticuloManufacturado`;
-            
+        let URL = form.id ? `http://localhost:8080/api/ArticuloManufacturado/${form.id}`
+        :`http://localhost:8080/api/ArticuloManufacturado`;
         
         try {
-            
-            const response = await axios.post(URL, form)
 
-            alert("Manufacturado creado con exito!")
-            console.log("Se guardo el articulo", response.data)
+            if (form.id) {
+                
+                const response = await axios.put(URL, form)
+
+                alert("Manufacturado actualizado con exito!")
+                console.log("Se actualizo el articulo: ", response.status)
+
+            }else{
+                const response = await axios.post(URL, form)
+    
+                alert("Manufacturado creado con exito!")
+                console.log("Se guardo el articulo", response.status)
+            }
+            
             cerrarFormulario()
         } catch (error) {
             console.error("ERROR", error)
+            cerrarFormulario()
         }
 
         return true
@@ -239,7 +189,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
             }
             lector.readAsDataURL(file)
         }else{
-            setPreviewImagen(obtenerImagen(String(articulo?.imagen)))
+            setPreviewImagen(obtenerImagen(String(articulo?.imagenArticulo)))
         }
     }
 
@@ -305,7 +255,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             </div>
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-1000 ease-in-out ${seccionActiva == 1 ? "max-h-screen" : "max-h-0"}`}>
+                                transition-all duration-500 ease-in-out ${seccionActiva == 1 ? "max-h-screen" : "max-h-0"}`}>
                                 <div>
                                     <h3>Nombre:</h3>
                                     <input value={form?.nombre} onChange={(e)=>setForm((prev)=> ({...prev, nombre: e.target.value}))} className="w-full" type="text" />
@@ -370,11 +320,11 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             {/**Cargar imagen y vista previa */}
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-1000 ease-in-out ${seccionActiva == 2 ? "max-h-screen" : "max-h-0"}`}>
+                                transition-all duration-500 ease-in-out ${seccionActiva == 2 ? "max-h-screen" : "max-h-0"}`}>
                                 
                                 <div className="grid grid-cols-2 gap-5 items-center">
                                     <div className="bg-[#D9D9D9] h-50 rounded-4xl">
-                                        {(articulo?.imagen || imagen) && (
+                                        {(articulo?.imagenArticulo || imagen) && (
                                             <img className="h-full w-full object-cover rounded-4xl" src={String(previewImagen)} alt="" />
                                         )}
                                     </div>
@@ -383,12 +333,12 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                         <input onChange={handleImagen} accept="image/*" type="file" />
                                     </div>
                                 </div>
-                                {(!imagen && !articulo?.imagen) && (
+                                {(!imagen && !articulo?.imagenArticulo) && (
                                     <h4>Debe cargar una imagen</h4>
                                 )}
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                                     <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={(imagen || articulo?.imagen) ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
+                                    <button onClick={(imagen || articulo?.imagenArticulo) ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
                                 </div>
                             </div>
                         </div>
@@ -413,8 +363,8 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                 </div>
                             </div>
                             <div className={`text-2xl *:py-5 
-                                overflow-hidden
-                                transition-all duration-1000 ease-in-out 
+                                overflow-y-auto
+                                transition-all duration-500 ease-in-out 
                                 ${seccionActiva == 3 ? "max-h-screen" : "max-h-0"}`}>
                                 <div>
                                     <h3>Preparacion:</h3>
@@ -424,7 +374,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                     <h3>Categoria:</h3>
                                     <select value={indexCategoria} onChange={(e)=>setIndexCategoria(Number(e.target.value))} name="categoria">
                                         {listaCategorias.length > 0 && listaCategorias.map((categoria)=>(
-                                            <option key={categoria.id} value={categoria.id}>{categoria.denominacion}</option>
+                                            <option key={categoria.id} value={Number(categoria.id)}>{categoria.denominacion}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -435,7 +385,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                      * pero el onChange sigue asignando la subcategoria correctamente
                                      */}
                                     <select value={""} onChange={(e)=>{
-                                        let buscarSubcat: Subcategoria | undefined = listaCategorias.find((categoria)=> categoria.id === indexCategoria)?.subcategorias.find((subcat)=> subcat.id === Number(e.target.value))
+                                        let buscarSubcat: Subcategoria | undefined = listaCategorias.find((categoria)=> categoria.id === indexCategoria)?.subcategorias?.find((subcat)=> subcat.id === Number(e.target.value))
                                         
                                         
                                         if (buscarSubcat) {
@@ -453,8 +403,8 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                         <option value="" disabled>Seleccionar...</option>
 
                                         {(listaCategorias.length > 0 && indexCategoria) && (
-                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias.map((subcategoria)=>{   
-                                            return <option key={subcategoria.id} value={subcategoria.id}>{subcategoria.denominacion}</option>
+                                        listaCategorias.find((categoria)=> categoria.id == indexCategoria)?.subcategorias?.map((subcategoria)=>{   
+                                            return <option key={subcategoria.id} value={Number(subcategoria.id)}>{subcategoria.denominacion}</option>
                                         }))}
 
                                     </select>
@@ -498,7 +448,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             </div>
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-1000 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`
+                                transition-all duration-500 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`
                                 }>
                                 
                                 <div>
@@ -584,7 +534,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             </div>
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-1000 ease-in-out ${seccionActiva == 5 ? "max-h-screen" : "max-h-0"}`}>
+                                transition-all duration-500 ease-in-out ${seccionActiva == 5 ? "max-h-screen" : "max-h-0"}`}>
                                 
                                 <div className="w-2/4">
                                     

@@ -6,9 +6,10 @@ import { obtenerImagen } from "../../../ts/Imagen";
 interface Props{
     articulo: ArticuloManufacturado | null;
     cerrarMostrar: () => void
+    abrirEditar: (articulo: ArticuloManufacturado | null)=>void
 }
 
-export default function AdminMostrarManufacturado({articulo, cerrarMostrar}: Props) {
+export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abrirEditar}: Props) {
     
     const calcularCostoTotal = ()=>{
         let total = 0
@@ -43,7 +44,7 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar}: Pro
                     <div className="flex justify-between items-center text-2xl">
                         <div className="grid grid-cols-[3fr_1fr]">
                             <div className="flex gap-5 items-center">
-                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={obtenerImagen(String(articulo?.imagen))} alt="" />
+                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={obtenerImagen(String(articulo?.imagenArticulo))} alt="" />
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-3xl font-bold">{articulo?.nombre}</h2>
                                     <div className="flex gap-2">
@@ -58,7 +59,10 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar}: Pro
                         </div>
 
                         <div>
-                            <button className="bg-[#D93F21] text-white p-2 px-5 rounded-4xl">Editar</button>
+                            <button onClick={()=>{
+                                cerrarMostrar()
+                                abrirEditar(articulo)
+                            }} className="bg-[#D93F21] text-white p-2 px-5 rounded-4xl">Editar</button>
                         </div>
                     </div>
 
@@ -105,7 +109,7 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar}: Pro
 
                             <div key={index} className="grid grid-cols-4">
                                 
-                                <h3>{detalle.cantidad}{detalle.articuloInsumo.unidadMedida?.unidad}</h3>
+                                <h3>{detalle.cantidad} {detalle.articuloInsumo.unidadMedida?.unidad}</h3>
                                 <h3>{detalle.articuloInsumo.nombre}</h3>
                                 <h3>${detalle.articuloInsumo.precioCompra}</h3>
                                 <h3>${detalle.cantidad * detalle.articuloInsumo.precioCompra}</h3>

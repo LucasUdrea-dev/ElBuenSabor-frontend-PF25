@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArticuloInsumo, ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo } from "../../../ts/Clases";
+import axios from "axios";
 
 interface Props{
     abierto: boolean
@@ -15,100 +16,22 @@ export default function SelectorInsumo({abierto, cerrar, setForm}: Props) {
 
     useEffect(()=>{
         
-        // Helper function to create an ArticuloInsumo
-        const createInsumo = (id: number, nombre: string, precioCompra: number, unidad: string): ArticuloInsumo => {
-            const insumo = new ArticuloInsumo();
-            insumo.id = id;
-            insumo.nombre = nombre;
-            insumo.precio = precioCompra * 1.5; // Example: selling price is 1.5 times cost
-            insumo.precioCompra = precioCompra;
-            insumo.imagen = "no-image.jpg"; // Default for insumos if not specified
-
-            let unidadMedidaId: number;
-            switch (unidad) {
-                case "unidad":
-                    unidadMedidaId = 1;
-                    break;
-                case "gr":
-                    unidadMedidaId = 2;
-                    break;
-                case "ml":
-                    unidadMedidaId = 3;
-                    break;
-                default:
-                    unidadMedidaId = 0; // Or handle unknown units as appropriate
-            }
-
-            insumo.unidadMedida = { id: unidadMedidaId, unidad: unidad };
-            insumo.subcategoria = { id: 1, denominacion: "Insumos Varios" }; // Example subcategory
-            return insumo;
-        };
-
-        const masaPizza = createInsumo(1, "Masa para Pizza", 50, "gr");
-        const quesoMuzzarella = createInsumo(2, "Queso Muzzarella", 100, "gr");
-        const salsaTomate = createInsumo(3, "Salsa de Tomate", 30, "ml");
-        const pepperoni = createInsumo(4, "Pepperoni", 80, "gr");
-        const jamon = createInsumo(5, "Jamón Cocido", 70, "gr");
-        const morron = createInsumo(6, "Morrón", 20, "gr");
-        const champinones = createInsumo(7, "Champiñones", 60, "gr");
-        const cebolla = createInsumo(8, "Cebolla", 25, "gr");
-        const huevo = createInsumo(9, "Huevo", 15, "unidad");
-        const aceitunas = createInsumo(10, "Aceitunas", 10, "gr");
-        const harina = createInsumo(11, "Harina 000", 20, "gr");
-        const carnePicada = createInsumo(12, "Carne Picada", 150, "gr");
-        const panHamburguesa = createInsumo(13, "Pan de Hamburguesa", 40, "unidad");
-        const lechuga = createInsumo(14, "Lechuga", 15, "gr");
-        const tomate = createInsumo(15, "Tomate", 20, "gr");
-        const panceta = createInsumo(16, "Panceta Ahumada", 50, "gr");
-        const quesoCheddar = createInsumo(17, "Queso Cheddar", 40, "gr");
-        const papasFritas = createInsumo(18, "Papas Fritas", 80, "gr");
-        const sal = createInsumo(19, "Sal", 5, "gr");
-        const pimienta = createInsumo(20, "Pimienta", 3, "gr");
-        const ajo = createInsumo(21, "Ajo", 5, "gr");
-        const albahaca = createInsumo(22, "Albahaca", 5, "gr");
-        const ricota = createInsumo(23, "Ricota", 100, "gr");
-        const espinaca = createInsumo(24, "Espinaca", 50, "gr");
-        const masaPasta = createInsumo(25, "Masa para Pasta", 120, "gr");
-        const crema = createInsumo(26, "Crema de Leche", 50, "ml");
-        const nuezMoscada = createInsumo(27, "Nuez Moscada", 2, "gr");
-        const panRallado = createInsumo(28, "Pan Rallado", 10, "gr");
-        const aceite = createInsumo(29, "Aceite", 10, "ml");
-
-        const todosInsumos: ArticuloInsumo[] = [
-            masaPizza,
-            quesoMuzzarella,
-            salsaTomate,
-            pepperoni,
-            jamon,
-            morron,
-            champinones,
-            huevo,
-            cebolla,
-            aceitunas,
-            harina,
-            carnePicada,
-            panHamburguesa,
-            lechuga,
-            tomate,
-            panceta,
-            quesoCheddar,
-            papasFritas,
-            sal,
-            pimienta,
-            panRallado,
-            aceite,
-            ajo,
-            albahaca,
-            ricota,
-            espinaca,
-            masaPasta,
-            crema,
-            nuezMoscada
-        ]
-
-        setListaInsumos(todosInsumos)
+        traerInsumos()
 
     },[])
+
+    const traerInsumos = async ()=>{
+        const URLCategorias = "http://localhost:8080/api/insumos"
+
+        try {
+            
+            const response = await axios.get(URLCategorias)
+            console.log(response.data)
+            setListaInsumos(response.data)
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
     useEffect(()=>{
         let filtrado: ArticuloInsumo[] = listaInsumos
