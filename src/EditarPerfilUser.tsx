@@ -3,16 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import EditCorreoUser from './EditCorreoUser';
 import EditContrasenaUser from './EditContrasenaUser';
+import { Usuario } from '../ts/Clases';
 
-type Usuario = {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono?: string;
-  imagenUsuario?: string;
-  contrasena: string;
-};
 
 // Esquema de validación
 const usuarioSchema = z.object({
@@ -29,17 +21,7 @@ const usuarioSchema = z.object({
 export default function EditarPerfilUser() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
-  const [formData, setFormData] = useState<Usuario>({
-
-    id: 1,
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    imagenUsuario: '',
-    contrasena: '',
-  });
-
+  const [formData, setFormData] = useState<Usuario>(new Usuario());
   const [errores, setErrores] = useState<Partial<Record<keyof Usuario, string>>>({});
   const navigate = useNavigate();
   const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
@@ -47,20 +29,17 @@ export default function EditarPerfilUser() {
 
 
   
-
-
-
   useEffect(() => {
     // Simulamos carga de datos hardcodeados
-    const fakeUser: Usuario = {
-      id: 1,
-      nombre: 'Agustin',
-      apellido: 'Del Monte',
-      email: 'agustin@mail.com',
-      telefono: '1122334455',
-      imagenUsuario: '',
-      contrasena: '123456',
-    };
+    const fakeUser = new Usuario();
+    fakeUser.id = 1;
+    fakeUser.nombre = 'Agustin';
+    fakeUser.apellido = 'Del Monte';
+    fakeUser.email = 'agustin@mail.com';
+    fakeUser.telefono = '1122334455';
+    fakeUser.imagenUsuario = '';
+    fakeUser.contrasena = '123456';
+    fakeUser.existe = true; 
 
     setUsuario(fakeUser);
     setFormData(fakeUser);
@@ -87,39 +66,66 @@ export default function EditarPerfilUser() {
   []);
   
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+        setFormData((prev) => {
+          const newFormData = new Usuario();
+          Object.assign(newFormData, prev);
+          (newFormData as any)[name] = value;
+          return newFormData;
+      });
+      
+        if (errores[name as keyof Usuario]) {
+          setErrores(prev => ({
+            ...prev,
+            [name]: undefined
+          }));
+      }
+    };
 
 
   const guardarCambios = async () => {
   try {
+
+    const usuarioPlano = {
+        id: formData.id,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        contrasena: formData.contrasena,
+        repetirContrasena: formData.repetirContrasena,
+        telefono: formData.telefono,
+        existe: formData.existe,
+        imagenUsuario: formData.imagenUsuario,
+      };
+
+
     // Validar los datos con Zod
-    const datosValidados = usuarioSchema.parse(formData);
+    const datosValidados = usuarioSchema.parse(usuarioPlano);
+
 
     console.log('Usuario válido:', datosValidados);
     setUsuario(formData);
     setErrores({});
+
+    //await axios.put(`https://api.tuservidor.com/usuario/${formData.id}`, datosValidados);
+
     navigate('/catalogo');
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const newErrors: Partial<Record<keyof Usuario, string>> = {};
-      error.errors.forEach((err) => {
-        const field = err.path[0] as keyof Usuario;
-        newErrors[field] = err.message;
-      });
-      setErrores(newErrors);
-    } else {
-      console.error('Error inesperado al validar:', error);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+
+        const newErrors: Partial<Record<keyof Usuario, string>> = {};
+          error.errors.forEach((err) => {
+          const field = err.path[0] as keyof Usuario;
+          newErrors[field] = err.message;
+        });
+
+        setErrores(newErrors);
+      } else {
+        console.error('Error inesperado al validar:', error);
+      }
     }
-  }
-};
+  };
 
   const cancelar = () => {
     if (usuario) setFormData(usuario);
@@ -278,20 +284,28 @@ export default function EditarPerfilUser() {
       <EditContrasenaUser
         isOpen={mostrarModalContrasena}
         onClose={() => setMostrarModalContrasena(false)}
-        usuarioId={formData.id}
+        usuarioId={formData.id!}
         onContrasenaActualizada={(nuevaContrasena)=> {
-          setFormData(prev=> ({ ...prev, contrasena: nuevaContrasena }));
-
-
+          setFormData(prev => {
+            const newFormData = new Usuario();
+            Object.assign(newFormData, prev);
+            newFormData.contrasena = nuevaContrasena;
+            return newFormData;
+          });
         }}
       />
 
       <EditCorreoUser
         isOpen={mostrarModalCorreo}
         onClose={() => setMostrarModalCorreo(false)}
-        usuarioId={formData.id}
+        usuarioId={formData.id!}
         onCorreoActualizado={(nuevoCorreo) => {
-          setFormData(prev => ({ ...prev, email: nuevoCorreo }));
+          setFormData(prev => {
+            const newFormData = new Usuario();
+            Object.assign(newFormData, prev);
+            newFormData.email = nuevoCorreo;
+            return newFormData;
+          });
         }}
       />
     </div>

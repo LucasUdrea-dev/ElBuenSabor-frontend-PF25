@@ -43,6 +43,8 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
 
 
   //limpiar
@@ -50,6 +52,8 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     if (!isOpen) {
       setFormData({ nombre: "", apellido:"", telefono: "", email: "", contrasena: "", repetirContrasena: "" });
       setErrors({});
+      setIsLoading(false);
+
     }
   }, [isOpen]);
 
@@ -87,6 +91,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
     if (!validarCampos()) return;
 
+    setIsLoading(true);
+    setErrors({});
+
     // Adaptar los datos al tipo UsuarioEntidad
     const usuario: Usuario = {
       nombre: formData.nombre,
@@ -102,12 +109,18 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       const response = await axios.post(API_URL, usuario);
       console.log("Usuario registrado:", response.data);
       onClose();
-    } catch (err) {
+
+    } catch (err: any) {
       console.error("Error al registrar usuario:", err);
-      setErrors({ general: "Hubo un problema al registrar al usuario." });
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          "Hubo un problema al registrar al usuario.";
+      
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsLoading(false);
     }
   };
-
 
 
   
@@ -145,6 +158,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           type="button"
           onClick={onClose}
           className="absolute top-9 right-8 text-gray-500 hover:text-gray-700 font-lato"
+          disabled={isLoading}
         >
           X
         </button>
@@ -163,6 +177,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               name="nombre"// atributo name
               value={formData.nombre}// Se enlaza al estado formData
               onChange={handleChange} // Llama a la función handleChange al cambiar el valor
+              disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.nombre ? "border-red-500" : "border-gray-300"
               }`}
@@ -177,6 +192,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               name="apellido"
               value={formData.apellido}
               onChange={handleChange}
+              disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.apellido ? "border-red-500" : "border-gray-300"
               }`}
@@ -191,6 +207,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
+               disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.telefono ? "border-red-500" : "border-gray-300"
               }`}
@@ -205,6 +222,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               name="email"
               value={formData.email}
               onChange={handleChange}
+              disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
@@ -223,6 +241,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               name="contrasena"
               value={formData.contrasena}
               onChange={handleChange}
+              disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.contrasena ? "border-red-500" : "border-gray-300"
               }`}
@@ -230,6 +249,8 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+
               className="absolute right-2 top-13 transform -translate-y-1/2"
             >
               <img
@@ -250,6 +271,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               value={formData.repetirContrasena}
               name="repetirContrasena"
               onChange={handleChange}
+              disabled={isLoading}
               className={`w-full p-2 border rounded font-lato ${
                 errors.repetirContrasena ? "border-red-500" : "border-gray-300"
               }`}
@@ -257,6 +279,8 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <button
               type="button"
               onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+              disabled={isLoading}
+
               className="absolute right-2 top-13 transform -translate-y-1/2"
             >
               <img
@@ -274,18 +298,39 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
           <button
             type="submit"
-            className="bg-[#0A76E1] text-white py-2 px-4 rounded-full hover:bg-[#0A5BBE] w-full mb-4 font-lato"
+            disabled={isLoading}
+            className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 ${
+              isLoading 
+                ? 'bg-gray-400 cursor-not-allowed opacity-70' 
+                : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
+            }`}
           >
-            Registrate
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Registrando...
+              </div>
+            ) : (
+              'Registrate'
+            )}
           </button>
 
           <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
 
           <div className="flex justify-center mb-4 space-x-10">
-            <button onClick={handleFacebookLogin} type="button">
+            <button 
+            onClick={handleFacebookLogin} 
+            type="button">
+               
+            
+
               <img src="public/svg/devicon_facebook.svg" alt="Facebook" className="w-10 h-10" />
             </button>
-            <button onClick={handleGoogleLogin} type="button">
+            <button 
+            onClick={handleGoogleLogin} 
+            type="button">
+              
+
               <img src="public/svg/flat-color-icons_google.svg" alt="Google" className="w-10 h-10" />
             </button>
           </div>
