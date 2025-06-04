@@ -8,6 +8,8 @@ import Inicio from './Inicio.tsx'
 import Catalogo from './Catalogo.tsx'
 import DireccionesUser from './DireccionesUser.tsx'
 import AdminCatalogo from './Admin/Manufacturados/AdminCatalogo.tsx'
+import EditarPerfilUser from './EditarPerfilUser.tsx'
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,6 +20,8 @@ createRoot(document.getElementById('root')!).render(
 
           <Route path='/catalogo' element={<Catalogo/>}/>
           <Route path='/misDirecciones' element={<DireccionesUser />} />
+          <Route path='/miPeril' element={<EditarPerfilUser />} />
+
 
           <Route path='*' element={<Inicio/>}/>
         </Route>
