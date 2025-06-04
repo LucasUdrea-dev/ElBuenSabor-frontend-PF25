@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import DesplegableUsuario from "./DesplegableUsuario.tsx"
 import RegistroModal from "./Registro.tsx"
 import InicioSesionUs from "./InicioSesionUser.tsx"
+import { obtenerImagen } from "../ts/Imagen.ts"
 
 export default function Navbar() {
     
@@ -72,7 +73,7 @@ export default function Navbar() {
                         <div className="relative">
                             <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
                                 <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                    <img className="rounded-4xl" src="./img/miniUsuario.jpg" alt="foto usuario" />
+                                    <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
                                     <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
                                         Nombre Apellido
                                         <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

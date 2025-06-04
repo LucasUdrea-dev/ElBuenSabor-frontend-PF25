@@ -11,16 +11,33 @@ export class Promocion {
 }
 
 export class Categoria {
-    id?: number;
+    id?: number | null = null;
     denominacion: string = "";
     imagen: string = "";
-    subcategorias: Subcategoria[] = [];
+    subcategorias?: Subcategoria[] = [];
 }
 
 export class Subcategoria {
-    id?: number;
+    id?: number | null = null ;
     denominacion: string = "";
     categoria?: Categoria = new Categoria;
+}
+
+export class Articulo{
+    id?: number | null = null;
+    nombre: string = "";
+    descripcion: string = "";
+    precio: number = 0;
+    existe?: boolean = false;
+    esParaElaborar?: boolean = false;
+    imagenArticulo: string = "";
+    subcategoria: Subcategoria = new Subcategoria();
+    unidadMedida?: UnidadMedida = new UnidadMedida();
+}
+
+export class UnidadMedida{
+    id?: number | null = null;
+    unidad: string = ""
 }
 
 export class ArticuloVentaDTO {
@@ -35,21 +52,30 @@ export class ArticuloVentaDTO {
     //Filtrar por existe, esParaElaborar y stock(sucursal)
 }
 
-export class ArticuloInsumo {
-    id?: number;
+export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
-    articulo: Articulo = new Articulo();
+    
 }
 
-export class Articulo{
-    id?: number;
-    nombre: string = "";
-    descripcion: string = "";
-    precio: number = 0;
-    existe?: boolean;
-    esParaElaborar?: boolean;
-    imagen: string = "";
-    subcategoria: Subcategoria = new Subcategoria();
+export class ArticuloManufacturado extends Articulo{
+    tiempoEstimado: string = "";
+    preparacion: string = "";
+    sucursal?: Sucursal = new Sucursal();
+    detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = []
+}
+
+export class ArticuloManufacturadoDetalleInsumo{
+    id?: number | null = null
+    articuloInsumo: ArticuloInsumo = new ArticuloInsumo()
+    cantidad: number = 0
+}
+
+export class Sucursal{
+    id?: number | null = null
+    nombre?: string = ""
+    horaApertura?: string = ""
+    horaCierre?: string = ""
+    existe?: boolean = false
 }
 
 export class Usuario{
@@ -95,5 +121,5 @@ export class Provincia {
 export class Pais {
     id?: number; 
     nombre: string = "";
-    provincias: Provincia[] = []; 
+    provincias: Provincia[] = [];
 }
