@@ -97,3 +97,84 @@ export class Pais {
     nombre: string = "";
     provincias: Provincia[] = []; 
 }
+
+//Pedido
+
+export class Pedido {
+    id?: number;
+    tiempoEstimado?: Date;
+    existe?: boolean;
+    fecha?: Date;
+    detallePedidoList: DetallePedido[] = [];
+    estadoPedido?: EstadoPedido;
+    sucursal?: Sucursal; 
+    tipoEnvio?: TipoEnvio; 
+    tipoPago?: TipoPago; 
+    usuario?: Usuario; 
+    detallePromocionList: DetallePromocion[] = []; 
+}
+
+export class DetallePedido {
+    id?: number;
+    pedido?: Pedido;
+    articulo?: Articulo; 
+    cantidad: number = 0;
+}
+
+export class EstadoPedido {
+    id?: number;
+    nombre_estado?: TypeState;
+    pedidoList: Pedido[] = [];
+}
+
+export enum TypeState {
+    EN_CAMINO = "EN CAMINO",
+    LISTO = "LISTO",
+    ENTREGADO = "ENTREGADO",
+    CANCELADO = "CANCELADO",
+}
+
+
+
+export class Empresa {
+    id?: number;
+    nombre: string = "";
+    razonSocial: string = "";
+    cuil: string = "";
+    sucursalList: Sucursal[] = [];
+}
+
+export class Sucursal {
+    id?: number;
+    nombre: string = "";
+    horaApertura: string = "";
+    horaCierre: string = "";
+    existe?: boolean;
+    //empleadoList: Empleado[] = []; 
+    //stockArticuloInsumoList: StockArticuloInsumo[] = []; 
+    pedidoList: Pedido[] = []; 
+    direccion?: Direccion; 
+    empresa?: Empresa; 
+    promocionList: Promocion[] = []; 
+}
+
+export class TipoEnvio {
+    id?: number;
+    //tipoDelivery?: TypeDelivery; 
+    pedidoList: Pedido[] = []; 
+}
+
+export class TipoPago {
+    id?: number;
+    //tipoPago?: TypePay; 
+    pedidoList: Pedido[] = []; 
+    //mercadoPagoList: MercadoPago[] = []; 
+}
+
+
+export class DetallePromocion {
+    id?: number;
+    pedido?: Pedido; 
+    promocion?: Promocion; 
+    cantidad: number = 0;
+}
