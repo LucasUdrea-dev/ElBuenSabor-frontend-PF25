@@ -1,5 +1,5 @@
 export class Promocion {
-    id?: number;
+    id?: number | null = null;
     denominacion: string = "";
     descripcion: string = "";
     precioRebajado: number = 0;
@@ -8,6 +8,53 @@ export class Promocion {
     sucursal?: any;
     articulos?: any[];
     imagen: string = "";
+}
+
+export class Pedido {
+    id?: number | null = null;
+    tiempoEstimado: string = ""
+    existe: boolean = true
+    fecha: string = new Date().toLocaleString()
+    detallePedidoList: DetallePedido[] = []
+    detallePromocionList: DetallePromocion[] = []
+    estadoPedido: EstadoPedido = {id: 1, nombreEstado: "INCOMING"}
+    sucursal: Sucursal = new Sucursal()
+    tipoEnvio: TipoEnvio = new TipoEnvio()
+    tipoPago: TipoPago = new TipoPago()
+    usuario: Usuario = new Usuario()
+    direccionPedido?: DireccionPedido = new DireccionPedido()
+}
+
+export class DireccionPedido{
+    id?: number | null = null;
+    direccion: Direccion = new Direccion()
+}
+
+export class DetallePromocion{
+    id?: number | null = null
+    promocion: Promocion = new Promocion()
+    cantidad: number = 0
+}
+
+export class TipoPago{
+    id?: number | null = null
+    tipoPago: string = ""
+}
+
+export class TipoEnvio{
+    id?: number | null = null
+    tipoDelivery: string = ""
+}
+
+export class DetallePedido{
+    id?: number | null = null
+    articulo: ArticuloVentaDTO = new ArticuloVentaDTO()
+    cantidad: number = 0
+}
+
+export class EstadoPedido{
+    id?: number | null = null
+    nombreEstado: string = "INCOMING"
 }
 
 export class Categoria {
@@ -76,6 +123,7 @@ export class Sucursal{
     horaApertura?: string = ""
     horaCierre?: string = ""
     existe?: boolean = false
+    direccion?: Direccion = new Direccion()
 }
 
 export class Usuario{
@@ -107,7 +155,7 @@ export class Direccion{
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    direccionList: Direccion[] = [];
+    direccionList?: Direccion[] = [];
     provincia?: Provincia; 
 }
 
@@ -115,7 +163,7 @@ export class Provincia {
     id?: number; 
     nombre: string = "";
     pais?: Pais; 
-    ciudadList: Ciudad[] = []; 
+    ciudadList?: Ciudad[] = []; 
 }
 
 export class Pais {

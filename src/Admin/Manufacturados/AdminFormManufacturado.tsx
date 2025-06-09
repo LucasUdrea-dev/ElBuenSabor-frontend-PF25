@@ -43,10 +43,6 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
     }
 
-    useEffect(()=>{
-        console.log(sucursalActual)
-    }, [sucursalActual])
-
     const traerSucursal = async ()=>{
         const URLSucursal = "http://localhost:8080/api/sucursales/1"
 
@@ -148,7 +144,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
         
 
     }
-    //ACA ME QUEDE
+    
     const guardarArticuloManufacturado = async (form: ArticuloManufacturado)=>{
         let URL = form.id ? `http://localhost:8080/api/ArticuloManufacturado/${form.id}`
         :`http://localhost:8080/api/ArticuloManufacturado`;

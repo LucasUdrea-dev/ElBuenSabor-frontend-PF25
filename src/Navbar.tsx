@@ -4,11 +4,13 @@ import DesplegableUsuario from "./DesplegableUsuario.tsx"
 import RegistroModal from "./Registro.tsx"
 import InicioSesionUs from "./InicioSesionUser.tsx"
 import { obtenerImagen } from "../ts/Imagen.ts"
+import Carrito from "./Carrito/Carrito.tsx"
 
 export default function Navbar() {
     
     const [estaLogeado, setEstaLogeado] = useState(false)
     const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] = useState(false)
+    const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const [isRegistroModalOpen, setRegistroModalOpen] = useState(false)
     const [isInicioSesionUsOpen, setInicioSesionUsOpen] = useState(false)
 
@@ -48,6 +50,7 @@ export default function Navbar() {
         <div className="bg-[#D93F21] h-15 flex justify-between items-center">
             <div >
 
+                {/**Logo buen sabor */}
                 <Link className="h-15 flex items-center text-2xl text-white" key={"catalogo"} to={"/catalogo"}>
                     <svg className="h-12 p-0 ml-4" width="50" viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <mask id="mask0_10_65" maskUnits="userSpaceOnUse" x="0" y="27" width="70" height="72">
@@ -68,34 +71,47 @@ export default function Navbar() {
             <div>
 
                 {estaLogeado ? (
-                    <div className="m-0 grid grid-cols-[3fr_1fr] gap-0 items-center">
 
-                        <div className="relative">
-                            <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
-                                <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                    <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
-                                    <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
-                                        Nombre Apellido
-                                        <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </label>
-                                </div>
-                            </button>
-                            {mostrarDesplegableUsuario && (
-                                <div className="absolute z-50 mt-0 w-1/1">
-                                    <DesplegableUsuario alCerrarSesion={cerrarSesion} />
-                                </div>
-                            )}
+                    <div className="flex relative">
+                        <div className={`m-0 flex gap-0 items-center
+                            transition-all
+                            ease-in-out
+                            duration-500
+                            ${mostrarCarrito && "mr-80"}`}>
+
+                            {/**Opciones de usuario */}
+                            <div className="relative">
+                                <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
+                                    <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
+                                        <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
+                                        <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
+                                            Nombre Apellido
+                                            <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </label>
+                                    </div>
+                                </button>
+                                {mostrarDesplegableUsuario && (
+                                    <div className={`absolute z-50 mt-0 w-1/1`}>
+                                        <DesplegableUsuario alCerrarSesion={cerrarSesion} />
+                                    </div>
+                                )}
+                            </div>
+        
+                            {/**Carrito */}
+                            <div className="h-15 flex items-center">
+                                <button onClick={()=>setMostrarCarrito((prev)=> !prev)} className="h-1/1">
+                                    <svg className="h-12 mb-2" width="78" height="70" viewBox="0 0 78 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M55.25 84.5C51.6425 84.5 48.75 87.3925 48.75 91C48.75 92.7239 49.4348 94.3772 50.6538 95.5962C51.8728 96.8152 53.5261 97.5 55.25 97.5C56.9739 97.5 58.6272 96.8152 59.8462 95.5962C61.0652 94.3772 61.75 92.7239 61.75 91C61.75 89.2761 61.0652 87.6228 59.8462 86.4038C58.6272 85.1848 56.9739 84.5 55.25 84.5ZM3.25 32.5V39H9.75L21.45 63.6675L17.03 71.63C16.5425 72.54 16.25 73.6125 16.25 74.75C16.25 76.4739 16.9348 78.1272 18.1538 79.3462C19.3728 80.5652 21.0261 81.25 22.75 81.25H61.75V74.75H24.115C23.8995 74.75 23.6928 74.6644 23.5405 74.512C23.3881 74.3597 23.3025 74.153 23.3025 73.9375C23.3025 73.775 23.335 73.645 23.4 73.5475L26.325 68.25H50.5375C52.975 68.25 55.12 66.885 56.225 64.9025L67.86 43.875C68.0875 43.355 68.25 42.8025 68.25 42.25C68.25 41.388 67.9076 40.5614 67.2981 39.9519C66.6886 39.3424 65.862 39 65 39H16.9325L13.8775 32.5M22.75 84.5C19.1425 84.5 16.25 87.3925 16.25 91C16.25 92.7239 16.9348 94.3772 18.1538 95.5962C19.3728 96.8152 21.0261 97.5 22.75 97.5C24.4739 97.5 26.1272 96.8152 27.3462 95.5962C28.5652 94.3772 29.25 92.7239 29.25 91C29.25 89.2761 28.5652 87.6228 27.3462 86.4038C26.1272 85.1848 24.4739 84.5 22.75 84.5Z" fill="#FAF8F5"/>
+                                    </svg>
+                                </button>
+
+                            </div>
+                            
                         </div>
-    
-                        <div className="h-15 flex items-center">
-                            <button className="h-1/1">
-                                <svg className="h-12 mb-2" width="78" height="70" viewBox="0 0 78 104" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M55.25 84.5C51.6425 84.5 48.75 87.3925 48.75 91C48.75 92.7239 49.4348 94.3772 50.6538 95.5962C51.8728 96.8152 53.5261 97.5 55.25 97.5C56.9739 97.5 58.6272 96.8152 59.8462 95.5962C61.0652 94.3772 61.75 92.7239 61.75 91C61.75 89.2761 61.0652 87.6228 59.8462 86.4038C58.6272 85.1848 56.9739 84.5 55.25 84.5ZM3.25 32.5V39H9.75L21.45 63.6675L17.03 71.63C16.5425 72.54 16.25 73.6125 16.25 74.75C16.25 76.4739 16.9348 78.1272 18.1538 79.3462C19.3728 80.5652 21.0261 81.25 22.75 81.25H61.75V74.75H24.115C23.8995 74.75 23.6928 74.6644 23.5405 74.512C23.3881 74.3597 23.3025 74.153 23.3025 73.9375C23.3025 73.775 23.335 73.645 23.4 73.5475L26.325 68.25H50.5375C52.975 68.25 55.12 66.885 56.225 64.9025L67.86 43.875C68.0875 43.355 68.25 42.8025 68.25 42.25C68.25 41.388 67.9076 40.5614 67.2981 39.9519C66.6886 39.3424 65.862 39 65 39H16.9325L13.8775 32.5M22.75 84.5C19.1425 84.5 16.25 87.3925 16.25 91C16.25 92.7239 16.9348 94.3772 18.1538 95.5962C19.3728 96.8152 21.0261 97.5 22.75 97.5C24.4739 97.5 26.1272 96.8152 27.3462 95.5962C28.5652 94.3772 29.25 92.7239 29.25 91C29.25 89.2761 28.5652 87.6228 27.3462 86.4038C26.1272 85.1848 24.4739 84.5 22.75 84.5Z" fill="#FAF8F5"/>
-                                </svg>
-                            </button>
-                        </div>
+
+                        <Carrito mostrarCarrito={mostrarCarrito}/> 
 
                     </div>
 
@@ -103,22 +119,22 @@ export default function Navbar() {
 
                     <div>
                             
-                            <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
-                                Iniciar Sesion
-                            </button>
-                            
+                        <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
+                            Iniciar Sesion
+                        </button>
+                        
 
-                            
-                            <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
-                                Registrarse
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        
+                        <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
+                            Registrarse
+                        </button>
+                    </div>
+                )}
             </div>
+        </div>
 
-            <RegistroModal isOpen={isRegistroModalOpen} onClose={cerrarRegistroModal} />
-            <InicioSesionUs isOpen={isInicioSesionUsOpen} onClose={cerrarInicioSesionUs} />
+        <RegistroModal isOpen={isRegistroModalOpen} onClose={cerrarRegistroModal} />
+        <InicioSesionUs isOpen={isInicioSesionUsOpen} onClose={cerrarInicioSesionUs} />
 
         </>
     )
