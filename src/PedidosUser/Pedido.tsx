@@ -12,9 +12,10 @@ interface PedidoProps {
 const PedidoComponent: React.FC<PedidoProps> = ({ 
   pedido, 
   tipo, 
-  formatearFecha, 
-  formatearHora 
-}) => {
+  }) => {
+
+
+
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   const obtenerEstadoTexto = (estado: TypeState | undefined): string => {
@@ -77,6 +78,34 @@ const PedidoComponent: React.FC<PedidoProps> = ({
     alert(`Funcionalidad en desarrollo. Orden #${pedido.id} agregada al carrito.`);
   };
 
+
+    // Función para formatear fecha string
+    const formatearFechaString = (fechaString: string): string => {
+      try {
+        const fecha = new Date(fechaString);
+        return fecha.toLocaleDateString('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      } catch (error) {
+        return fechaString; // Si hay error, devolver el string original
+      }
+    };
+
+    // Función para obtener hora de la fecha string
+    const obtenerHoraPedido = (fechaString: string): string => {
+      try {
+        const fecha = new Date(fechaString);
+        return fecha.toLocaleTimeString('es-AR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      } catch (error) {
+        return ''; // Si hay error, devolver string vacío
+      }
+    };
+
    return (
     <>
       <div className="bg-[#FAF8F5] text-[#262626] rounded-xl p-4 relative font-lato flex flex-col min-h-[280px]">
@@ -93,10 +122,14 @@ const PedidoComponent: React.FC<PedidoProps> = ({
           {/* Información de hora y tipo de envío */}
           <div className="mb-3">
             <p className="text-sm text-[#555555]">
-              {formatearHora(pedido.tiempoEstimado)} - {obtenerTipoEnvio()}
+              {/* Mostrar tiempo estimado si es para pedidos pendientes, o hora del pedido si es pasado */}
+              {tipo === 'pendientes' && pedido.tiempoEstimado !== "0 minutos" 
+                ? `${pedido.tiempoEstimado} - ${obtenerTipoEnvio()}`
+                : `${obtenerHoraPedido(pedido.fecha)} - ${obtenerTipoEnvio()}`
+              }
             </p>
             <p className="text-xs text-[#777777]">
-              {formatearFecha(pedido.fecha)}
+              {formatearFechaString(pedido.fecha)}
             </p>
           </div>
 

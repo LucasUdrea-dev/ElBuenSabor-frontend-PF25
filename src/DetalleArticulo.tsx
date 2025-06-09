@@ -53,9 +53,9 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
                                 <p>Ingredientes:
                                     {articulo.insumos.map((insumo, index, insumos)=>{
                                         if (index === insumos.length - 1) {
-                                            return ` ${insumo.articulo.nombre}.`
+                                            return ` ${insumo.nombre}.`
                                         }
-                                        return ` ${insumo.articulo.nombre},`
+                                        return ` ${insumo.nombre},`
                                     })}
                                 </p>
                             

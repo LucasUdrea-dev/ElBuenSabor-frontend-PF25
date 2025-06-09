@@ -5,16 +5,41 @@ import {
   DetallePromocion,
   EstadoPedido, 
   TypeState, 
-  Articulo, 
+  ArticuloVentaDTO,
   Promocion,
   Subcategoria,
   Categoria,
   Sucursal,
   Direccion,
+  DireccionPedido,
   Usuario,
   TipoEnvio,
-  TipoPago
+  TipoPago,
+  UnidadMedida,
+  Ciudad,
+  Provincia,
+  Pais
 } from "../../ts/Clases";
+
+// Crear país, provincia y ciudad
+const pais = new Pais();
+pais.id = 1;
+pais.nombre = "Argentina";
+
+const provincia = new Provincia();
+provincia.id = 1;
+provincia.nombre = "Mendoza";
+provincia.pais = pais;
+
+const ciudad = new Ciudad();
+ciudad.id = 1;
+ciudad.nombre = "Mendoza";
+ciudad.provincia = provincia;
+
+// Crear unidad de medida
+const unidadMedida = new UnidadMedida();
+unidadMedida.id = 1;
+unidadMedida.unidad = "unidad";
 
 // Crear categorías
 const categoria1 = new Categoria();
@@ -38,46 +63,46 @@ subcategoria2.id = 2;
 subcategoria2.denominacion = "Gourmet";
 subcategoria2.categoria = categoria2;
 
-// Crear artículos
-const articulo1 = new Articulo();
-articulo1.id = 1;
-articulo1.nombre = "Hamburguesa Clásica";
-articulo1.descripcion = "Hamburguesa con carne, lechuga, tomate y queso";
-articulo1.precio = 850;
-articulo1.existe = true;
-articulo1.esParaElaborar = true;
-articulo1.imagen = "https://example.com/hamburguesa-clasica.jpg";
-articulo1.subcategoria = subcategoria1;
+// Crear artículos usando ArticuloVentaDTO para los detalles de pedido
+const articuloVenta1 = new ArticuloVentaDTO();
+articuloVenta1.id = 1;
+articuloVenta1.nombre = "Hamburguesa Clásica";
+articuloVenta1.descripcion = "Hamburguesa con carne, lechuga, tomate y queso";
+articuloVenta1.precio = 850;
+articuloVenta1.imagen = "https://example.com/hamburguesa-clasica.jpg";
+articuloVenta1.subcategoria = subcategoria1;
+articuloVenta1.insumos = []; // Array vacío para productos elaborados
+articuloVenta1.tiempoEstimado = "15 minutos";
 
-const articulo2 = new Articulo();
-articulo2.id = 2;
-articulo2.nombre = "Pizza Margherita";
-articulo2.descripcion = "Pizza con salsa de tomate, mozzarella y albahaca";
-articulo2.precio = 1200;
-articulo2.existe = true;
-articulo2.esParaElaborar = true;
-articulo2.imagen = "https://example.com/pizza-margherita.jpg";
-articulo2.subcategoria = subcategoria2;
+const articuloVenta2 = new ArticuloVentaDTO();
+articuloVenta2.id = 2;
+articuloVenta2.nombre = "Pizza Margherita";
+articuloVenta2.descripcion = "Pizza con salsa de tomate, mozzarella y albahaca";
+articuloVenta2.precio = 1200;
+articuloVenta2.imagen = "https://example.com/pizza-margherita.jpg";
+articuloVenta2.subcategoria = subcategoria2;
+articuloVenta2.insumos = [];
+articuloVenta2.tiempoEstimado = "20 minutos";
 
-const articulo3 = new Articulo();
-articulo3.id = 3;
-articulo3.nombre = "Papas Fritas";
-articulo3.descripcion = "Papas fritas crocantes";
-articulo3.precio = 450;
-articulo3.existe = true;
-articulo3.esParaElaborar = false;
-articulo3.imagen = "https://example.com/papas-fritas.jpg";
-articulo3.subcategoria = subcategoria1;
+const articuloVenta3 = new ArticuloVentaDTO();
+articuloVenta3.id = 3;
+articuloVenta3.nombre = "Papas Fritas";
+articuloVenta3.descripcion = "Papas fritas crocantes";
+articuloVenta3.precio = 450;
+articuloVenta3.imagen = "https://example.com/papas-fritas.jpg";
+articuloVenta3.subcategoria = subcategoria1;
+articuloVenta3.insumos = [];
+articuloVenta3.tiempoEstimado = "10 minutos";
 
-const articulo4 = new Articulo();
-articulo4.id = 4;
-articulo4.nombre = "Gaseosa Cola";
-articulo4.descripcion = "Bebida cola 500ml";
-articulo4.precio = 300;
-articulo4.existe = true;
-articulo4.esParaElaborar = false;
-articulo4.imagen = "https://example.com/cola.jpg";
-articulo4.subcategoria = subcategoria1;
+const articuloVenta4 = new ArticuloVentaDTO();
+articuloVenta4.id = 4;
+articuloVenta4.nombre = "Gaseosa Cola";
+articuloVenta4.descripcion = "Bebida cola 500ml";
+articuloVenta4.precio = 300;
+articuloVenta4.imagen = "https://example.com/gaseosa-cola.jpg";
+articuloVenta4.subcategoria = subcategoria1;
+articuloVenta4.insumos = [];
+articuloVenta4.tiempoEstimado = "0 minutos";
 
 // Crear promociones
 const promocion1 = new Promocion();
@@ -104,6 +129,14 @@ direccion.numeracion = "454";
 direccion.alias = "Casa";
 direccion.text_area = "Entre Rivadavia y Belgrano";
 direccion.existe = true;
+direccion.latitud = -32.8895;
+direccion.longitud = -68.8458;
+direccion.ciudad = ciudad;
+
+// Crear dirección de pedido
+const direccionPedido = new DireccionPedido();
+direccionPedido.id = 1;
+direccionPedido.direccion = direccion;
 
 // Crear sucursal
 const sucursal = new Sucursal();
@@ -117,18 +150,22 @@ sucursal.direccion = direccion;
 // Crear estados de pedido
 const estadoEnCamino = new EstadoPedido();
 estadoEnCamino.id = 1;
+estadoEnCamino.nombreEstado = "EN CAMINO";
 estadoEnCamino.nombre_estado = TypeState.EN_CAMINO;
 
 const estadoListo = new EstadoPedido();
 estadoListo.id = 2;
+estadoListo.nombreEstado = "LISTO";
 estadoListo.nombre_estado = TypeState.LISTO;
 
 const estadoEntregado = new EstadoPedido();
 estadoEntregado.id = 3;
+estadoEntregado.nombreEstado = "ENTREGADO";
 estadoEntregado.nombre_estado = TypeState.ENTREGADO;
 
 const estadoCancelado = new EstadoPedido();
 estadoCancelado.id = 4;
+estadoCancelado.nombreEstado = "CANCELADO";
 estadoCancelado.nombre_estado = TypeState.CANCELADO;
 
 // Crear usuario
@@ -139,44 +176,48 @@ usuario.apellido = "Pérez";
 usuario.email = "juan.perez@email.com";
 usuario.telefono = "+54 261 123-4567";
 usuario.existe = true;
+usuario.contrasena = "";
+usuario.repetirContrasena = "";
 
 // Crear tipo de envío
 const tipoEnvio = new TipoEnvio();
 tipoEnvio.id = 1;
+tipoEnvio.tipoDelivery = "Delivery";
 
 // Crear tipo de pago
 const tipoPago = new TipoPago();
 tipoPago.id = 1;
+tipoPago.tipoPago = "Efectivo";
 
 // Crear detalles de pedido
 const detallePedido1 = new DetallePedido();
 detallePedido1.id = 1;
-detallePedido1.articulo = articulo1;
+detallePedido1.articulo = articuloVenta1;
 detallePedido1.cantidad = 2;
 
 const detallePedido2 = new DetallePedido();
 detallePedido2.id = 2;
-detallePedido2.articulo = articulo3;
+detallePedido2.articulo = articuloVenta3;
 detallePedido2.cantidad = 1;
 
 const detallePedido3 = new DetallePedido();
 detallePedido3.id = 3;
-detallePedido3.articulo = articulo4;
+detallePedido3.articulo = articuloVenta4;
 detallePedido3.cantidad = 2;
 
 const detallePedido4 = new DetallePedido();
 detallePedido4.id = 4;
-detallePedido4.articulo = articulo2;
+detallePedido4.articulo = articuloVenta2;
 detallePedido4.cantidad = 1;
 
 const detallePedido5 = new DetallePedido();
 detallePedido5.id = 5;
-detallePedido5.articulo = articulo1;
+detallePedido5.articulo = articuloVenta1;
 detallePedido5.cantidad = 1;
 
 const detallePedido6 = new DetallePedido();
 detallePedido6.id = 6;
-detallePedido6.articulo = articulo3;
+detallePedido6.articulo = articuloVenta3;
 detallePedido6.cantidad = 2;
 
 // Crear detalles de promoción
@@ -195,63 +236,66 @@ export const pedidosMock: Pedido[] = [
   // Pedido 1 - EN CAMINO
   {
     id: 1001,
-    tiempoEstimado: new Date(2025, 5, 2, 20, 30), // 20:30 de hoy
+    tiempoEstimado: "30 minutos",
     existe: true,
-    fecha: new Date(2025, 5, 2, 19, 45), // Hace 45 minutos
+    fecha: new Date(2025, 5, 2, 19, 45).toLocaleString(), // Hace 45 minutos
     detallePedidoList: [detallePedido1, detallePedido2, detallePedido3],
     detallePromocionList: [detallePromocion1],
     estadoPedido: estadoEnCamino,
     sucursal: sucursal,
     tipoEnvio: tipoEnvio,
     tipoPago: tipoPago,
-    usuario: usuario
+    usuario: usuario,
+    direccionPedido: direccionPedido
   },
   
   // Pedido 2 - LISTO
   {
     id: 1002,
-    tiempoEstimado: new Date(2025, 5, 2, 20, 15), // 20:15 de hoy
+    tiempoEstimado: "0 minutos",
     existe: true,
-    fecha: new Date(2025, 5, 2, 19, 30), // Hace 1 hora
+    fecha: new Date(2025, 5, 2, 19, 30).toLocaleString(), // Hace 1 hora
     detallePedidoList: [detallePedido4],
     detallePromocionList: [],
     estadoPedido: estadoListo,
     sucursal: sucursal,
     tipoEnvio: tipoEnvio,
     tipoPago: tipoPago,
-    usuario: usuario
+    usuario: usuario,
+    direccionPedido: direccionPedido
   },
   
   // Pedido 3 - ENTREGADO (ayer)
   {
     id: 1003,
-    tiempoEstimado: new Date(2025, 5, 1, 21, 0), // 21:00 de ayer
+    tiempoEstimado: "0 minutos",
     existe: true,
-    fecha: new Date(2025, 5, 1, 20, 15), // Ayer
+    fecha: new Date(2025, 5, 1, 20, 15).toLocaleString(), // Ayer
     detallePedidoList: [detallePedido5, detallePedido6],
     detallePromocionList: [detallePromocion2],
     estadoPedido: estadoEntregado,
     sucursal: sucursal,
     tipoEnvio: tipoEnvio,
     tipoPago: tipoPago,
-    usuario: usuario
+    usuario: usuario,
+    direccionPedido: direccionPedido
   },
   
   // Pedido 4 - CANCELADO
   {
     id: 1004,
-    tiempoEstimado: new Date(2025, 5, 1, 19, 30),
+    tiempoEstimado: "0 minutos",
     existe: true,
-    fecha: new Date(2025, 5, 1, 18, 45),
+    fecha: new Date(2025, 5, 1, 18, 45).toLocaleString(),
     detallePedidoList: [
       {
         id: 7,
-        articulo: articulo1,
+        articulo: articuloVenta1,
         cantidad: 1
       },
       {
         id: 8,
-        articulo: articulo4,
+        articulo: articuloVenta4,
         cantidad: 1
       }
     ],
@@ -260,24 +304,25 @@ export const pedidosMock: Pedido[] = [
     sucursal: sucursal,
     tipoEnvio: tipoEnvio,
     tipoPago: tipoPago,
-    usuario: usuario
+    usuario: usuario,
+    direccionPedido: direccionPedido
   },
   
   // Pedido 5 - ENTREGADO (hace una semana)
   {
     id: 1005,
-    tiempoEstimado: new Date(2025, 4, 26, 22, 0),
+    tiempoEstimado: "0 minutos",
     existe: true,
-    fecha: new Date(2025, 4, 26, 21, 15),
+    fecha: new Date(2025, 4, 26, 21, 15).toLocaleString(),
     detallePedidoList: [
       {
         id: 9,
-        articulo: articulo2,
+        articulo: articuloVenta2,
         cantidad: 2
       },
       {
         id: 10,
-        articulo: articulo4,
+        articulo: articuloVenta4,
         cantidad: 3
       }
     ],
@@ -286,6 +331,7 @@ export const pedidosMock: Pedido[] = [
     sucursal: sucursal,
     tipoEnvio: tipoEnvio,
     tipoPago: tipoPago,
-    usuario: usuario
+    usuario: usuario,
+    direccionPedido: direccionPedido
   }
 ];

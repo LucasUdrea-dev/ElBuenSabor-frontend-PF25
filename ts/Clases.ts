@@ -1,5 +1,5 @@
 export class Promocion {
-    id?: number;
+    id?: number | null = null;
     denominacion: string = "";
     descripcion: string = "";
     precioRebajado: number = 0;
@@ -10,17 +10,92 @@ export class Promocion {
     imagen: string = "";
 }
 
+export class Pedido {
+    id?: number | null = null;
+    tiempoEstimado: string = ""
+    existe: boolean = true
+    fecha: string = new Date().toLocaleString()
+    detallePedidoList: DetallePedido[] = []
+    detallePromocionList: DetallePromocion[] = []
+    estadoPedido: EstadoPedido = {id: 1, nombreEstado: "INCOMING"}
+    sucursal: Sucursal = new Sucursal()
+    tipoEnvio: TipoEnvio = new TipoEnvio()
+    tipoPago: TipoPago = new TipoPago()
+    usuario: Usuario = new Usuario()
+    direccionPedido?: DireccionPedido = new DireccionPedido()
+}
+
+export class DireccionPedido{
+    id?: number | null = null;
+    direccion: Direccion = new Direccion()
+}
+
+export class DetallePromocion{
+    id?: number | null = null
+    promocion: Promocion = new Promocion()
+    cantidad: number = 0
+}
+
+export class TipoPago{
+    id?: number | null = null
+    tipoPago: string = ""
+}
+
+export class TipoEnvio{
+    id?: number | null = null
+    tipoDelivery: string = ""
+}
+
+export class DetallePedido{
+    id?: number | null = null
+    articulo: ArticuloVentaDTO = new ArticuloVentaDTO()
+    cantidad: number = 0
+}
+
+export class EstadoPedido{
+    id?: number | null = null
+    nombreEstado: string = "INCOMING"
+    nombre_estado?: TypeState;
+
+}
+
+
+export enum TypeState {
+    EN_CAMINO = "EN CAMINO",
+    LISTO = "LISTO",
+    ENTREGADO = "ENTREGADO",
+    CANCELADO = "CANCELADO",
+}
+
+
 export class Categoria {
-    id?: number;
+    id?: number | null = null;
     denominacion: string = "";
     imagen: string = "";
-    subcategorias: Subcategoria[] = [];
+    subcategorias?: Subcategoria[] = [];
 }
 
 export class Subcategoria {
-    id?: number;
+    id?: number | null = null ;
     denominacion: string = "";
     categoria?: Categoria = new Categoria;
+}
+
+export class Articulo{
+    id?: number | null = null;
+    nombre: string = "";
+    descripcion: string = "";
+    precio: number = 0;
+    existe?: boolean = false;
+    esParaElaborar?: boolean = false;
+    imagenArticulo: string = "";
+    subcategoria: Subcategoria = new Subcategoria();
+    unidadMedida?: UnidadMedida = new UnidadMedida();
+}
+
+export class UnidadMedida{
+    id?: number | null = null;
+    unidad: string = ""
 }
 
 export class ArticuloVentaDTO {
@@ -35,21 +110,31 @@ export class ArticuloVentaDTO {
     //Filtrar por existe, esParaElaborar y stock(sucursal)
 }
 
-export class ArticuloInsumo {
-    id?: number;
+export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
-    articulo: Articulo = new Articulo();
+    
 }
 
-export class Articulo{
-    id?: number;
-    nombre: string = "";
-    descripcion: string = "";
-    precio: number = 0;
-    existe?: boolean;
-    esParaElaborar?: boolean;
-    imagen: string = "";
-    subcategoria: Subcategoria = new Subcategoria();
+export class ArticuloManufacturado extends Articulo{
+    tiempoEstimado: string = "";
+    preparacion: string = "";
+    sucursal?: Sucursal = new Sucursal();
+    detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = []
+}
+
+export class ArticuloManufacturadoDetalleInsumo{
+    id?: number | null = null
+    articuloInsumo: ArticuloInsumo = new ArticuloInsumo()
+    cantidad: number = 0
+}
+
+export class Sucursal{
+    id?: number | null = null
+    nombre?: string = ""
+    horaApertura?: string = ""
+    horaCierre?: string = ""
+    existe?: boolean = false
+    direccion?: Direccion = new Direccion()
 }
 
 export class Usuario{
@@ -81,7 +166,7 @@ export class Direccion{
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    direccionList: Direccion[] = [];
+    direccionList?: Direccion[] = [];
     provincia?: Provincia; 
 }
 
@@ -89,92 +174,12 @@ export class Provincia {
     id?: number; 
     nombre: string = "";
     pais?: Pais; 
-    ciudadList: Ciudad[] = []; 
+    ciudadList?: Ciudad[] = []; 
 }
 
 export class Pais {
     id?: number; 
     nombre: string = "";
-    provincias: Provincia[] = []; 
+    provincias: Provincia[] = [];
 }
 
-//Pedido
-
-export class Pedido {
-    id?: number;
-    tiempoEstimado?: Date;
-    existe?: boolean;
-    fecha?: Date;
-    detallePedidoList: DetallePedido[] = [];
-    estadoPedido?: EstadoPedido;
-    sucursal?: Sucursal; 
-    tipoEnvio?: TipoEnvio; 
-    tipoPago?: TipoPago; 
-    usuario?: Usuario; 
-    detallePromocionList: DetallePromocion[] = []; 
-}
-
-export class DetallePedido {
-    id?: number;
-    pedido?: Pedido;
-    articulo?: Articulo; 
-    cantidad: number = 0;
-}
-
-export class EstadoPedido {
-    id?: number;
-    nombre_estado?: TypeState;
-    pedidoList: Pedido[] = [];
-}
-
-export enum TypeState {
-    EN_CAMINO = "EN CAMINO",
-    LISTO = "LISTO",
-    ENTREGADO = "ENTREGADO",
-    CANCELADO = "CANCELADO",
-}
-
-
-
-export class Empresa {
-    id?: number;
-    nombre: string = "";
-    razonSocial: string = "";
-    cuil: string = "";
-    sucursalList: Sucursal[] = [];
-}
-
-export class Sucursal {
-    id?: number;
-    nombre: string = "";
-    horaApertura: string = "";
-    horaCierre: string = "";
-    existe?: boolean;
-    //empleadoList: Empleado[] = []; 
-    //stockArticuloInsumoList: StockArticuloInsumo[] = []; 
-    pedidoList: Pedido[] = []; 
-    direccion?: Direccion; 
-    empresa?: Empresa; 
-    promocionList: Promocion[] = []; 
-}
-
-export class TipoEnvio {
-    id?: number;
-    //tipoDelivery?: TypeDelivery; 
-    pedidoList: Pedido[] = []; 
-}
-
-export class TipoPago {
-    id?: number;
-    //tipoPago?: TypePay; 
-    pedidoList: Pedido[] = []; 
-    //mercadoPagoList: MercadoPago[] = []; 
-}
-
-
-export class DetallePromocion {
-    id?: number;
-    pedido?: Pedido; 
-    promocion?: Promocion; 
-    cantidad: number = 0;
-}
