@@ -9,7 +9,8 @@ interface MisPedidosProps {
 }
 
 const MisPedidos: React.FC<MisPedidosProps> = ({ pedidos }) => {
-  // Usar datos mock si no se pasan pedidos como prop
+
+  // Usar datos mock si no se pasan pedidos.
   const pedidosData = pedidos || pedidosMock;
   
   const [tabActiva, setTabActiva] = useState<'pendientes' | 'pasadas'>('pendientes');
