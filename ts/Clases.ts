@@ -19,7 +19,7 @@ export class Pedido {
     detallePromocionList: DetallePromocion[] = []
     estadoPedido: EstadoPedido = {id: 1, nombreEstado: "INCOMING"}
     sucursal: Sucursal = new Sucursal()
-    tipoEnvio: TipoEnvio = new TipoEnvio()
+    tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
     tipoPago: TipoPago = new TipoPago()
     usuario: Usuario = new Usuario()
     direccionPedido?: DireccionPedido = new DireccionPedido()
@@ -45,6 +45,11 @@ export class TipoEnvio{
     id?: number | null = null
     tipoDelivery: string = ""
 }
+
+export const tiposEnvioEnum: TipoEnvio[] = [
+    {id: 1, tipoDelivery: "DELIVERY"},
+    {id: 2, tipoDelivery: "TAKEAWAY"}
+]
 
 export class DetallePedido{
     id?: number | null = null

@@ -34,7 +34,7 @@ export default function DetallePromocion({promocion, onClose}: Props) {
                 className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 
                 {/**Modal */}
-                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-t-2xl grid grid-rows-[3fr_1fr] w-full max-w-lg">
+                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-2xl grid grid-rows-[3fr_1fr] w-full max-w-lg">
                     
                     {/**Imagen y tiempo */}
                     <div className="relative">

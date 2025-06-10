@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ArticuloVentaDTO } from "../ts/Clases";
 import { obtenerImagen } from "../ts/Imagen";
+import { CarritoContext } from "./Carrito/CarritoContext";
 
 interface Props{
     articulo: ArticuloVentaDTO;
@@ -12,18 +13,30 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
 
     const [cantidad, setCantidad] = useState(1)
 
+    const carritoContext = useContext(CarritoContext)
+
+    if (carritoContext === undefined) {
+        return <p>No se encontro CarritoProvider</p>
+    }
+
+    const {agregarArticulo} = carritoContext
+
+    const cerrarDetalle = ()=>{
+        setCantidad(1)
+        onClose()
+    }
+
     if (!isOpen) return null
     
     return(
         <>
             {/**Fondo oscurecido */}
             <div onClick={()=>{
-                setCantidad(1)
-                onClose()
+                cerrarDetalle()
                 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 
                 {/**Modal */}
-                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-t-2xl grid grid-rows-[3fr_1fr] w-full max-w-lg">
+                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-2xl grid grid-rows-[3fr_1fr] w-full max-w-lg">
                     
                     {/**Imagen y tiempo */}
                     <div className="relative">
@@ -79,7 +92,10 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
                                     <option>10</option>
                                 </select>
                             </div>
-                            <button className="bg-[#D93F21] text-white px-2 rounded-lg">Agregar a mi orden (${articulo.precio*cantidad})</button>
+                            <button onClick={()=>{
+                                agregarArticulo(articulo, cantidad)
+                                cerrarDetalle()
+                            }} className="bg-[#D93F21] text-white px-2 rounded-lg">Agregar a mi orden (${articulo.precio*cantidad})</button>
                         </div>
                     </div>
                 </div>

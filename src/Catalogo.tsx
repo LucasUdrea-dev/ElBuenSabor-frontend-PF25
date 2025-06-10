@@ -173,14 +173,12 @@ export default function Catalogo() {
             denominacion: "Hamburguesas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias?.push(subcategoriaHamburguesas);
 
         const subcategoriaPizzas: Subcategoria = {
             id: 102,
             denominacion: "Pizzas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias?.push(subcategoriaPizzas);
 
 
         const categoriaPastas: Categoria = {
@@ -195,7 +193,6 @@ export default function Catalogo() {
             denominacion: "Pastas Rellenas",
             categoria: categoriaPastas
         };
-        categoriaPastas.subcategorias?.push(subcategoriaPastasRellenas);
 
         const categoriaBebidas: Categoria = {
             id: 3,
@@ -209,7 +206,6 @@ export default function Catalogo() {
             denominacion: "Gaseosas",
             categoria: categoriaBebidas
         };
-        categoriaBebidas.subcategorias?.push(subcategoriaGaseosas);
 
         // --- Nuevas categorías y subcategorías para mayor variedad ---
         const categoriaPostres: Categoria = {
@@ -223,13 +219,12 @@ export default function Catalogo() {
             denominacion: "Helados",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias?.push(subcategoriaHelados);
+
         const subcategoriaTortas: Subcategoria = {
             id: 402,
             denominacion: "Tortas",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias?.push(subcategoriaTortas);
 
         const categoriaEnsaladas: Categoria = {
             id: 5,
@@ -242,7 +237,6 @@ export default function Catalogo() {
             denominacion: "Vegetarianas",
             categoria: categoriaEnsaladas
         };
-        categoriaEnsaladas.subcategorias?.push(subcategoriaVegetarianas);
 
 
         // Creación de artículos de insumo (ejemplos)

@@ -1,8 +1,10 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Pedido, Promocion } from "../../ts/Clases";
+import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Pedido, Promocion, tiposEnvioEnum } from "../../ts/Clases";
 
 interface CarritoContextType{
     pedido: Pedido
+    paraDelivery: ()=>void
+    paraRetirar: ()=>void
     agregarArticulo: (articulo: ArticuloVentaDTO, cantidad: number)=>void
     quitarArticulo: (articulo: ArticuloVentaDTO)=>void
     borrarArticulo: (articulo: ArticuloVentaDTO)=>void
@@ -26,12 +28,51 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     })
 
     useEffect(()=>{
+        console.log(pedido)
         try {
             localStorage.setItem("carrito", JSON.stringify(pedido))
         } catch (error) {
             console.error("Error al guardar el carrito en localstorage: ", error)
         }
     }, [pedido])
+
+    useEffect(()=>{
+        calcularTiempoEstimado()
+    }, [pedido.detallePedidoList, pedido.detallePromocionList])
+
+    const calcularTiempoEstimado = ()=>{
+
+        setPedido((prev)=>{
+            
+            let mayorTiempo = 0
+
+            if (prev.detallePromocionList.length > 0) {
+                return {...prev, tiempoEstimado: "30"}
+            }
+
+            prev.detallePedidoList.map((detalle)=> {
+                if (Number(detalle.articulo.tiempoEstimado.split(" ")[0]) > mayorTiempo) {
+                    mayorTiempo = Number(detalle.articulo.tiempoEstimado.split(" ")[0])
+                }
+            })
+
+            return {...prev, tiempoEstimado: String(mayorTiempo)}
+
+        })
+
+    }
+
+    const paraDelivery = ()=>{
+        setPedido((prev)=>{
+            return {...prev, tipoEnvio: tiposEnvioEnum[0]}
+        })
+    }
+
+    const paraRetirar = ()=>{
+        setPedido((prev)=>{
+            return {...prev, tipoEnvio: tiposEnvioEnum[1]}
+        })
+    }
 
     const agregarArticulo = (articulo: ArticuloVentaDTO, cantidad: number)=>{
 
@@ -134,7 +175,7 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     }
     
     return(
-        <CarritoContext.Provider value={{pedido, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
+        <CarritoContext.Provider value={{pedido, paraDelivery, paraRetirar, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
             {children}
         </CarritoContext.Provider>
     )
