@@ -22,7 +22,8 @@ export class Pedido {
     tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
     tipoPago: TipoPago = new TipoPago()
     usuario: Usuario = new Usuario()
-    direccionPedido?: DireccionPedido = new DireccionPedido()
+    direccionPedido: DireccionPedido = new DireccionPedido()
+
 }
 
 export class DireccionPedido{
@@ -147,12 +148,12 @@ export class Usuario{
 export class Direccion{
     id?: number;
     existe?: boolean;
-    nombre_calle: string = "";
+    nombreCalle: string = "";
     numeracion: string = "";
     latitud: number = 0;
     longitud: number = 0;
     alias: string = "";
-    text_area: String ="";
+    descripcionEntrega: string ="";
     ciudad?: Ciudad;
 }
 
@@ -160,7 +161,6 @@ export class Direccion{
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    direccionList?: Direccion[] = [];
     provincia?: Provincia; 
 }
 

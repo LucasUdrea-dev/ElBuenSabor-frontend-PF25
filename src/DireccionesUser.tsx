@@ -20,51 +20,48 @@ export default function DireccionesUser() {
   const ciudadMendoza: Ciudad = {
     id: 1,
     nombre: "Ciudad de Mendoza",
-    provincia: provinciaMendoza,
-    direccionList: []
+    provincia: provinciaMendoza
   };
 
   const ciudadLasHeras: Ciudad = {
     id: 2,
     nombre: "Las Heras",
-    provincia: provinciaMendoza,
-    direccionList: []
+    provincia: provinciaMendoza
   };
 
   const ciudadGuaymallen: Ciudad = {
     id: 3,
     nombre: "Guaymallén",
-    provincia: provinciaMendoza,
-    direccionList: []
+    provincia: provinciaMendoza
   };
 
   const [direcciones, setDirecciones] = useState<Direccion[]>([
     {
       id: 1,
-      nombre_calle: "Calle Falsa",
+      nombreCalle: "Calle Falsa",
       numeracion: "123",
       alias: "Casa",
-      text_area: "Aclaración 1",
+      descripcionEntrega: "Aclaración 1",
       latitud: 12.345678,
       longitud: 123.456789,
       ciudad: ciudadMendoza
     },
     {
       id: 2,
-      nombre_calle: "Avenida Siempre Viva",
+      nombreCalle: "Avenida Siempre Viva",
       numeracion: "742",
       alias: "Oficina",
-      text_area: "Aclaración 2",
+      descripcionEntrega: "Aclaración 2",
       latitud: 23.456789,
       longitud: -98.765432,
       ciudad: ciudadLasHeras
     },
     {
       id: 3,
-      nombre_calle: "Calle de los Héroes",
+      nombreCalle: "Calle de los Héroes",
       numeracion: "456",
       alias: "Departamento",
-      text_area: "Aclaración 3",
+      descripcionEntrega: "Aclaración 3",
       latitud: 34.56789,
       longitud: 87.654321,
       ciudad: ciudadGuaymallen
@@ -155,7 +152,7 @@ export default function DireccionesUser() {
                   <div>
                     <p className="font-bold">{dir.alias}</p>
                     <p className="text-sm">
-                      {dir.nombre_calle} {dir.numeracion}, {dir.ciudad?.nombre}, {dir.ciudad?.provincia?.nombre}, {dir.ciudad?.provincia?.pais?.nombre}
+                      {dir.nombreCalle} {dir.numeracion}, {dir.ciudad?.nombre}, {dir.ciudad?.provincia?.nombre}, {dir.ciudad?.provincia?.pais?.nombre}
                     </p>
                   </div>
                   <div className="flex gap-2">

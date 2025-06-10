@@ -38,7 +38,7 @@ type Props = {
 };
 
 const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }: Props) => {
-  const [calle, setCalle] = useState(direccion.nombre_calle);
+  const [calle, setCalle] = useState(direccion.nombreCalle);
   const [numero, setNumero] = useState(direccion.numeracion);
   const [ciudad, setCiudad] = useState(direccion.ciudad?.nombre || "");
   const [provincia, setProvincia] = useState(direccion.ciudad?.provincia?.nombre || "");
@@ -62,8 +62,8 @@ const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }:
         setCiudades(resCiudades.data);
         setProvincias(resProvincias.data);
 
-        if (direccion.text_area) {
-          const partes = direccion.text_area.split(",");
+        if (direccion.descripcionEntrega) {
+          const partes = direccion.descripcionEntrega.split(",");
           const pisoVal = partes.find(p => p.includes("Piso"))?.split(":")[1]?.trim() || "";
           const deptoVal = partes.find(p => p.includes("Depto"))?.split(":")[1]?.trim() || "";
           setPiso(pisoVal);
@@ -119,12 +119,12 @@ const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }:
 
     const dirActualizada = new Direccion();
     dirActualizada.id = direccion.id;
-    dirActualizada.nombre_calle = calle;
+    dirActualizada.nombreCalle = calle;
     dirActualizada.numeracion = numero;
     dirActualizada.alias = alias;
     dirActualizada.latitud = parseFloat(latitud || "0");
     dirActualizada.longitud = parseFloat(longitud || "0");
-    dirActualizada.text_area = `Piso: ${piso}, Depto: ${depto}`;
+    dirActualizada.descripcionEntrega = `Piso: ${piso}, Depto: ${depto}`;
     dirActualizada.ciudad = ciu;
 
     try {

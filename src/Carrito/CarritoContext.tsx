@@ -1,10 +1,12 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Pedido, Promocion, tiposEnvioEnum } from "../../ts/Clases";
+import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Direccion, DireccionPedido, Pedido, Promocion, tiposEnvioEnum } from "../../ts/Clases";
 
 interface CarritoContextType{
     pedido: Pedido
     paraDelivery: ()=>void
     paraRetirar: ()=>void
+    calcularPrecioTotal: ()=>number
+    cambiarDireccion: (direccion: Direccion)=>void
     agregarArticulo: (articulo: ArticuloVentaDTO, cantidad: number)=>void
     quitarArticulo: (articulo: ArticuloVentaDTO)=>void
     borrarArticulo: (articulo: ArticuloVentaDTO)=>void
@@ -39,6 +41,22 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     useEffect(()=>{
         calcularTiempoEstimado()
     }, [pedido.detallePedidoList, pedido.detallePromocionList])
+
+    const calcularPrecioTotal = ()=>{
+
+        let precioTotal = 0
+
+        for (const detalle of pedido.detallePedidoList) {
+            precioTotal = precioTotal + (detalle.articulo.precio * detalle.cantidad)
+        }
+
+        for (const detalle of pedido.detallePromocionList) {
+            precioTotal = precioTotal + (detalle.promocion.precioRebajado * detalle.cantidad)
+        }
+
+        return precioTotal
+
+    }
 
     const calcularTiempoEstimado = ()=>{
 
@@ -173,9 +191,21 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
         })
     }
+
+    const cambiarDireccion = (direccion: Direccion)=>{
+        setPedido((prev)=>{
+
+            const nuevoDireccionPedido: DireccionPedido = new DireccionPedido()
+
+            nuevoDireccionPedido.direccion = direccion
+
+            return {...prev, direccionPedido: nuevoDireccionPedido}
+
+        })
+    }
     
     return(
-        <CarritoContext.Provider value={{pedido, paraDelivery, paraRetirar, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
+        <CarritoContext.Provider value={{pedido, paraDelivery, paraRetirar, cambiarDireccion, calcularPrecioTotal, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
             {children}
         </CarritoContext.Provider>
     )

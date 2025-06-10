@@ -1,8 +1,9 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { CarritoContext } from "./CarritoContext";
 import DetallePromocionCarrito from "./DetallePromocionCarrito";
 import DetallePedidoCarrito from "./DetallePedidoCarrito";
+import SeleccionarDireccionCarrito from "./SeleccionarDireccionCarrito";
 
 interface Props{
     mostrarCarrito: boolean;
@@ -10,15 +11,18 @@ interface Props{
 
 export default function Carrito({mostrarCarrito}: Props) {
 
+    const [mostrarSeleccionarDireccion, setMostrarSeleccionarDireccion] = useState(false)
     const carritoContext = useContext(CarritoContext)
 
     if (carritoContext === undefined) {
         return <p>CartProvider no encontrado.</p>
     }
 
-    const {pedido, paraDelivery, paraRetirar} = carritoContext;
+    const {pedido, paraDelivery, paraRetirar, calcularPrecioTotal} = carritoContext;
 
-    const fecha = new Date()
+    const cerrarSeleccionarDireccion = ()=>{
+        setMostrarSeleccionarDireccion(false)
+    }
     
     return(
         <>
@@ -73,16 +77,30 @@ export default function Carrito({mostrarCarrito}: Props) {
                                         <h1>Delivery</h1>
                                     </button>
                                 </div>
-                                <div className="py-2 flex items-center gap-2">
-                                    <img src="./svg/relojCarrito.svg" alt="" />
-                                    <div className="text-xl h-full">
+                                <div className="py-2 flex flex-col gap-2">
+                                    <div className="text-xl flex items-center gap-2 h-full">
+                                        <img src="./svg/relojCarrito.svg" alt="" />
                                         <h1>
                                             {new Date(new Date().getTime() + (Number(pedido.tiempoEstimado) * 60 * 1000)).toLocaleTimeString().slice(0, 5)}
                                         </h1>
                                     </div>
+                                    <div>
+                                        {pedido.tipoEnvio.tipoDelivery == "DELIVERY" && (
+                                            <div className="flex items-center gap-2">
+                                                <img src="./svg/logoUbicacionCarrito.svg" alt="" />
+                                                <div className="flex justify-between w-full items-center">
+                                                    <h1>{pedido.direccionPedido?.direccion.id ? `${pedido.direccionPedido.direccion.nombreCalle} ${pedido.direccionPedido.direccion.numeracion}` : `Seleccione una direccion`}</h1>
+                                                    <button>
+                                                        <img className="h-5" src="./svg/seleccionarDireccionCarrito.svg" alt="" />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
-                                    <h1>${}</h1>
+                                    <h1>${calcularPrecioTotal()}</h1>
                                 </div>
                             </div>
 
@@ -92,6 +110,8 @@ export default function Carrito({mostrarCarrito}: Props) {
             </div>
 
         </div>
+
+        <SeleccionarDireccionCarrito cerrarModal={cerrarSeleccionarDireccion}/>
         
         </>
     )
