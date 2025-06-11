@@ -222,3 +222,7 @@ export class Pais {
     provincias: Provincia[] = [];
 }
 
+export  interface PreferenceMP{
+    id: string;
+    statusCode: number;
+}

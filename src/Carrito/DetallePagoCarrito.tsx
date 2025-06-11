@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { CarritoContext } from "./CarritoContext"
 import { useNavigate } from "react-router-dom"
+import MercadoPago from "../MercadoPago/MercadoPago"
 
 interface Props{
     isOpen: boolean
@@ -118,8 +119,11 @@ export default function DetallePagoCarrito({isOpen, cerrarModal, cerrarCarrito}:
                                 }}
                                 className="bg-[#D93F21] text-white p-2 w-3/4">Realizar Orden</button>
                             ): (
-                                
-                                <button>Mercado Pago</button>
+                                <MercadoPago monto={pedido.tipoEnvio.tipoDelivery === "DELIVERY" ?
+                                    (calcularPrecioTotal() + (calcularPrecioTotal() * 10/100)) 
+                                    :
+                                    (calcularPrecioTotal())
+                                }/>
                             )}
                         </div>
 
