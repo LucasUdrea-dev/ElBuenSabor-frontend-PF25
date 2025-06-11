@@ -37,7 +37,7 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({
 
   const obtenerDireccionEntrega = (): string => {
     // Esto debería venir de la información del usuario o del pedido
-    return pedido.sucursal?.direccion?.nombre_calle || 'San Martín 454, Mendoza, Mendoza';
+    return pedido.sucursal?.direccion?.nombreCalle || 'San Martín 454, Mendoza, Mendoza';
   };
 
   const obtenerFormaPago = (): string => {

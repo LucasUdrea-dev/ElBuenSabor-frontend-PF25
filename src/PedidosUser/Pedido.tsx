@@ -115,7 +115,7 @@ const PedidoComponent: React.FC<PedidoProps> = ({
             <div className="flex justify-between items-center mb-5 bg-gray-200 px-4 py-2 rounded">
             <span className="text-base font-bold ">ORDEN #{pedido.id}</span>
             <span className={`px-2 py-1 rounded text-sm text-black font-semibold ${obtenerColorEstado(pedido.estadoPedido?.nombre_estado)}`}>
-              {obtenerEstadoTexto(pedido.estadoPedido?.nombre_estado)}
+              {obtenerEstadoTexto(pedido.estadoPedido?.nombreEstado)}
             </span>
           </div>
 

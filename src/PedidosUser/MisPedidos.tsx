@@ -28,13 +28,13 @@ const MisPedidos: React.FC<MisPedidosProps> = ({ pedidos }) => {
     // Filtrar por tab activa
     if (tabActiva === 'pendientes') {
       pedidosFiltrados = pedidosData.filter(pedido => 
-        pedido.estadoPedido?.nombre_estado === TypeState.EN_CAMINO || 
-        pedido.estadoPedido?.nombre_estado === TypeState.LISTO
+        pedido.estadoPedido?.nombreEstado === TypeState.EN_CAMINO || 
+        pedido.estadoPedido?.nombreEstado === TypeState.LISTO
       );
     } else {
       pedidosFiltrados = pedidosData.filter(pedido => 
-        pedido.estadoPedido?.nombre_estado === TypeState.ENTREGADO || 
-        pedido.estadoPedido?.nombre_estado === TypeState.CANCELADO
+        pedido.estadoPedido?.nombreEstado === TypeState.ENTREGADO || 
+        pedido.estadoPedido?.nombreEstado === TypeState.CANCELADO
       );
     }
 
@@ -86,13 +86,13 @@ const MisPedidos: React.FC<MisPedidosProps> = ({ pedidos }) => {
   const getPedidosDeTabActual = () => {
     if (tabActiva === 'pendientes') {
       return pedidosData.filter(pedido => 
-        pedido.estadoPedido?.nombre_estado === TypeState.EN_CAMINO || 
-        pedido.estadoPedido?.nombre_estado === TypeState.LISTO
+        pedido.estadoPedido?.nombreEstado === TypeState.EN_CAMINO || 
+        pedido.estadoPedido?.nombreEstado === TypeState.LISTO
       );
     } else {
       return pedidosData.filter(pedido => 
-        pedido.estadoPedido?.nombre_estado === TypeState.ENTREGADO || 
-        pedido.estadoPedido?.nombre_estado === TypeState.CANCELADO
+        pedido.estadoPedido?.nombreEstado === TypeState.ENTREGADO || 
+        pedido.estadoPedido?.nombreEstado === TypeState.CANCELADO
       );
     }
   };

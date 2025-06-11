@@ -124,10 +124,10 @@ promocion2.imagen = "https://example.com/pizza-familiar.jpg";
 // Crear dirección
 const direccion = new Direccion();
 direccion.id = 1;
-direccion.nombre_calle = "San Martín";
+direccion.nombreCalle = "San Martín";
 direccion.numeracion = "454";
 direccion.alias = "Casa";
-direccion.text_area = "Entre Rivadavia y Belgrano";
+direccion.descripcionEntrega = "Entre Rivadavia y Belgrano";
 direccion.existe = true;
 direccion.latitud = -32.8895;
 direccion.longitud = -68.8458;
@@ -151,22 +151,22 @@ sucursal.direccion = direccion;
 const estadoEnCamino = new EstadoPedido();
 estadoEnCamino.id = 1;
 estadoEnCamino.nombreEstado = "EN CAMINO";
-estadoEnCamino.nombre_estado = TypeState.EN_CAMINO;
+estadoEnCamino.nombreEstado = TypeState.EN_CAMINO;
 
 const estadoListo = new EstadoPedido();
 estadoListo.id = 2;
 estadoListo.nombreEstado = "LISTO";
-estadoListo.nombre_estado = TypeState.LISTO;
+estadoListo.nombreEstado = TypeState.LISTO;
 
 const estadoEntregado = new EstadoPedido();
 estadoEntregado.id = 3;
 estadoEntregado.nombreEstado = "ENTREGADO";
-estadoEntregado.nombre_estado = TypeState.ENTREGADO;
+estadoEntregado.nombreEstado = TypeState.ENTREGADO;
 
 const estadoCancelado = new EstadoPedido();
 estadoCancelado.id = 4;
 estadoCancelado.nombreEstado = "CANCELADO";
-estadoCancelado.nombre_estado = TypeState.CANCELADO;
+estadoCancelado.nombreEstado = TypeState.CANCELADO;
 
 // Crear usuario
 const usuario = new Usuario();

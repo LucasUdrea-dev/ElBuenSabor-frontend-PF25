@@ -69,6 +69,12 @@ export class EstadoPedido{
     nombreEstado: string = "INCOMING"
 }
 
+export enum TypeState {
+    EN_CAMINO = "EN CAMINO",
+    LISTO = "LISTO",
+    ENTREGADO = "ENTREGADO",
+    CANCELADO = "CANCELADO",
+}
 
 export class Categoria {
     id?: number | null = null;
