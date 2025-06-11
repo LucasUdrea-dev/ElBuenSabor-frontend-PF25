@@ -4,24 +4,42 @@ import { CarritoContext } from "./CarritoContext";
 import DetallePromocionCarrito from "./DetallePromocionCarrito";
 import DetallePedidoCarrito from "./DetallePedidoCarrito";
 import SeleccionarDireccionCarrito from "./SeleccionarDireccionCarrito";
+import DetallePagoCarrito from "./DetallePagoCarrito";
 
 interface Props{
     mostrarCarrito: boolean;
+    cerrarCarrito: ()=>void
 }
 
-export default function Carrito({mostrarCarrito}: Props) {
+export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
 
     const [mostrarSeleccionarDireccion, setMostrarSeleccionarDireccion] = useState(false)
+    const [detallePago, setDetallePago] = useState(false)
+
     const carritoContext = useContext(CarritoContext)
 
     if (carritoContext === undefined) {
         return <p>CartProvider no encontrado.</p>
     }
 
-    const {pedido, paraDelivery, paraRetirar, calcularPrecioTotal} = carritoContext;
+    const {pedido, paraDelivery, paraRetirar, calcularPrecioTotal, vaciarPedido} = carritoContext;
 
     const cerrarSeleccionarDireccion = ()=>{
         setMostrarSeleccionarDireccion(false)
+    }
+
+    const cerrarDetallePago = ()=>{
+        setDetallePago(false)
+    }
+
+    const botonContinuar = ()=>{
+        if(pedido.tipoEnvio.tipoDelivery == "DELIVERY"){
+            if (pedido.direccionPedido.direccion.id) {
+                setDetallePago(true)
+            }
+        }else{
+            setDetallePago(true)
+        }
     }
     
     return(
@@ -63,20 +81,24 @@ export default function Carrito({mostrarCarrito}: Props) {
                                 ))}
                             </div>
 
-                            <div>
+                            <div className="px-2">
                                 <div className="text-xl text-center">
                                     <h1>Entrega</h1>
                                 </div>
+
+                                {/**Seleccionar Delivery o Retirar*/}
                                 <div className="flex justify-between">
                                     <button onClick={()=>paraRetirar()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio.tipoDelivery == "TAKEAWAY" ? "opacity-100" : "opacity-40"}`}>
                                         <img src="./svg/enTienda.svg" alt="" />
-                                        <h1>En Tienda</h1>
+                                        <h1>En Local</h1>
                                     </button>
                                     <button onClick={()=>paraDelivery()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio.tipoDelivery == "DELIVERY" ? "opacity-100" : "opacity-40"}`}>
                                         <img src="./svg/delivery.svg" alt="" />
                                         <h1>Delivery</h1>
                                     </button>
                                 </div>
+
+                                {/**Hora estimada y direccion */}
                                 <div className="py-2 flex flex-col gap-2">
                                     <div className="text-xl flex items-center gap-2 h-full">
                                         <img src="./svg/relojCarrito.svg" alt="" />
@@ -86,22 +108,67 @@ export default function Carrito({mostrarCarrito}: Props) {
                                     </div>
                                     <div>
                                         {pedido.tipoEnvio.tipoDelivery == "DELIVERY" && (
-                                            <div className="flex items-center gap-2">
-                                                <img src="./svg/logoUbicacionCarrito.svg" alt="" />
-                                                <div className="flex justify-between w-full items-center">
-                                                    <h1>{pedido.direccionPedido?.direccion.id ? `${pedido.direccionPedido.direccion.nombreCalle} ${pedido.direccionPedido.direccion.numeracion}` : `Seleccione una direccion`}</h1>
-                                                    <button>
-                                                        <img className="h-5" src="./svg/seleccionarDireccionCarrito.svg" alt="" />
-                                                    </button>
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <img src="./svg/logoUbicacionCarrito.svg" alt="" />
+                                                    <div className="grid grid-cols-[3fr_1fr] w-full items-center">
+                                                        <h1>{pedido.direccionPedido?.direccion.id ? 
+                                                        `${pedido.direccionPedido.direccion.nombreCalle} ${pedido.direccionPedido.direccion.numeracion}, ${pedido.direccionPedido.direccion.ciudad?.nombre}` 
+                                                        : `Seleccione una direccion`}
+                                                        </h1>
+                                                        <button onClick={()=>setMostrarSeleccionarDireccion(true)}>
+                                                            <img className="h-5 m-auto" src="./svg/seleccionarDireccionCarrito.svg" alt="" />
+                                                        </button>
+                                                    </div>    
                                                 </div>
+                                                <div className="text-red-400 text-center">
+                                                    {!pedido.direccionPedido.direccion.id && (
+                                                        <h1>Seleccione una direccion</h1>
+                                                    )}
+                                                </div>
+
                                             </div>
 
                                         )}
                                     </div>
                                 </div>
+
+                                {/**Precios */}
                                 <div>
-                                    <h1>${calcularPrecioTotal()}</h1>
+                                    
+                                    {pedido.tipoEnvio.tipoDelivery == "DELIVERY" && (
+                                        <div>
+                                            <div className="flex justify-between opacity-70">
+                                                <h1>Subtotal:</h1>
+                                                <h1>${calcularPrecioTotal()}</h1>
+                                            </div>
+                                            <div className="flex justify-between opacity-50 text-sm">
+                                                <h2>10% Delivery</h2>
+                                                <h2>${calcularPrecioTotal() * 10/100}</h2>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between">
+                                        <h1>TOTAL:</h1>
+                                        <h1>${pedido.tipoEnvio.tipoDelivery == "DELIVERY" ? `${calcularPrecioTotal() + (calcularPrecioTotal()*10/100)}` : `${calcularPrecioTotal()}`}</h1>
+                                    </div>
+
                                 </div>
+
+                                {/**Botones Cancelar o Confirmar */}
+                                <div className="grid grid-cols-2 gap-5 mt-5">
+                                    <button onClick={()=>vaciarPedido()}
+                                        className="border p-1 rounded-2xl">
+                                        Cancelar Orden
+                                    </button>
+                                    <button
+                                        onClick={()=>botonContinuar()}
+                                        className="p-1 rounded-2xl bg-[#D93F21] text-white">
+                                        Continuar
+                                    </button>
+                                </div>
+
                             </div>
 
                         </div>
@@ -111,8 +178,9 @@ export default function Carrito({mostrarCarrito}: Props) {
 
         </div>
 
-        <SeleccionarDireccionCarrito cerrarModal={cerrarSeleccionarDireccion}/>
-        
+        <SeleccionarDireccionCarrito isOpen={mostrarSeleccionarDireccion} cerrarModal={cerrarSeleccionarDireccion}/>
+        <DetallePagoCarrito isOpen={detallePago} cerrarModal={cerrarDetallePago} cerrarCarrito={cerrarCarrito}/>
+
         </>
     )
 

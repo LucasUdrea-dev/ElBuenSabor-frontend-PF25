@@ -6,7 +6,7 @@ export class Promocion {
     tipoPromocion?: any;
     existe?: boolean;
     sucursal?: any;
-    articulos?: any[];
+    promocionArticuloList?: any[];
     imagen: string = "";
 }
 
@@ -17,10 +17,10 @@ export class Pedido {
     fecha: string = new Date().toLocaleString()
     detallePedidoList: DetallePedido[] = []
     detallePromocionList: DetallePromocion[] = []
-    estadoPedido: EstadoPedido = {id: 1, nombreEstado: "INCOMING"}
+    estadoPedido: EstadoPedido = {id: 5, nombreEstado: "INCOMING"}
     sucursal: Sucursal = new Sucursal()
     tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
-    tipoPago: TipoPago = new TipoPago()
+    tipoPago: TipoPago = tiposPagoEnum[1]
     usuario: Usuario = new Usuario()
     direccionPedido: DireccionPedido = new DireccionPedido()
 
@@ -41,6 +41,11 @@ export class TipoPago{
     id?: number | null = null
     tipoPago: string = ""
 }
+
+export const tiposPagoEnum: TipoPago[] = [
+    {id: 1, tipoPago: "CASH"},
+    {id: 2, tipoPago: "MERCADOPAGO"}
+]
 
 export class TipoEnvio{
     id?: number | null = null
@@ -132,6 +137,38 @@ export class Sucursal{
     direccion?: Direccion = new Direccion()
 }
 
+export const sucursalMendoza: Sucursal = {
+  id: 1,
+  nombre: "Sucursal Central Mendoza",
+  horaApertura: "09:00",
+  horaCierre: "18:00",
+  existe: true,
+  direccion: {
+    id: 101,
+    existe: true,
+    nombreCalle: "Av. San Martín",
+    numeracion: "1100",
+    latitud: -32.890692, // Latitud aproximada para Av. San Martín 1100, Mendoza
+    longitud: -68.847145, // Longitud aproximada para Av. San Martín 1100, Mendoza
+    alias: "Oficina Principal",
+    descripcionEntrega: "Frente a la Plaza San Martín, edificio color crema.",
+    ciudad: {
+      id: 1,
+      nombre: "Ciudad de Mendoza",
+      provincia: {
+        id: 1,
+        nombre: "Mendoza",
+        pais: {
+          id: 1,
+          nombre: "Argentina",
+          provincias: [], // Dejamos vacío para evitar referencias circulares
+        },
+        ciudadList: [], // Dejamos vacío para evitar referencias circulares
+      },
+    },
+  },
+};
+
 export class Usuario{
     id?: number;
     nombre: string = "";
@@ -154,20 +191,20 @@ export class Direccion{
     longitud: number = 0;
     alias: string = "";
     descripcionEntrega: string ="";
-    ciudad?: Ciudad;
+    ciudad: Ciudad = new Ciudad();
 }
 
 
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    provincia?: Provincia; 
+    provincia: Provincia = new Provincia(); 
 }
 
 export class Provincia {
     id?: number; 
     nombre: string = "";
-    pais?: Pais; 
+    pais: Pais = new Pais(); 
     ciudadList?: Ciudad[] = []; 
 }
 

@@ -23,6 +23,10 @@ export default function Navbar() {
         setMostrarDesplegableUsuario(!mostrarDesplegableUsuario)
     }
 
+    const cerrarCarrito = ()=>{
+        setMostrarCarrito(false)
+    }
+
     const cerrarSesion = () => {
         setEstaLogeado(false)
         setMostrarDesplegableUsuario(false)
@@ -111,7 +115,7 @@ export default function Navbar() {
                             
                         </div>
 
-                        <Carrito mostrarCarrito={mostrarCarrito}/> 
+                        <Carrito mostrarCarrito={mostrarCarrito} cerrarCarrito={cerrarCarrito}/> 
 
                     </div>
 

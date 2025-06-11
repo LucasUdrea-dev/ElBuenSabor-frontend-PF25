@@ -10,6 +10,7 @@ import DireccionesUser from './DireccionesUser.tsx'
 import AdminCatalogo from './Admin/Manufacturados/AdminCatalogo.tsx'
 import EditarPerfilUser from './EditarPerfilUser.tsx'
 import CarritoProvider from './Carrito/CarritoContext.tsx'
+import OrdenRecibida from './Carrito/OrdenRecibida.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
@@ -21,6 +22,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/inicio' element={<Inicio/>}/>
 
             <Route path='/catalogo' element={<Catalogo/>}/>
+            <Route path="/ordenRecibida" element={<OrdenRecibida/>}/>
+
             <Route path='/misDirecciones' element={<DireccionesUser />} />
             <Route path='/miPeril' element={<EditarPerfilUser />} />
 

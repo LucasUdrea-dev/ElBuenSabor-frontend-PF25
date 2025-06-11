@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Direccion, DireccionPedido, Pedido, Promocion, tiposEnvioEnum } from "../../ts/Clases";
+import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Direccion, DireccionPedido, Pedido, Promocion, sucursalMendoza, tiposEnvioEnum, tiposPagoEnum } from "../../ts/Clases";
 
 interface CarritoContextType{
     pedido: Pedido
@@ -7,12 +7,14 @@ interface CarritoContextType{
     paraRetirar: ()=>void
     calcularPrecioTotal: ()=>number
     cambiarDireccion: (direccion: Direccion)=>void
+    cambiarMetodoPago: (metodo: string)=>void
     agregarArticulo: (articulo: ArticuloVentaDTO, cantidad: number)=>void
     quitarArticulo: (articulo: ArticuloVentaDTO)=>void
     borrarArticulo: (articulo: ArticuloVentaDTO)=>void
     agregarPromocion: (promocion: Promocion, cantidad: number)=>void
     quitarPromocion: (promocion: Promocion)=>void
     borrarPromocion: (promocion: Promocion)=>void
+    vaciarPedido: ()=>void
 }
 
 export const CarritoContext = createContext<CarritoContextType | undefined>(undefined)
@@ -22,10 +24,10 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     const [pedido, setPedido] = useState<Pedido>(()=>{
         try {
             const carritoGuardado = localStorage.getItem("carrito")
-            return carritoGuardado ? JSON.parse(carritoGuardado) : new Pedido()
+            return carritoGuardado ? JSON.parse(carritoGuardado) : inicializarPedido()
         } catch (error) {
             console.error("Error al leer el carrito guardado: ", error)
-            return new Pedido()
+            return inicializarPedido()
         }
     })
 
@@ -42,6 +44,19 @@ export default function CarritoProvider({children}: PropsWithChildren) {
         calcularTiempoEstimado()
     }, [pedido.detallePedidoList, pedido.detallePromocionList])
 
+    useEffect(()=>{
+        cambiarMetodoPago("MERCADOPAGO")
+    }, [pedido.tipoEnvio])
+
+    const inicializarPedido = ()=>{
+        let pedidoNuevo = new Pedido()
+
+        pedidoNuevo = {...pedidoNuevo, sucursal: sucursalMendoza}
+
+        return pedidoNuevo
+
+    }
+
     const calcularPrecioTotal = ()=>{
 
         let precioTotal = 0
@@ -55,6 +70,13 @@ export default function CarritoProvider({children}: PropsWithChildren) {
         }
 
         return precioTotal
+
+    }
+
+    const vaciarPedido = ()=>{
+
+        localStorage.removeItem("carrito")
+        setPedido(inicializarPedido())
 
     }
 
@@ -89,6 +111,20 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     const paraRetirar = ()=>{
         setPedido((prev)=>{
             return {...prev, tipoEnvio: tiposEnvioEnum[1]}
+        })
+    }
+
+    const cambiarMetodoPago = (metodo: string)=>{
+        setPedido((prev)=>{
+
+            const metodoSeleccionado = tiposPagoEnum.find((tipo)=>tipo.tipoPago == metodo)
+
+            if (metodoSeleccionado) {
+                return {...prev, tipoPago: metodoSeleccionado}
+            }
+
+            return prev
+
         })
     }
 
@@ -205,7 +241,7 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     }
     
     return(
-        <CarritoContext.Provider value={{pedido, paraDelivery, paraRetirar, cambiarDireccion, calcularPrecioTotal, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
+        <CarritoContext.Provider value={{pedido, vaciarPedido, paraDelivery, paraRetirar, cambiarDireccion, cambiarMetodoPago, calcularPrecioTotal, agregarArticulo, agregarPromocion, quitarArticulo, quitarPromocion, borrarArticulo, borrarPromocion}}>
             {children}
         </CarritoContext.Provider>
     )
