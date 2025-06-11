@@ -21,6 +21,15 @@ export const CarritoContext = createContext<CarritoContextType | undefined>(unde
 
 export default function CarritoProvider({children}: PropsWithChildren) {
 
+    const inicializarPedido = ()=>{
+        let pedidoNuevo = new Pedido()
+
+        pedidoNuevo = {...pedidoNuevo, sucursal: sucursalMendoza}
+
+        return pedidoNuevo
+
+    }
+
     const [pedido, setPedido] = useState<Pedido>(()=>{
         try {
             const carritoGuardado = localStorage.getItem("carrito")
@@ -47,15 +56,6 @@ export default function CarritoProvider({children}: PropsWithChildren) {
     useEffect(()=>{
         cambiarMetodoPago("MERCADOPAGO")
     }, [pedido.tipoEnvio])
-
-    const inicializarPedido = ()=>{
-        let pedidoNuevo = new Pedido()
-
-        pedidoNuevo = {...pedidoNuevo, sucursal: sucursalMendoza}
-
-        return pedidoNuevo
-
-    }
 
     const calcularPrecioTotal = ()=>{
 
