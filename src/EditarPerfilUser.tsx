@@ -21,6 +21,8 @@ const usuarioSchema = z.object({
 export default function EditarPerfilUser() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
+
+  //Contiene los datos que el usuario está editando en el formulario. Es una copia de usuario que se modifica cuando el usuario escribe
   const [formData, setFormData] = useState<Usuario>(new Usuario());
   const [errores, setErrores] = useState<Partial<Record<keyof Usuario, string>>>({});
   const navigate = useNavigate();
@@ -66,13 +68,14 @@ export default function EditarPerfilUser() {
   []);
   
 
+  
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
         setFormData((prev) => {
-          const newFormData = new Usuario();
-          Object.assign(newFormData, prev);
-          (newFormData as any)[name] = value;
-          return newFormData;
+          const newFormData = new Usuario();  // Crea un nuevo objeto Usuario
+          Object.assign(newFormData, prev);   // Copia todos los datos anteriores
+          (newFormData as any)[name] = value; // Actualiza solo el campo que cambió
+          return newFormData;                 // Devuelve el objeto actualizado
       });
       
         if (errores[name as keyof Usuario]) {

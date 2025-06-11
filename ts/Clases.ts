@@ -23,7 +23,6 @@ export class Pedido {
     tipoPago: TipoPago = tiposPagoEnum[1]
     usuario: Usuario = new Usuario()
     direccionPedido: DireccionPedido = new DireccionPedido()
-
 }
 
 export class DireccionPedido{
@@ -42,10 +41,12 @@ export class TipoPago{
     tipoPago: string = ""
 }
 
+
 export const tiposPagoEnum: TipoPago[] = [
     {id: 1, tipoPago: "CASH"},
     {id: 2, tipoPago: "MERCADOPAGO"}
 ]
+
 
 export class TipoEnvio{
     id?: number | null = null
@@ -67,6 +68,7 @@ export class EstadoPedido{
     id?: number | null = null
     nombreEstado: string = "INCOMING"
 }
+
 
 export class Categoria {
     id?: number | null = null;
@@ -198,7 +200,7 @@ export class Direccion{
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    provincia: Provincia = new Provincia(); 
+    provincia: Provincia = new Provincia();
 }
 
 export class Provincia {
@@ -213,3 +215,4 @@ export class Pais {
     nombre: string = "";
     provincias: Provincia[] = [];
 }
+
