@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import {Promocion} from "../ts/Clases.ts"
 import { obtenerImagen } from "../ts/Imagen.ts"
+import DetallePromocion from "./DetallePromocion.tsx"
 
 interface Props{
     promos: Promocion[]
@@ -9,6 +10,7 @@ interface Props{
 export default function SliderPromociones({promos}: Props) {
 
     const [indexActual, setIndexActual] = useState(0)
+    const [detallePromocion, setDetallePromocion] = useState<Promocion | null>(null)
 
     useEffect(()=>{
         if (promos.length === 0) {
@@ -24,7 +26,10 @@ export default function SliderPromociones({promos}: Props) {
         }
 
     }, [promos.length, promos, indexActual])
-    
+
+    const cerrarDetalle = ()=>{
+        setDetallePromocion(null)
+    }
     
     return(
         <>
@@ -37,9 +42,14 @@ export default function SliderPromociones({promos}: Props) {
                         <h1 className="text-6xl">{promos[indexActual].denominacion}</h1>
                         <h2 className="text-4xl text-center">{promos[indexActual].descripcion}</h2>
                     </div>
-                    <div>
-                        <img className="m-auto h-[300px] w-full top-1/2 object-cover rounded-r-4xl" src={obtenerImagen(promos[indexActual].imagen)} alt="No se pudo recuperar la imagen" />
-                    </div>
+                    
+                    <button onClick={()=>setDetallePromocion(promos[indexActual])}>
+                        <img className="m-auto h-[300px] w-full top-1/2 
+                        object-cover rounded-r-4xl" 
+                        src={obtenerImagen(promos[indexActual].imagen)} 
+                        alt="No se pudo recuperar la imagen" />
+                    </button>
+                    
                 </div>
                 
             ) : (
@@ -55,6 +65,8 @@ export default function SliderPromociones({promos}: Props) {
             </div>
         
         </div>
+
+        <DetallePromocion promocion={detallePromocion} onClose={cerrarDetalle}/>
         
         </>
     )

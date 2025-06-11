@@ -6,7 +6,7 @@ export class Promocion {
     tipoPromocion?: any;
     existe?: boolean;
     sucursal?: any;
-    articulos?: any[];
+    promocionArticuloList?: any[];
     imagen: string = "";
 }
 
@@ -17,12 +17,12 @@ export class Pedido {
     fecha: string = new Date().toLocaleString()
     detallePedidoList: DetallePedido[] = []
     detallePromocionList: DetallePromocion[] = []
-    estadoPedido: EstadoPedido = {id: 1, nombreEstado: "INCOMING"}
+    estadoPedido: EstadoPedido = {id: 5, nombreEstado: "INCOMING"}
     sucursal: Sucursal = new Sucursal()
-    tipoEnvio: TipoEnvio = new TipoEnvio()
-    tipoPago: TipoPago = new TipoPago()
+    tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
+    tipoPago: TipoPago = tiposPagoEnum[1]
     usuario: Usuario = new Usuario()
-    direccionPedido?: DireccionPedido = new DireccionPedido()
+    direccionPedido: DireccionPedido = new DireccionPedido()
 }
 
 export class DireccionPedido{
@@ -41,10 +41,22 @@ export class TipoPago{
     tipoPago: string = ""
 }
 
+
+export const tiposPagoEnum: TipoPago[] = [
+    {id: 1, tipoPago: "CASH"},
+    {id: 2, tipoPago: "MERCADOPAGO"}
+]
+
+
 export class TipoEnvio{
     id?: number | null = null
     tipoDelivery: string = ""
 }
+
+export const tiposEnvioEnum: TipoEnvio[] = [
+    {id: 1, tipoDelivery: "DELIVERY"},
+    {id: 2, tipoDelivery: "TAKEAWAY"}
+]
 
 export class DetallePedido{
     id?: number | null = null
@@ -55,16 +67,6 @@ export class DetallePedido{
 export class EstadoPedido{
     id?: number | null = null
     nombreEstado: string = "INCOMING"
-    nombre_estado?: TypeState;
-
-}
-
-
-export enum TypeState {
-    EN_CAMINO = "EN CAMINO",
-    LISTO = "LISTO",
-    ENTREGADO = "ENTREGADO",
-    CANCELADO = "CANCELADO",
 }
 
 
@@ -137,6 +139,38 @@ export class Sucursal{
     direccion?: Direccion = new Direccion()
 }
 
+export const sucursalMendoza: Sucursal = {
+  id: 1,
+  nombre: "Sucursal Central Mendoza",
+  horaApertura: "09:00",
+  horaCierre: "18:00",
+  existe: true,
+  direccion: {
+    id: 101,
+    existe: true,
+    nombreCalle: "Av. San Martín",
+    numeracion: "1100",
+    latitud: -32.890692, // Latitud aproximada para Av. San Martín 1100, Mendoza
+    longitud: -68.847145, // Longitud aproximada para Av. San Martín 1100, Mendoza
+    alias: "Oficina Principal",
+    descripcionEntrega: "Frente a la Plaza San Martín, edificio color crema.",
+    ciudad: {
+      id: 1,
+      nombre: "Ciudad de Mendoza",
+      provincia: {
+        id: 1,
+        nombre: "Mendoza",
+        pais: {
+          id: 1,
+          nombre: "Argentina",
+          provincias: [], // Dejamos vacío para evitar referencias circulares
+        },
+        ciudadList: [], // Dejamos vacío para evitar referencias circulares
+      },
+    },
+  },
+};
+
 export class Usuario{
     id?: number;
     nombre: string = "";
@@ -153,27 +187,26 @@ export class Usuario{
 export class Direccion{
     id?: number;
     existe?: boolean;
-    nombre_calle: string = "";
+    nombreCalle: string = "";
     numeracion: string = "";
     latitud: number = 0;
     longitud: number = 0;
     alias: string = "";
-    text_area: String ="";
-    ciudad?: Ciudad;
+    descripcionEntrega: string ="";
+    ciudad: Ciudad = new Ciudad();
 }
 
 
 export class Ciudad {
     id?: number; 
     nombre: string = "";
-    direccionList?: Direccion[] = [];
-    provincia?: Provincia; 
+    provincia: Provincia = new Provincia();
 }
 
 export class Provincia {
     id?: number; 
     nombre: string = "";
-    pais?: Pais; 
+    pais: Pais = new Pais(); 
     ciudadList?: Ciudad[] = []; 
 }
 

@@ -22,30 +22,35 @@ export default function Catalogo() {
     useEffect(()=>{
         let data: Promocion[] = [];
         let promocion1: Promocion = {
+            id: 1,
             denominacion: "Promo 1",
             descripcion: "1 pizza + 2 CocaCola 500ml",
             precioRebajado: 500,
             imagen: "pizza.jpg"
         }
         let promocion2: Promocion = {
+            id: 2,
             denominacion: "Promo 2",
             descripcion: "2 hamburguesas + 2 CocaCola 500ml + 2 papas grandes",
             precioRebajado: 500,
             imagen: "hamburguesa.jpg"
         }
         let promocion3: Promocion = {
+            id: 3,
             denominacion: "Promo 3",
             descripcion: "1 pizza + 2 CocaCola 500ml",
             precioRebajado: 500,
             imagen: "pizza.jpg"
         }
         let promocion4: Promocion = {
+            id: 4,
             denominacion: "Promo 4",
             descripcion: "1 pizza + 2 CocaCola 500ml",
             precioRebajado: 500,
             imagen: "hamburguesa.jpg"
         }
         let promocion5: Promocion = {
+            id: 5,
             denominacion: "Promo 5",
             descripcion: "1 pizza + 2 CocaCola 500ml",
             precioRebajado: 500,
@@ -75,14 +80,14 @@ export default function Catalogo() {
             denominacion: "Hamburguesas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias.push(subcategoriaHamburguesas);
+        categoriaComidaRapida.subcategorias?.push(subcategoriaHamburguesas);
 
         const subcategoriaPizzas: Subcategoria = {
             id: 102,
             denominacion: "Pizzas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias.push(subcategoriaPizzas);
+        categoriaComidaRapida.subcategorias?.push(subcategoriaPizzas);
 
 
         const categoriaPastas: Categoria = {
@@ -97,7 +102,7 @@ export default function Catalogo() {
             denominacion: "Pastas Rellenas",
             categoria: categoriaPastas
         };
-        categoriaPastas.subcategorias.push(subcategoriaPastasRellenas);
+        categoriaPastas.subcategorias?.push(subcategoriaPastasRellenas);
 
         const categoriaBebidas: Categoria = {
             id: 3,
@@ -111,7 +116,7 @@ export default function Catalogo() {
             denominacion: "Gaseosas",
             categoria: categoriaBebidas
         };
-        categoriaBebidas.subcategorias.push(subcategoriaGaseosas);
+        categoriaBebidas.subcategorias?.push(subcategoriaGaseosas);
 
         const categoriaPostres: Categoria = {
             id: 4,
@@ -124,13 +129,13 @@ export default function Catalogo() {
             denominacion: "Helados",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias.push(subcategoriaHelados);
+        categoriaPostres.subcategorias?.push(subcategoriaHelados);
         const subcategoriaTortas: Subcategoria = {
             id: 402,
             denominacion: "Tortas",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias.push(subcategoriaTortas);
+        categoriaPostres.subcategorias?.push(subcategoriaTortas);
 
         const categoriaEnsaladas: Categoria = {
             id: 5,
@@ -143,7 +148,7 @@ export default function Catalogo() {
             denominacion: "Vegetarianas",
             categoria: categoriaEnsaladas
         };
-        categoriaEnsaladas.subcategorias.push(subcategoriaVegetarianas);
+        categoriaEnsaladas.subcategorias?.push(subcategoriaVegetarianas);
         
         data.push(categoriaComidaRapida)
         data.push(categoriaPastas)
@@ -168,14 +173,12 @@ export default function Catalogo() {
             denominacion: "Hamburguesas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias.push(subcategoriaHamburguesas);
 
         const subcategoriaPizzas: Subcategoria = {
             id: 102,
             denominacion: "Pizzas",
             categoria: categoriaComidaRapida
         };
-        categoriaComidaRapida.subcategorias.push(subcategoriaPizzas);
 
 
         const categoriaPastas: Categoria = {
@@ -190,7 +193,6 @@ export default function Catalogo() {
             denominacion: "Pastas Rellenas",
             categoria: categoriaPastas
         };
-        categoriaPastas.subcategorias.push(subcategoriaPastasRellenas);
 
         const categoriaBebidas: Categoria = {
             id: 3,
@@ -204,7 +206,6 @@ export default function Catalogo() {
             denominacion: "Gaseosas",
             categoria: categoriaBebidas
         };
-        categoriaBebidas.subcategorias.push(subcategoriaGaseosas);
 
         // --- Nuevas categorías y subcategorías para mayor variedad ---
         const categoriaPostres: Categoria = {
@@ -218,13 +219,12 @@ export default function Catalogo() {
             denominacion: "Helados",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias.push(subcategoriaHelados);
+
         const subcategoriaTortas: Subcategoria = {
             id: 402,
             denominacion: "Tortas",
             categoria: categoriaPostres
         };
-        categoriaPostres.subcategorias.push(subcategoriaTortas);
 
         const categoriaEnsaladas: Categoria = {
             id: 5,
@@ -237,7 +237,6 @@ export default function Catalogo() {
             denominacion: "Vegetarianas",
             categoria: categoriaEnsaladas
         };
-        categoriaEnsaladas.subcategorias.push(subcategoriaVegetarianas);
 
 
         // Creación de artículos de insumo (ejemplos)
@@ -248,7 +247,7 @@ export default function Catalogo() {
             descripcion: "Pan especial para hamburguesas",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-pan-brioche.jpg",
+            imagenArticulo: "imagen-pan-brioche.jpg",
             subcategoria: subcategoriaHamburguesas
         };
 
@@ -259,7 +258,7 @@ export default function Catalogo() {
             descripcion: "Carne picada para hamburguesas",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-carne-vacuna.jpg",
+            imagenArticulo: "imagen-carne-vacuna.jpg",
             subcategoria: subcategoriaHamburguesas
         };
 
@@ -270,7 +269,7 @@ export default function Catalogo() {
             descripcion: "Masa fresca para pizza",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-masa-pizza.jpg",
+            imagenArticulo: "imagen-masa-pizza.jpg",
             subcategoria: subcategoriaPizzas
         };
 
@@ -281,7 +280,7 @@ export default function Catalogo() {
             descripcion: "Salsa casera para pizza",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-salsa-tomate.jpg",
+            imagenArticulo: "imagen-salsa-tomate.jpg",
             subcategoria: subcategoriaPizzas
         };
 
@@ -292,7 +291,7 @@ export default function Catalogo() {
             descripcion: "Harina de trigo",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-harina.jpg",
+            imagenArticulo: "imagen-harina.jpg",
             subcategoria: subcategoriaPastasRellenas
         };
 
@@ -303,7 +302,7 @@ export default function Catalogo() {
             descripcion: "Huevos frescos",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-huevo.jpg",
+            imagenArticulo: "imagen-huevo.jpg",
             subcategoria: subcategoriaPastasRellenas
         };
 
@@ -315,7 +314,7 @@ export default function Catalogo() {
             descripcion: "Azúcar refinada",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-azucar.jpg",
+            imagenArticulo: "imagen-azucar.jpg",
             subcategoria: subcategoriaTortas
         };
 
@@ -326,7 +325,7 @@ export default function Catalogo() {
             descripcion: "Lechuga de hoja verde",
             precio: 0,
             esParaElaborar: true,
-            imagen: "imagen-lechuga.jpg",
+            imagenArticulo: "imagen-lechuga.jpg",
             subcategoria: subcategoriaVegetarianas
         };
 
@@ -463,7 +462,7 @@ export default function Catalogo() {
         //Filtro por subcategoria
         if (subcategoriaSeleccionada) {
             datosFiltrados = datosFiltrados.filter((articulo)=>
-                articulo.subcategoria.id === categorias[Number(categoriaSeleccionada)].subcategorias[Number(subcategoriaSeleccionada)].id
+                articulo.subcategoria.id === categorias[Number(categoriaSeleccionada)]?.subcategorias?.[Number(subcategoriaSeleccionada)]?.id
             )
         }
 
@@ -576,7 +575,7 @@ export default function Catalogo() {
                     
                     <button onClick={()=> setSubcategoriaSeleccionada("")} className={`${subcategoriaSeleccionada === "" ? "bg-[#D93F21]" : "bg-white text-black"} px-5 rounded-2xl uppercase`}>Todos</button>
                     
-                    {(categorias.length > 0 && categoriaSeleccionada != "") && categorias[Number(categoriaSeleccionada)].subcategorias.map((subcat, index) => (
+                    {(categorias.length > 0 && categoriaSeleccionada != "") && categorias[Number(categoriaSeleccionada)]?.subcategorias?.map((subcat, index) => (
                         <button key={index} onClick={()=> setSubcategoriaSeleccionada(String(index))} className={`${String(index) === subcategoriaSeleccionada ? "bg-[#D93F21]" : "bg-white text-black"} px-5 rounded-2xl uppercase`}>{subcat.denominacion}</button>
                     ))}
                 </div>
@@ -602,7 +601,7 @@ export default function Catalogo() {
 
                     }
                     ) : (
-                        <h1 className="text-2xl text-center">No se encuentran articulos</h1>
+                        <h1 className="text-2xl text-center">No se encuentran productos</h1>
                     )}
                 </div>
 
