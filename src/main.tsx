@@ -5,7 +5,7 @@ import App from './App.tsx'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Inicio from './Inicio.tsx'
-import Catalogo from './Catalogo.tsx'
+import Catalogo from './Catalogo/Catalogo.tsx'
 import DireccionesUser from './DireccionesUser.tsx'
 import AdminCatalogo from './Admin/Manufacturados/AdminCatalogo.tsx'
 import EditarPerfilUser from './EditarPerfilUser.tsx'

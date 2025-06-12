@@ -1,13 +1,26 @@
+export const host: string = "http://localhost:8080"
+
 export class Promocion {
     id?: number | null = null;
     denominacion: string = "";
     descripcion: string = "";
     precioRebajado: number = 0;
-    tipoPromocion?: any;
-    existe?: boolean;
-    sucursal?: any;
+    tipoPromocion?: TipoPromocion = new TipoPromocion();
+    existe: boolean = false;
+    sucursal?: Sucursal;
     promocionArticuloList?: any[];
     imagen: string = "";
+}
+
+export class PromocionArticulo{
+    id: number | null = null
+    cantidad: number = 0
+    articulo?: ArticuloInsumo | ArticuloManufacturado;
+}
+
+export class TipoPromocion{
+    id: number | null = 1
+    tipoPromocion: string = "NORMAL"
 }
 
 export class Pedido {
@@ -111,9 +124,9 @@ export class ArticuloVentaDTO {
     nombre: string = "";
     descripcion: string = "";
     precio: number = 0;
-    imagen: string = "";
+    imagenArticulo: string = "";
     subcategoria: Subcategoria = new Subcategoria();
-    insumos: ArticuloInsumo[] = [];//Si es insumo que traiga array vacio
+    detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = [];//Si es insumo que traiga array vacio
     tiempoEstimado: string = "";
     //Filtrar por existe, esParaElaborar y stock(sucursal)
 }

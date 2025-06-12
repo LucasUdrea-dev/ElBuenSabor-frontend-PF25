@@ -42,7 +42,7 @@ export default function OrdenRecibida() {
     return(
         <>
         
-        <div className="bg-[#333333] h-full w-full py-10">
+        <div className="bg-[#333333] h-full w-full py-40">
 
             <div className="bg-white rounded-2xl m-auto w-2/3 max-w-2xl">
                     

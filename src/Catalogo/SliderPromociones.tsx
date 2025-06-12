@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import {Promocion} from "../ts/Clases.ts"
-import { obtenerImagen } from "../ts/Imagen.ts"
+import {Promocion} from "../../ts/Clases.ts"
+import { obtenerImagen } from "../../ts/Imagen.ts"
 import DetallePromocion from "./DetallePromocion.tsx"
 
 interface Props{
