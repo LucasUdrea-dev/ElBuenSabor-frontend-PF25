@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Pedido, TypeState } from "../../ts/Clases";
 import DetallePedido from "./DetallePedido";
 
@@ -7,16 +8,19 @@ interface PedidoProps {
   tipo: 'pendientes' | 'pasadas';
   formatearFecha: (fecha: Date | undefined) => string;
   formatearHora: (fecha: Date | undefined) => string;
+  onPedidoActualizado?: () => void; 
 }
 
 const PedidoComponent: React.FC<PedidoProps> = ({ 
   pedido, 
-  tipo, 
-  }) => {
-
-
+  tipo,
+  onPedidoActualizado
+}) => {
 
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
+  const [cargandoRepetir, setCargandoRepetir] = useState(false);
+
+  const API_BASE_URL = 'http://localhost:8080/api';
 
   const obtenerEstadoTexto = (estado: TypeState | undefined): string => {
     switch (estado) {
@@ -36,97 +40,137 @@ const PedidoComponent: React.FC<PedidoProps> = ({
   const obtenerColorEstado = (estado: TypeState | undefined): string => {
     switch (estado) {
       case TypeState.EN_CAMINO:
-        return 'text-black-600';
+        return 'text-blue-600 bg-blue-100';
       case TypeState.LISTO:
-        return 'text-green-600';
+        return 'text-green-600 bg-green-100';
       case TypeState.ENTREGADO:
-        return 'text-black-600';
+        return 'text-gray-600 bg-gray-100';
       case TypeState.CANCELADO:
-        return 'text-red-600';
+        return 'text-red-600 bg-red-100';
       default:
-        return 'text-black-600';
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
-  const calcularTotal = (): number => {
-    // Calcular total de artículos
-    const totalArticulos = pedido.detallePedidoList.reduce((total, detalle) => {
-      const precio = detalle.articulo?.precio || 0;
-      return total + (precio * detalle.cantidad);
-    }, 0);
-
-    // Calcular total de promociones
-    const totalPromociones = pedido.detallePromocionList.reduce((total, detallePromo) => {
-      const precio = detallePromo.promocion?.precioRebajado || 0;
-      return total + (precio * detallePromo.cantidad);
-    }, 0);
-
-    return totalArticulos + totalPromociones;
-  };
-
   const obtenerTipoEnvio = (): string => {
-    // Determinar tipo de envío basado en la dirección de la sucursal
-    if (pedido.sucursal?.direccion) {
+    if (pedido.direccionPedido) {
       return 'Envío a domicilio';
     }
     return 'Retiro en local';
   };
 
-  const handleRepetirOrden = () => {
-    // Funcionalidad pendiente - se implementará cuando el carrito esté listo
-    console.log('Repetir orden:', pedido.id);
-    alert(`Funcionalidad en desarrollo. Orden #${pedido.id} agregada al carrito.`);
+
+
+  const handleRepetirOrden = async () => {
+    setCargandoRepetir(true);
+    try {
+        const nuevoPedidoDTO = {
+            detallePedidoList: pedido.detallePedidoList.map(detalle => ({
+                cantidad: detalle.cantidad,
+                articulo: { id: detalle.articulo.id }
+            })),
+            detallePromocionList: pedido.detallePromocionList.map(detalle => ({
+                cantidad: detalle.cantidad,
+                promocion: { id: detalle.promocion.id }
+            })),
+            usuario: { id: pedido.usuario.id },
+            sucursal: { id: pedido.sucursal.id },
+            direccionPedido: pedido.direccionPedido ? {
+                direccion: { id: pedido.direccionPedido.direccion.id }
+            } : null,
+            tipoEnvio: { id: pedido.tipoEnvio.id },
+            tipoPago: { id: pedido.tipoPago.id }
+        };
+
+        const response = await axios.post(`${API_BASE_URL}/pedidos`, nuevoPedidoDTO);
+      
+      if (response.status === 201) {
+        alert(`¡Orden repetida exitosamente! Nueva orden #${response.data.id}`);
+        // Notificar al componente padre para que recargue los pedidos
+        if (onPedidoActualizado) {
+          onPedidoActualizado();
+        }
+      }
+    } catch (error) {
+      console.error('Error al repetir orden:', error);
+      alert('Error al repetir la orden. Por favor, intenta de nuevo.');
+    } finally {
+      setCargandoRepetir(false);
+    }
   };
 
 
-    // Función para formatear fecha string
-    const formatearFechaString = (fechaString: string): string => {
-      try {
-        const fecha = new Date(fechaString);
-        return fecha.toLocaleDateString('es-AR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-      } catch (error) {
-        return fechaString; // Si hay error, devolver el string original
-      }
-    };
 
-    // Función para obtener hora de la fecha string
-    const obtenerHoraPedido = (fechaString: string): string => {
-      try {
-        const fecha = new Date(fechaString);
-        return fecha.toLocaleTimeString('es-AR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
-      } catch (error) {
-        return ''; // Si hay error, devolver string vacío
-      }
-    };
 
-   return (
+  const formatearFechaString = (fecha: Date | string | undefined): string => {
+    if (!fecha) return '';
+    
+    try {
+      const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+      
+      if (isNaN(fechaObj.getTime())) {
+        return typeof fecha === 'string' ? fecha : '';
+      }
+      
+      return fechaObj.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error al formatear fecha:', error);
+      return typeof fecha === 'string' ? fecha : '';
+    }
+  };
+
+
+
+  const obtenerHoraPedido = (fecha: Date | string | undefined): string => {
+    if (!fecha) return '';
+    
+    try {
+      const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+      
+      // Verificar si la fecha es válida
+      if (isNaN(fechaObj.getTime())) {
+        return '';
+      }
+      
+      return fechaObj.toLocaleTimeString('es-AR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch (error) {
+      console.error('Error al obtener hora:', error);
+      return '';
+    }
+  };
+
+
+
+  const obtenerTiempoInfo = (): string => {
+    if (tipo === 'pendientes' && pedido.tiempoEstimado && pedido.tiempoEstimado !== "0 minutos") {
+      return `${pedido.tiempoEstimado} - ${obtenerTipoEnvio()}`;
+    }
+    return `${obtenerHoraPedido(pedido.fecha)} - ${obtenerTipoEnvio()}`;
+  };
+
+
+
+  return (
     <>
       <div className="bg-[#FAF8F5] text-[#262626] rounded-xl p-4 relative font-lato flex flex-col min-h-[280px]">
-        {/* Contenido principal que ocupará el espacio disponible */}
         <div className="flex-1">
-          {/* Header con número de orden y estado */}
-            <div className="flex justify-between items-center mb-5 bg-gray-200 px-4 py-2 rounded">
-            <span className="text-base font-bold ">ORDEN #{pedido.id}</span>
-            <span className={`px-2 py-1 rounded text-sm text-black font-semibold ${obtenerColorEstado(pedido.estadoPedido?.nombre_estado)}`}>
-              {obtenerEstadoTexto(pedido.estadoPedido?.nombre_estado)}
+          <div className="flex justify-between items-center mb-5 bg-gray-200 px-4 py-2 rounded">
+            <span className="text-base font-bold">ORDEN #{pedido.id}</span>
+            <span className={`px-2 py-1 rounded text-sm font-semibold ${obtenerColorEstado(pedido.estadoPedido?.nombreEstado as TypeState)}`}>
+              {obtenerEstadoTexto(pedido.estadoPedido?.nombreEstado as TypeState)}
             </span>
           </div>
 
-          {/* Información de hora y tipo de envío */}
           <div className="mb-3">
             <p className="text-sm text-[#555555]">
-              {/* Mostrar tiempo estimado si es para pedidos pendientes, o hora del pedido si es pasado */}
-              {tipo === 'pendientes' && pedido.tiempoEstimado !== "0 minutos" 
-                ? `${pedido.tiempoEstimado} - ${obtenerTipoEnvio()}`
-                : `${obtenerHoraPedido(pedido.fecha)} - ${obtenerTipoEnvio()}`
-              }
+              {obtenerTiempoInfo()}
             </p>
             <p className="text-xs text-[#777777]">
               {formatearFechaString(pedido.fecha)}
@@ -135,28 +179,27 @@ const PedidoComponent: React.FC<PedidoProps> = ({
 
           {/* Lista de productos */}
           <div className="mb-4">
-            {pedido.detallePedidoList.map((detalle, index) => (
-              <div key={index} className="text-sm text-[#333333] mb-1">
+            {(pedido.detallePedidoList || []).map((detalle, index) => (
+              <div key={`articulo-${index}`} className="text-sm text-[#333333] mb-1">
                 {detalle.cantidad} × {detalle.articulo?.nombre || 'Artículo desconocido'}
               </div>
             ))}
-            {pedido.detallePromocionList.map((detallePromo, index) => (
+            
+            {(pedido.detallePromocionList || []).map((detallePromo, index) => (
               <div key={`promo-${index}`} className="text-sm text-[#333333] mb-1 font-medium">
                 {detallePromo.cantidad} × {detallePromo.promocion?.denominacion || 'Promoción'} 
                 <span className="text-xs text-[#D93F21] ml-1">(Oferta)</span>
               </div>
             ))}
-          </div>
 
-          {/* Total */}
-          <div className="mb-4">
-            <p className="text-sm font-bold text-[#262626]">
-              Total: ${calcularTotal().toFixed(2)}
-            </p>
+            {(!pedido.detallePedidoList?.length && !pedido.detallePromocionList?.length) && (
+              <div className="text-sm text-[#777777] italic">
+                No hay productos disponibles
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Botones anclados abajo */}
         <div className="flex gap-2 mt-auto">
           {tipo === 'pasadas' && (
             <button
@@ -168,20 +211,22 @@ const PedidoComponent: React.FC<PedidoProps> = ({
           )}
           <button
             onClick={handleRepetirOrden}
-            className="flex-1 bg-[#D93F21] hover:bg-[#b9331a] text-white py-2 px-3 rounded text-sm transition-colors font-lato"
+            disabled={cargandoRepetir}
+            className={`flex-1 py-2 px-3 rounded text-sm transition-colors font-lato ${
+              cargandoRepetir 
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-[#D93F21] hover:bg-[#b9331a] text-white'
+            }`}
           >
-            Repetir Orden
+            {cargandoRepetir ? 'Procesando...' : 'Repetir Orden'}
           </button>
         </div>
       </div>
 
-      {/* Modal de detalle */}
       {mostrarDetalle && (
         <DetallePedido 
           pedido={pedido}
           onClose={() => setMostrarDetalle(false)}
-          calcularTotal={calcularTotal}
-          obtenerTipoEnvio={obtenerTipoEnvio}
         />
       )}
     </>

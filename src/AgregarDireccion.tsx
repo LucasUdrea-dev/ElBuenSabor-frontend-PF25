@@ -153,12 +153,12 @@ const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     ciu.provincia = prov;
 
     const nuevaDireccion = new Direccion();
-    nuevaDireccion.nombre_calle = calle;
+    nuevaDireccion.nombreCalle = calle;
     nuevaDireccion.numeracion = numero;
     nuevaDireccion.latitud = parseFloat(latitud || "0");
     nuevaDireccion.longitud = parseFloat(longitud || "0");
     nuevaDireccion.alias = alias;
-    nuevaDireccion.text_area = aclaracionesConcatenadas;
+    nuevaDireccion.descripcionEntrega = aclaracionesConcatenadas;
 
 
     // Enviar la dirección al backend
