@@ -8,7 +8,7 @@ export class Promocion {
     tipoPromocion?: TipoPromocion = new TipoPromocion();
     existe: boolean = false;
     sucursal?: Sucursal;
-    promocionArticuloList?: any[];
+    promocionArticuloList?: PromocionArticulo[];
     imagen: string = "";
 }
 
@@ -27,7 +27,7 @@ export class Pedido {
     id?: number | null = null;
     tiempoEstimado: string = ""
     existe: boolean = true
-    fecha: string = new Date().toLocaleString()
+    fecha: string = new Date().toISOString()
     detallePedidoList: DetallePedido[] = []
     detallePromocionList: DetallePromocion[] = []
     estadoPedido: EstadoPedido = {id: 5, nombreEstado: "INCOMING"}
@@ -35,7 +35,7 @@ export class Pedido {
     tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
     tipoPago: TipoPago = tiposPagoEnum[1]
     usuario: Usuario = new Usuario()
-    direccionPedido: DireccionPedido = new DireccionPedido()
+    direccionPedido?: DireccionPedido = new DireccionPedido()
 }
 
 export class DireccionPedido{
@@ -73,7 +73,7 @@ export const tiposEnvioEnum: TipoEnvio[] = [
 
 export class DetallePedido{
     id?: number | null = null
-    articulo: ArticuloVentaDTO = new ArticuloVentaDTO()
+    articulo?: ArticuloInsumo | ArticuloManufacturado
     cantidad: number = 0
 }
 
@@ -133,7 +133,7 @@ export class ArticuloVentaDTO {
 
 export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
-    
+    tiempoEstimado?: string;
 }
 
 export class ArticuloManufacturado extends Articulo{
@@ -166,7 +166,6 @@ export const sucursalMendoza: Sucursal = {
   existe: true,
   direccion: {
     id: 101,
-    existe: true,
     nombreCalle: "Av. San Martín",
     numeracion: "1100",
     latitud: -32.890692, // Latitud aproximada para Av. San Martín 1100, Mendoza
@@ -195,17 +194,45 @@ export class Usuario{
     nombre: string = "";
     apellido: string = "";
     email: string = "";
-    contrasena: string = "";
-    repetirContrasena: string = "";
-    telefono: string = "";
-    existe?: boolean;
+    existe: boolean = true;
     imagenUsuario?: string;
-    
+    telefonoList: Telefono = new Telefono()
+    rol: Rol = new Rol()
+    direccionList: Direccion[] = []
+
+}
+
+export class userAuthentication{
+    id: number | null = null
+    password: string = ""
+    username: string = ""
+}
+
+export class Rol{
+    id: number | null = null
+    fechaAlta: string = new Date().toISOString()
+    tipoRol: TipoRol = new TipoRol()
+}
+
+export class TipoRol{
+    id: number | null = null
+    rol: TypeRol = TypeRol.CUSTOMER
+}
+
+export enum TypeRol{
+    ADMIN,
+    ADMINAREA,
+    EMPLOYEE,
+    CUSTOMER
+}
+
+export class Telefono{
+    id: number | null = null
+    numero: number = 0
 }
 
 export class Direccion{
     id?: number;
-    existe?: boolean;
     nombreCalle: string = "";
     numeracion: string = "";
     latitud: number = 0;
@@ -237,5 +264,5 @@ export class Pais {
 
 export  interface PreferenceMP{
     id: string;
-    statusCode: number;
+    statusCode: number;
 }

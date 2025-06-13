@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import SliderPromociones from "./SliderPromociones";
-import { ArticuloInsumo, ArticuloVentaDTO, Categoria, host, Promocion, Subcategoria } from "../../ts/Clases";
+import { ArticuloVentaDTO, Categoria, host, Promocion } from "../../ts/Clases";
 import { obtenerImagen } from "../../ts/Imagen";
 import ArticuloCardCatalogo from "./ArticuloCardCatalogo";
 import axios from "axios";
@@ -19,58 +19,18 @@ export default function Catalogo() {
 
     const articulosPorPagina = 9;
 
-    //Funcion para obtener promociones
-    useEffect(()=>{
-        let data: Promocion[] = [];
-        let promocion1: Promocion = {
-            id: 1,
-            denominacion: "Promo 1",
-            descripcion: "1 pizza + 2 CocaCola 500ml",
-            precioRebajado: 500,
-            imagen: "pizza.jpg"
-        }
-        let promocion2: Promocion = {
-            id: 2,
-            denominacion: "Promo 2",
-            descripcion: "2 hamburguesas + 2 CocaCola 500ml + 2 papas grandes",
-            precioRebajado: 500,
-            imagen: "hamburguesa.jpg"
-        }
-        let promocion3: Promocion = {
-            id: 3,
-            denominacion: "Promo 3",
-            descripcion: "1 pizza + 2 CocaCola 500ml",
-            precioRebajado: 500,
-            imagen: "pizza.jpg"
-        }
-        let promocion4: Promocion = {
-            id: 4,
-            denominacion: "Promo 4",
-            descripcion: "1 pizza + 2 CocaCola 500ml",
-            precioRebajado: 500,
-            imagen: "hamburguesa.jpg"
-        }
-        let promocion5: Promocion = {
-            id: 5,
-            denominacion: "Promo 5",
-            descripcion: "1 pizza + 2 CocaCola 500ml",
-            precioRebajado: 500,
-            imagen: "pizza.jpg"
-        }
-        data.push(promocion1)
-        data.push(promocion2)
-        data.push(promocion3)
-        data.push(promocion4)
-        data.push(promocion5)
-        setPromos(data)
-    }, [])
-
-    //Obtener categorias
+    
     useEffect(()=>{
         cargarCategorias()
         cargarArticulos()
+        cargarPromos()
     }, [])
 
+    useEffect(()=>{
+        console.log(promos)
+    }, [promos])
+
+    //Obtener categorias
     const cargarCategorias = async()=>{
 
         const URL = host+"/api/Categoria/ventas"
@@ -87,6 +47,26 @@ export default function Catalogo() {
 
     }
 
+    //Funcion para obtener promociones
+    const cargarPromos = async()=>{
+
+        const URL = host+"/api/promociones/venta"
+
+        try {
+            
+            const response = await axios.get(URL)
+
+            const promocionesObtenidas: Promocion [] = response.data
+
+            setPromos(promocionesObtenidas)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
+    //Obtener articulos para venta
     const cargarArticulos = async()=>{
 
         const URL = host+"/api/articulo/venta"
@@ -191,7 +171,7 @@ export default function Catalogo() {
             </div>
 
             {/**Promociones */}
-            <div className="px-[3%]">
+            <div className="px-[3%] m-auto">
                 <SliderPromociones promos={promos}/>
             </div>
 

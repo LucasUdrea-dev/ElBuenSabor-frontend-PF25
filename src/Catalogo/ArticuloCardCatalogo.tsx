@@ -18,7 +18,7 @@ export default function ArticuloCardCatalogo({articulo}: Props) {
     return(
         <>
             <button onClick={()=>{setDetalleAbierto(true)}} className="text-left">
-                <div className="bg-[#99999959] w-full rounded-2xl flex flex-col gap-1">
+                <div className="bg-[#99999959] w-full rounded-2xl py-2 flex flex-col gap-1">
                     {/**Imagen y tiempo */}
                     <div className="relative">
                         <img className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl" src={obtenerImagen(articulo.imagenArticulo)} alt="No se encontro la imagen" />
