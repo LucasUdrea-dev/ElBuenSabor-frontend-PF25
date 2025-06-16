@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import { Promocion } from "../ts/Clases";
-import { obtenerImagen } from "../ts/Imagen";
-import { CarritoContext } from "./Carrito/CarritoContext";
+import { Promocion } from "../../ts/Clases";
+import { obtenerImagen } from "../../ts/Imagen";
+import { CarritoContext } from "../Carrito/CarritoContext";
 
 interface Props{
     promocion: Promocion | null;

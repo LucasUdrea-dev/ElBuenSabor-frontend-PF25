@@ -1,20 +1,35 @@
+import { number } from "zod/v4";
+
+export const host: string = "http://localhost:8080"
+
 export class Promocion {
     id?: number | null = null;
     denominacion: string = "";
     descripcion: string = "";
     precioRebajado: number = 0;
-    tipoPromocion?: any;
-    existe?: boolean;
-    sucursal?: any;
-    promocionArticuloList?: any[];
+    tipoPromocion?: TipoPromocion = new TipoPromocion();
+    existe: boolean = false;
+    sucursal?: Sucursal;
+    promocionArticuloList?: PromocionArticulo[];
     imagen: string = "";
+}
+
+export class PromocionArticulo{
+    id: number | null = null
+    cantidad: number = 0
+    articulo?: ArticuloInsumo | ArticuloManufacturado;
+}
+
+export class TipoPromocion{
+    id: number | null = 1
+    tipoPromocion: string = "NORMAL"
 }
 
 export class Pedido {
     id?: number | null = null;
     tiempoEstimado: string = ""
     existe: boolean = true
-    fecha: string = new Date().toLocaleString()
+    fecha: string = new Date().toISOString()
     detallePedidoList: DetallePedido[] = []
     detallePromocionList: DetallePromocion[] = []
     estadoPedido: EstadoPedido = {id: 5, nombreEstado: "INCOMING"}
@@ -22,7 +37,7 @@ export class Pedido {
     tipoEnvio: TipoEnvio = tiposEnvioEnum[1]
     tipoPago: TipoPago = tiposPagoEnum[1]
     usuario: Usuario = new Usuario()
-    direccionPedido: DireccionPedido = new DireccionPedido()
+    direccionPedido?: DireccionPedido = new DireccionPedido()
 }
 
 export class DireccionPedido{
@@ -60,7 +75,7 @@ export const tiposEnvioEnum: TipoEnvio[] = [
 
 export class DetallePedido{
     id?: number | null = null
-    articulo: ArticuloVentaDTO = new ArticuloVentaDTO()
+    articulo?: ArticuloInsumo | ArticuloManufacturado
     cantidad: number = 0
 }
 
@@ -69,12 +84,15 @@ export class EstadoPedido{
     nombreEstado: string = "INCOMING"
 }
 
-export enum TypeState {
-    EN_CAMINO = "EN CAMINO",
-    LISTO = "LISTO",
-    ENTREGADO = "ENTREGADO",
-    CANCELADO = "CANCELADO",
-}
+export const tiposEstadoPedido: EstadoPedido[] = [
+    {id: 1, nombreEstado: "PREPARING"},
+    {id: 2, nombreEstado: "STANDBY"},
+    {id: 3, nombreEstado: "CANCELLED"},
+    {id: 4, nombreEstado: "REJECTED"},
+    {id: 5, nombreEstado: "INCOMING"},
+    {id: 6, nombreEstado: "DELIVERED"},
+    {id: 7, nombreEstado: "READY"}
+]
 
 export class Categoria {
     id?: number | null = null;
@@ -111,16 +129,16 @@ export class ArticuloVentaDTO {
     nombre: string = "";
     descripcion: string = "";
     precio: number = 0;
-    imagen: string = "";
+    imagenArticulo: string = "";
     subcategoria: Subcategoria = new Subcategoria();
-    insumos: ArticuloInsumo[] = [];//Si es insumo que traiga array vacio
+    detalleInsumos: ArticuloManufacturadoDetalleInsumo[] = [];//Si es insumo que traiga array vacio
     tiempoEstimado: string = "";
     //Filtrar por existe, esParaElaborar y stock(sucursal)
 }
 
 export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
-    
+    tiempoEstimado?: string;
 }
 
 export class ArticuloManufacturado extends Articulo{
@@ -153,7 +171,6 @@ export const sucursalMendoza: Sucursal = {
   existe: true,
   direccion: {
     id: 101,
-    existe: true,
     nombreCalle: "Av. San Martín",
     numeracion: "1100",
     latitud: -32.890692, // Latitud aproximada para Av. San Martín 1100, Mendoza
@@ -182,17 +199,45 @@ export class Usuario{
     nombre: string = "";
     apellido: string = "";
     email: string = "";
-    contrasena: string = "";
-    repetirContrasena: string = "";
-    telefono: string = "";
-    existe?: boolean;
+    existe: boolean = true;
     imagenUsuario?: string;
-    
+    telefonoList: Telefono[] = []
+    rol: Rol = new Rol()
+    direccionList: Direccion[] = []
+
+}
+
+export class userAuthentication{
+    id: number | null = null
+    password: string = ""
+    username: string = ""
+}
+
+export class Rol{
+    id: number | null = null
+    fechaAlta: string = new Date().toISOString()
+    tipoRol: TipoRol = new TipoRol()
+}
+
+export class TipoRol{
+    id: number | null = null
+    rol: TypeRol = TypeRol.CUSTOMER
+}
+
+export enum TypeRol{
+    ADMIN,
+    ADMINAREA,
+    EMPLOYEE,
+    CUSTOMER
+}
+
+export class Telefono{
+    id: number | null = null
+    numero: number = 0
 }
 
 export class Direccion{
     id?: number;
-    existe?: boolean;
     nombreCalle: string = "";
     numeracion: string = "";
     latitud: number = 0;
@@ -224,5 +269,5 @@ export class Pais {
 
 export  interface PreferenceMP{
     id: string;
-    statusCode: number;
+    statusCode: number;
 }

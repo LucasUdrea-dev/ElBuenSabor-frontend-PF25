@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import { ArticuloVentaDTO } from "../ts/Clases";
-import { obtenerImagen } from "../ts/Imagen";
-import { CarritoContext } from "./Carrito/CarritoContext";
+import { ArticuloVentaDTO } from "../../ts/Clases";
+import { obtenerImagen } from "../../ts/Imagen";
+import { CarritoContext } from "../Carrito/CarritoContext";
 
 interface Props{
     articulo: ArticuloVentaDTO;
@@ -40,7 +40,7 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
                     
                     {/**Imagen y tiempo */}
                     <div className="relative">
-                        <img className="h-full object-cover rounded-t-2xl" src={obtenerImagen(articulo.imagen)} alt="No se encontro la imagen" />
+                        <img className="h-full object-cover rounded-t-2xl" src={obtenerImagen(articulo.imagenArticulo)} alt="No se encontro la imagen" />
                         {articulo.tiempoEstimado && (
                             <div className="absolute bottom-0 bg-[#D93F21] m-auto text-center p-5 px-15 rounded-tr-2xl ">
                                 <h1 className="text-xl">{`${articulo.tiempoEstimado.split(" ")[0]}-${Number(articulo.tiempoEstimado.split(" ")[0]) + 5}`} min</h1>
@@ -62,15 +62,15 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
                             {/**Si tiene insumos se muestran los ingredientes
                              * Si no tiene insumos se muestra la descripcion
                              */}
-                            {articulo.insumos.length > 0 ? 
+                            {articulo.detalleInsumos?.length > 0 ? 
                                 <p>Ingredientes:
-                                    {articulo.insumos.map((insumo, index, insumos)=>{
+                                    {articulo.detalleInsumos.map((detalle, index, insumos)=>{
                                         if (index === insumos.length - 1) {
-                                            return ` ${insumo.nombre}.`
+                                            return ` ${detalle.articuloInsumo.nombre}.`
                                         }else if(index === insumos.length - 2){
-                                            return ` ${insumo.nombre} y`
+                                            return ` ${detalle.articuloInsumo.nombre} y`
                                         }
-                                        return ` ${insumo.nombre},`
+                                        return ` ${detalle.articuloInsumo.nombre},`
                                     })}
                                 </p>
                             
