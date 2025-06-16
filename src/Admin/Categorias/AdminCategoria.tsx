@@ -1,0 +1,197 @@
+import { useEffect, useState } from "react"
+import { ArticuloManufacturado, ArticuloInsumo, Subcategoria, Sucursal, host, Categoria } from '../../../ts/Clases.ts';
+import axios from "axios";
+
+export default function AdminCategoria() {
+
+    const [categorias, setCategorias] = useState<Categoria[]>([])
+    const [categoriasMostradas, setCategoriasMostradas] = useState<Categoria[]>([])
+    const [buscador, setBuscador] = useState("")
+    const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
+    const [mostrarCategoria, setMostrarCategoria] = useState<Categoria | null>(null)
+    const [formCategoria, setFormCategoria] = useState<Categoria | null>(null)
+
+    const cantidadPorPagina = 10;
+    
+    useEffect(()=>{
+        cargarCategorias()
+    }, [])
+
+    const borradoLogico = async (articulo: ArticuloManufacturado)=>{
+
+        const URL = host+`/api/ArticuloManufacturado/${articulo.id}`
+
+        articulo.existe = !articulo.existe
+
+        try {
+            
+            const response = await axios.put(URL, articulo)
+
+            console.log("Se borro logicamente el articulo: " + response.status)
+            cargarCategorias()
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
+    const cerrarDetalle = ()=>{
+        setMostrarCategoria(null)
+    }
+
+    const cerrarForm = ()=>{
+        setFormCategoria(null)
+    }
+
+    const cargarCategorias = async ()=>{
+
+        const URL =  host+"/api/Categoria"
+
+        try {
+            
+            const response = await axios.get(URL)
+            setCategorias(response.data)
+
+        } catch (error) {
+            console.log(error)
+        }
+        
+    }
+
+    useEffect(()=>{
+
+        let filtrado: Categoria[] = categorias
+
+        if (buscador) {
+            filtrado = filtrado.filter((categoria)=>
+            categoria.denominacion.toLowerCase().includes(buscador.toLowerCase()))
+        }
+
+        setPaginaSeleccionada(1)
+        setCategoriasMostradas(filtrado)
+
+    }, [categorias, buscador])
+    
+    return(
+        <>
+        
+            <div className="bg-[#333333] w-full h-full py-10">
+
+                {/**Tabla */}
+                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(mostrarArticulo || formManufacturado) && "hidden"}`}>
+
+                    {/**Titulo, agregar y buscador */}
+                    <div className="flex justify-between p-5 h-2/12">
+
+                        <h1 className="pl-5 text-4xl">Catálogo</h1>
+
+                        <div className="flex gap-5 pr-[2%] text-2xl">
+                            <button onClick={()=>setFormManufacturado(new ArticuloManufacturado())} className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
+                                <h2>Agregar</h2>
+                                <img className="h-5" src="/svg/Agregar.svg" alt="" />
+                            </button>
+
+                            <input onChange={(e)=>setBuscador(e.target.value)} className="bg-[#878787] text-white pl-5 rounded-4xl" placeholder="Buscar..." type="text" />
+
+                        </div>
+
+                    </div>
+
+                    {/**Tabla CRUD catalogo */}
+                    <div className="w-full pb-10">
+
+                        {/**Cabecera */}
+                        <div className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
+
+                            <h1>Categoría</h1>
+                            <h1>Nombre</h1>
+                            <h1>Precio</h1>
+                            <h1>Publicado</h1>
+                            <h1>Acciones</h1>
+
+                        </div>
+
+                        {/**Articulos */}
+                        {articulosManufacturadosMostrados.length > 0 && articulosManufacturadosMostrados.map((articulo, index)=>{
+                            
+                            if (index < (paginaSeleccionada*cantidadPorPagina) && index >= (cantidadPorPagina*(paginaSeleccionada-1))) {
+
+                                return(
+                                    
+                                    <div key={articulo.id} className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
+                                        
+                                        <div>
+                                            <h3>{articulo.subcategoria.categoria?.denominacion}</h3>
+                                        </div>
+                                        <div>
+                                            <h3>{articulo.nombre}</h3>
+                                        </div>
+                                        <h3>${articulo.precio}</h3>
+                                        <div className="flex">
+                                            <div className={`${articulo.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                        </div>
+                                        <div className="flex justify-around">
+                                            <button onClick={()=>setMostrarArticulo(articulo)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
+                                            <button onClick={()=>setFormManufacturado(articulo)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
+                                            <button onClick={()=>{borradoLogico(articulo)}}><img className="h-15" src={`/svg/${articulo.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt="" /></button>
+                                        </div>
+    
+                                    </div>
+                                )
+                                
+                            }
+
+                        })}
+
+                        {/**Paginacion */}
+                        <div className="text-gray-500 flex items-center pt-10 pr-20 justify-end gap-2 text-2xl *:h-10">
+
+                            {/**Informacion articulos mostrados y totales */}
+                            <div className="h-10 flex items-center">
+                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < articulosManufacturadosMostrados.length ? (paginaSeleccionada*cantidadPorPagina) : articulosManufacturadosMostrados.length} de {articulosManufacturadosMostrados.length}</h4>
+                            </div>
+
+                            {/**Control de paginado a traves de botones */}
+                            <button onClick={()=>setPaginaSeleccionada(1)}><img className="h-10" src="/svg/PrimeraPagina.svg" alt="" /></button>
+                            <button onClick={()=>setPaginaSeleccionada(prev=> {
+                                if (paginaSeleccionada > 1) {
+                                    return prev - 1
+                                }
+                                return prev;
+                            })}><img className="h-10" src="/svg/AnteriorPagina.svg" alt="" /></button>
+
+                            <button onClick={()=>setPaginaSeleccionada(prev=> {
+                                if (paginaSeleccionada < Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina)) {
+                                    return prev+1
+                                }
+                                return prev;
+                            })}><img className="h-10" src="/svg/SiguientePagina.svg" alt="" /></button>
+                            
+                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
+
+                        </div>                        
+
+                    </div>
+
+                </div>
+                
+                {/**MostrarManufacturado */}
+                <div className={`${!mostrarArticulo && "hidden"}`}>
+
+                    <AdminMostrarManufacturado articulo={mostrarArticulo} abrirEditar={setFormManufacturado} cerrarMostrar={cerrarDetalle}/>
+
+                </div>
+
+                {/**Editar, crear manufacturado */}
+                <div className={`${!formManufacturado && "hidden"}`}>
+
+                    <AdminFormManufacturado articulo={formManufacturado} cargarAdminCatalogo={cargarManufacturados} cerrarEditar={cerrarForm}/>
+
+                </div>
+
+            </div>
+
+        </>
+    )
+
+}

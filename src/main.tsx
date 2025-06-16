@@ -12,6 +12,7 @@ import EditarPerfilUser from './EditarPerfilUser.tsx'
 import CarritoProvider from './Carrito/CarritoContext.tsx'
 import OrdenRecibida from './Carrito/OrdenRecibida.tsx'
 import MisPedidos from './PedidosUser/MisPedidos.tsx'
+import AdminCategoria from './Admin/Categorias/AdminCategoria.tsx'
 
 
 
@@ -36,6 +37,7 @@ createRoot(document.getElementById('root')!).render(
 
           <Route path='/admin' element={<App/>}>
             <Route path='/admin/adminCatalogo' element={<AdminCatalogo/>}/>
+            <Route path='/admin/adminCategoria' element={<AdminCategoria/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
