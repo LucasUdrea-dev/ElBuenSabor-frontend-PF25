@@ -1,3 +1,5 @@
+import { number } from "zod/v4";
+
 export const host: string = "http://localhost:8080"
 
 export class Promocion {
@@ -82,12 +84,15 @@ export class EstadoPedido{
     nombreEstado: string = "INCOMING"
 }
 
-export enum TypeState {
-    EN_CAMINO = "EN CAMINO",
-    LISTO = "LISTO",
-    ENTREGADO = "ENTREGADO",
-    CANCELADO = "CANCELADO",
-}
+export const tiposEstadoPedido: EstadoPedido[] = [
+    {id: 1, nombreEstado: "PREPARING"},
+    {id: 2, nombreEstado: "STANDBY"},
+    {id: 3, nombreEstado: "CANCELLED"},
+    {id: 4, nombreEstado: "REJECTED"},
+    {id: 5, nombreEstado: "INCOMING"},
+    {id: 6, nombreEstado: "DELIVERED"},
+    {id: 7, nombreEstado: "READY"}
+]
 
 export class Categoria {
     id?: number | null = null;
@@ -196,7 +201,7 @@ export class Usuario{
     email: string = "";
     existe: boolean = true;
     imagenUsuario?: string;
-    telefonoList: Telefono = new Telefono()
+    telefonoList: Telefono[] = []
     rol: Rol = new Rol()
     direccionList: Direccion[] = []
 

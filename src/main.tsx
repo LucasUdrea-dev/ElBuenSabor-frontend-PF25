@@ -27,8 +27,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/ordenRecibida" element={<OrdenRecibida/>}/>
 
             <Route path='/misDirecciones' element={<DireccionesUser />} />
-            <Route path='/miPeril' element={<EditarPerfilUser />} />
-            <Route path="misOrdenes" element={<MisPedidos />} />
+            <Route path='/miPerfil' element={<EditarPerfilUser />} />
+            <Route path="/misOrdenes" element={<MisPedidos />} />
 
 
             <Route path='*' element={<Inicio/>}/>
