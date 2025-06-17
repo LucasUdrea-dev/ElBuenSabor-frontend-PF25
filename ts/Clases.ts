@@ -1,5 +1,3 @@
-import { number } from "zod/v4";
-
 export const host: string = "http://localhost:8080"
 
 export class Promocion {
@@ -98,6 +96,7 @@ export class Categoria {
     id?: number | null = null;
     denominacion: string = "";
     imagen: string = "";
+    esParaElaborar: boolean = false;
     subcategorias?: Subcategoria[] = [];
 }
 

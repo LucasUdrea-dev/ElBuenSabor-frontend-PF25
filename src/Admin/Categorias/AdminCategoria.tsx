@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 import { ArticuloManufacturado, ArticuloInsumo, Subcategoria, Sucursal, host, Categoria } from '../../../ts/Clases.ts';
 import axios from "axios";
+import AdminFormCategoria from "./AdminFormCategoria.tsx";
 
 export default function AdminCategoria() {
 
     const [categorias, setCategorias] = useState<Categoria[]>([])
     const [categoriasMostradas, setCategoriasMostradas] = useState<Categoria[]>([])
     const [buscador, setBuscador] = useState("")
+    const [filtroEsParaElaborar, setFiltroEsParaElaborar] = useState("")
     const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
     const [mostrarCategoria, setMostrarCategoria] = useState<Categoria | null>(null)
     const [formCategoria, setFormCategoria] = useState<Categoria | null>(null)
@@ -17,20 +19,20 @@ export default function AdminCategoria() {
         cargarCategorias()
     }, [])
 
-    const borradoLogico = async (articulo: ArticuloManufacturado)=>{
+    const borradoLogico = async (categoria: Categoria)=>{
 
-        const URL = host+`/api/ArticuloManufacturado/${articulo.id}`
-
-        articulo.existe = !articulo.existe
+        const URL = host+`/api/Categoria/${categoria.id}`
 
         try {
-            
-            const response = await axios.put(URL, articulo)
-
-            console.log("Se borro logicamente el articulo: " + response.status)
-            cargarCategorias()
+            if (confirm("Borrar una categoria es una accion irreversible. Desea continuar?")) {
+                
+                const response = await axios.delete(URL)
+    
+                console.log("Se borro la categoria: " + response.status)
+                cargarCategorias()
+            }
         } catch (error) {
-            console.error(error)
+            alert("La categoria esta en uso, no se puede eliminar")
         }
 
     }
@@ -62,6 +64,14 @@ export default function AdminCategoria() {
 
         let filtrado: Categoria[] = categorias
 
+        if (filtroEsParaElaborar) {
+            if (filtroEsParaElaborar == "elaborar") {
+                filtrado = filtrado.filter((categoria)=> categoria.esParaElaborar)
+            } else if (filtroEsParaElaborar == "vender") {
+                filtrado = filtrado.filter((categoria)=> !categoria.esParaElaborar)
+            }
+        }
+
         if (buscador) {
             filtrado = filtrado.filter((categoria)=>
             categoria.denominacion.toLowerCase().includes(buscador.toLowerCase()))
@@ -70,28 +80,42 @@ export default function AdminCategoria() {
         setPaginaSeleccionada(1)
         setCategoriasMostradas(filtrado)
 
-    }, [categorias, buscador])
+    }, [categorias, buscador, filtroEsParaElaborar])
     
     return(
         <>
         
-            <div className="bg-[#333333] w-full h-full py-10">
+            <div className="bg-[#333333] w-full h-screen py-10">
 
                 {/**Tabla */}
-                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(mostrarArticulo || formManufacturado) && "hidden"}`}>
+                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(mostrarCategoria || formCategoria) && "hidden"}`}>
 
                     {/**Titulo, agregar y buscador */}
                     <div className="flex justify-between p-5 h-2/12">
 
-                        <h1 className="pl-5 text-4xl">Catálogo</h1>
+                        <h1 className="pl-5 text-4xl">Categorias</h1>
 
                         <div className="flex gap-5 pr-[2%] text-2xl">
-                            <button onClick={()=>setFormManufacturado(new ArticuloManufacturado())} className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
-                                <h2>Agregar</h2>
-                                <img className="h-5" src="/svg/Agregar.svg" alt="" />
-                            </button>
+
+                            <select onChange={(e)=>setFiltroEsParaElaborar(e.target.value)} 
+                                value={filtroEsParaElaborar}
+                                className="bg-gray-300 rounded-4xl px-2">
+
+                                <option value={""}>Todos</option>
+                                <option value={"elaborar"}>Para Elaborar</option>
+                                <option value={"vender"}>Para Vender</option>
+
+                            </select>
 
                             <input onChange={(e)=>setBuscador(e.target.value)} className="bg-[#878787] text-white pl-5 rounded-4xl" placeholder="Buscar..." type="text" />
+
+                            <button onClick={()=>setFormCategoria(new Categoria())} 
+                                className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
+                                
+                                <h2>Agregar</h2>
+                                <img className="h-5" src="/svg/Agregar.svg" alt="" />
+
+                            </button>
 
                         </div>
 
@@ -101,39 +125,33 @@ export default function AdminCategoria() {
                     <div className="w-full pb-10">
 
                         {/**Cabecera */}
-                        <div className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
+                        <div className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
 
-                            <h1>Categoría</h1>
                             <h1>Nombre</h1>
-                            <h1>Precio</h1>
-                            <h1>Publicado</h1>
+                            <h1>Es para elaborar</h1>
                             <h1>Acciones</h1>
 
                         </div>
 
                         {/**Articulos */}
-                        {articulosManufacturadosMostrados.length > 0 && articulosManufacturadosMostrados.map((articulo, index)=>{
+                        {categoriasMostradas.length > 0 && categoriasMostradas.map((categoria, index)=>{
                             
                             if (index < (paginaSeleccionada*cantidadPorPagina) && index >= (cantidadPorPagina*(paginaSeleccionada-1))) {
 
                                 return(
                                     
-                                    <div key={articulo.id} className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
+                                    <div key={categoria.id} className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
                                         
                                         <div>
-                                            <h3>{articulo.subcategoria.categoria?.denominacion}</h3>
+                                            <h3>{categoria.denominacion}</h3>
                                         </div>
-                                        <div>
-                                            <h3>{articulo.nombre}</h3>
-                                        </div>
-                                        <h3>${articulo.precio}</h3>
                                         <div className="flex">
-                                            <div className={`${articulo.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                            <div className={`${categoria.esParaElaborar ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
                                         </div>
                                         <div className="flex justify-around">
-                                            <button onClick={()=>setMostrarArticulo(articulo)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
-                                            <button onClick={()=>setFormManufacturado(articulo)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
-                                            <button onClick={()=>{borradoLogico(articulo)}}><img className="h-15" src={`/svg/${articulo.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt="" /></button>
+                                            <button onClick={()=>setMostrarCategoria(categoria)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
+                                            <button onClick={()=>setFormCategoria(categoria)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
+                                            <button onClick={()=>{borradoLogico(categoria)}}><img className="h-15" src={`/svg/LogoBorrar.svg`} alt="" /></button>
                                         </div>
     
                                     </div>
@@ -148,7 +166,7 @@ export default function AdminCategoria() {
 
                             {/**Informacion articulos mostrados y totales */}
                             <div className="h-10 flex items-center">
-                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < articulosManufacturadosMostrados.length ? (paginaSeleccionada*cantidadPorPagina) : articulosManufacturadosMostrados.length} de {articulosManufacturadosMostrados.length}</h4>
+                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < categoriasMostradas.length ? (paginaSeleccionada*cantidadPorPagina) : categoriasMostradas.length} de {categoriasMostradas.length}</h4>
                             </div>
 
                             {/**Control de paginado a traves de botones */}
@@ -161,13 +179,13 @@ export default function AdminCategoria() {
                             })}><img className="h-10" src="/svg/AnteriorPagina.svg" alt="" /></button>
 
                             <button onClick={()=>setPaginaSeleccionada(prev=> {
-                                if (paginaSeleccionada < Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina)) {
+                                if (paginaSeleccionada < Math.ceil(categoriasMostradas.length / cantidadPorPagina)) {
                                     return prev+1
                                 }
                                 return prev;
                             })}><img className="h-10" src="/svg/SiguientePagina.svg" alt="" /></button>
                             
-                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
+                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(categoriasMostradas.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
 
                         </div>                        
 
@@ -176,16 +194,18 @@ export default function AdminCategoria() {
                 </div>
                 
                 {/**MostrarManufacturado */}
-                <div className={`${!mostrarArticulo && "hidden"}`}>
-
-                    <AdminMostrarManufacturado articulo={mostrarArticulo} abrirEditar={setFormManufacturado} cerrarMostrar={cerrarDetalle}/>
+                <div className={`${!mostrarCategoria && "hidden"}`}>
+                    {/**
+                        <AdminMostrarManufacturado articulo={mostrarCategoria} abrirEditar={setFormManufacturado} cerrarMostrar={cerrarDetalle}/>
+                     * 
+                     */}
 
                 </div>
 
                 {/**Editar, crear manufacturado */}
-                <div className={`${!formManufacturado && "hidden"}`}>
-
-                    <AdminFormManufacturado articulo={formManufacturado} cargarAdminCatalogo={cargarManufacturados} cerrarEditar={cerrarForm}/>
+                <div className={`${!formCategoria && "hidden"}`}>
+                    
+                    <AdminFormCategoria categoria={formCategoria} cargarAdminCatalogo={cargarCategorias} cerrarEditar={cerrarForm}/>
 
                 </div>
 

@@ -194,20 +194,20 @@ export default function Catalogo() {
                 {/**Se muestran las categorias existentes + Todos */}
                 <div className="mt-10 flex gap-3">
                     <button onClick={()=>{
-                            setCategoriaSeleccionada("")
-                            setSubcategoriaSeleccionada("")
-                            }} 
-                            className={`${ categoriaSeleccionada === "" && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
-                            <img className="rounded-[20rem] object-cover h-20 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontro la imagen" />
-                            <h3 className="m-auto">Todos</h3>
-                        </button>
+                        setCategoriaSeleccionada("")
+                        setSubcategoriaSeleccionada("")
+                        }} 
+                        className={`${ categoriaSeleccionada === "" && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
+                        <img className="rounded-[20rem] object-cover h-25 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontro la imagen" />
+                        <h3 className="m-auto">Todos</h3>
+                    </button>
                     {categorias.map((categoria, index)=>(
                         <button key={index} onClick={()=>{
                             setCategoriaSeleccionada(String(index))
                             setSubcategoriaSeleccionada("")
                             }} 
-                            className={`${ String(index) === categoriaSeleccionada && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
-                            <img className="rounded-[20rem] h-20 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontro la imagen" />
+                            className={`${ String(index) === categoriaSeleccionada && "bg-[#D93F21]"} px-1 pt-1 pb-5 text-center rounded-[20rem] flex flex-col gap-1`}>
+                            <img className="rounded-[20rem] h-25 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontro la imagen" />
                             <h3 className="m-auto">{categoria.denominacion}</h3>
                         </button>
                     ))}

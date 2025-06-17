@@ -155,23 +155,19 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                 
                 const response = await axios.put(URL, form)
 
-                alert("Manufacturado actualizado con exito!")
                 console.log("Se actualizo el articulo: ", response.status)
-
+                return true
             }else{
                 const response = await axios.post(URL, form)
     
-                alert("Manufacturado creado con exito!")
                 console.log("Se guardo el articulo", response.status)
+                return true
             }
-            
-            cerrarFormulario()
         } catch (error) {
             console.error("ERROR", error)
-            cerrarFormulario()
+            return false
         }
 
-        return true
     }
 
     const handleImagen = (e: React.ChangeEvent<HTMLInputElement>)=>{
