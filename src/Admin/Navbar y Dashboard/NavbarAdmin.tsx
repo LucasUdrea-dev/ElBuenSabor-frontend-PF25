@@ -32,15 +32,8 @@ export default function NavbarAdmin() {
         }
     }
 
-  const handleDashboardSelection = (seccion: string) => {
+    const handleDashboardSelection = (seccion: string) => {
         console.log(`Sección seleccionada: ${seccion}`)
-        // Lógica para Semielaborados
-        if (seccion === "Catalogo") {
-            // navegación por Link en el Dashboard
-            setMostrarDashboard(false)
-            return
-        }
-        // lógica para navegar a otras secciones
         setMostrarDashboard(false)
     }
 
@@ -94,50 +87,51 @@ export default function NavbarAdmin() {
 
             <div>
                
-                    <div className="m-0 grid grid-cols-[3fr_1fr] gap-0 items-center">
+                <div className="m-0 gap-0 items-center">
 
-                        <div className="relative">
-                            <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
-                                <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                    <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
-                                    <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
-                                        Nombre Apellido
-                                        <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </label>
-                                </div>
-                            </button>
-                            {mostrarDesplegableUsuario && (
-                                <div className="absolute z-50 mt-0 w-1/1">
-                                    <DesplegableUsuario alCerrarSesion={cerrarSesion} />
-                                </div>
-                            )}
-                        </div>
-    
-
+                    <div className="relative">
+                        <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
+                            <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-l-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
+                                <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
+                                <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
+                                    Nombre Apellido
+                                    <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </button>
+                        
+                        {mostrarDesplegableUsuario && (
+                            <div className="absolute z-50 mt-0 w-1/1">
+                                <DesplegableUsuario alCerrarSesion={cerrarSesion} />
+                            </div>
+                        )}
                     </div>
 
-               
-                </div>
-            </div>
 
-            {estaLogeado && (
-                <>
-                    <Dashboard 
-                        onSeleccionar={handleDashboardSelection}
-                        isCollapsed={!mostrarDashboard}
-                        onToggleCollapse={() => setMostrarDashboard(false)}
-                    />
-                    {mostrarDashboard && (
-                    <div 
-                        className="fixed inset-0 bg-black/25 backdrop-blur-[2px] z-30"
-                        onClick={() => setMostrarDashboard(false)}
-                        style={{ pointerEvents: 'auto' }}
-                    />
-                     )}
-                </>
-            )}
+                </div>
+
+               
+            </div>
+        </div>
+
+        {estaLogeado && (
+            <>
+                <Dashboard 
+                    onSeleccionar={handleDashboardSelection}
+                    isCollapsed={!mostrarDashboard}
+                    onToggleCollapse={() => setMostrarDashboard(false)}
+                />
+                {mostrarDashboard && (
+                <div 
+                    className="fixed inset-0 bg-black/25 backdrop-blur-[2px] z-30"
+                    onClick={() => setMostrarDashboard(false)}
+                    style={{ pointerEvents: 'auto' }}
+                />
+                    )}
+            </>
+        )}
 
             
 

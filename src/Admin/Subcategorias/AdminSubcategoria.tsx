@@ -1,53 +1,70 @@
 import { useEffect, useState } from "react"
-import { host, Categoria } from '../../../ts/Clases.ts';
+import { host, Categoria, Subcategoria } from '../../../ts/Clases.ts';
 import axios from "axios";
-import AdminFormCategoria from "./AdminFormCategoria.tsx";
+import AdminFormCategoria from "./AdminFormSubcategoria.tsx";
 
-export default function AdminCategoria() {
+export default function AdminSubcategoria() {
 
-    const [categorias, setCategorias] = useState<Categoria[]>([])
-    const [categoriasMostradas, setCategoriasMostradas] = useState<Categoria[]>([])
+    const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([])
+    const [listaCategorias, setListaCategorias] = useState<Categoria[]>([])
+    const [subcategoriasMostradas, setSubcategoriasMostradas] = useState<Subcategoria[]>([])
     const [buscador, setBuscador] = useState("")
-    const [filtroEsParaElaborar, setFiltroEsParaElaborar] = useState("")
+    const [filtroPorCategoria, setFiltroPorCategoria] = useState(0)
     const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
-    const [formCategoria, setFormCategoria] = useState<Categoria | null>(null)
+    const [formSubcategoria, setFormSubcategoria] = useState<Subcategoria | null>(null)
 
     const cantidadPorPagina = 10;
     
     useEffect(()=>{
-        cargarCategorias()
+        cargarSubcategorias()
+        cargarListaCategorias()
     }, [])
 
-    const borradoLogico = async (categoria: Categoria)=>{
+    const borradoLogico = async (subcategoria: Subcategoria)=>{
 
-        const URL = host+`/api/Categoria/${categoria.id}`
+        const URL = host+`/api/subcategoria/${subcategoria.id}`
 
         try {
-            if (confirm("Borrar una categoria es una accion irreversible. Desea continuar?")) {
+            if (confirm("Borrar una subcategoria es una accion irreversible. Desea continuar?")) {
                 
                 const response = await axios.delete(URL)
     
-                console.log("Se borro la categoria: " + response.status)
-                cargarCategorias()
+                console.log("Se borro la subcategoria: " + response.status)
+                cargarSubcategorias()
             }
         } catch (error) {
-            alert("La categoria esta en uso, no se puede eliminar")
+            alert("La subcategoria esta en uso, no se puede eliminar")
         }
 
     }
 
     const cerrarForm = ()=>{
-        setFormCategoria(null)
+        setFormSubcategoria(null)
     }
 
-    const cargarCategorias = async ()=>{
+    const cargarSubcategorias = async ()=>{
+
+        const URL =  host+"/api/subcategoria"
+
+        try {
+            
+            const response = await axios.get(URL)
+            setSubcategorias(response.data)
+
+        } catch (error) {
+            console.log(error)
+        }
+        
+    }
+
+    const cargarListaCategorias = async ()=>{
 
         const URL =  host+"/api/Categoria"
 
         try {
             
             const response = await axios.get(URL)
-            setCategorias(response.data)
+            setListaCategorias(response.data)
 
         } catch (error) {
             console.log(error)
@@ -57,25 +74,21 @@ export default function AdminCategoria() {
 
     useEffect(()=>{
 
-        let filtrado: Categoria[] = categorias
+        let filtrado: Subcategoria[] = subcategorias
 
-        if (filtroEsParaElaborar) {
-            if (filtroEsParaElaborar == "elaborar") {
-                filtrado = filtrado.filter((categoria)=> categoria.esParaElaborar)
-            } else if (filtroEsParaElaborar == "vender") {
-                filtrado = filtrado.filter((categoria)=> !categoria.esParaElaborar)
-            }
+        if (filtroPorCategoria) {
+            filtrado = filtrado.filter((subcat)=> subcat.categoria?.id == filtroPorCategoria)
         }
 
         if (buscador) {
-            filtrado = filtrado.filter((categoria)=>
-            categoria.denominacion.toLowerCase().includes(buscador.toLowerCase()))
+            filtrado = filtrado.filter((subcategoria)=>
+            subcategoria.denominacion.toLowerCase().includes(buscador.toLowerCase()))
         }
 
         setPaginaSeleccionada(1)
-        setCategoriasMostradas(filtrado)
+        setSubcategoriasMostradas(filtrado)
 
-    }, [categorias, buscador, filtroEsParaElaborar])
+    }, [subcategorias, buscador, filtroPorCategoria])
     
     return(
         <>
@@ -83,28 +96,30 @@ export default function AdminCategoria() {
             <div className="bg-[#333333] w-full h-screen py-10">
 
                 {/**Tabla */}
-                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(formCategoria) && "hidden"}`}>
+                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(formSubcategoria) && "hidden"}`}>
 
                     {/**Titulo, agregar y buscador */}
                     <div className="flex justify-between p-5 h-2/12">
 
-                        <h1 className="pl-5 text-4xl">Categorias</h1>
+                        <h1 className="pl-5 text-4xl">Subcategorias</h1>
 
                         <div className="flex gap-5 pr-[2%] text-2xl">
 
-                            <select onChange={(e)=>setFiltroEsParaElaborar(e.target.value)} 
-                                value={filtroEsParaElaborar}
+                            <select onChange={(e)=>setFiltroPorCategoria(Number(e.target.value))} 
+                                value={filtroPorCategoria}
                                 className="bg-gray-300 rounded-4xl px-2">
 
-                                <option value={""}>Todos</option>
-                                <option value={"elaborar"}>Para Elaborar</option>
-                                <option value={"vender"}>Para Vender</option>
+                                <option value={0}>Todos</option>
+
+                                {listaCategorias.length > 0 && listaCategorias.map((categoria)=>(
+                                    <option key={categoria.id} value={Number(categoria.id)}>{categoria.denominacion}</option>
+                                ))}
 
                             </select>
 
                             <input onChange={(e)=>setBuscador(e.target.value)} className="bg-[#878787] text-white pl-5 rounded-4xl" placeholder="Buscar..." type="text" />
 
-                            <button onClick={()=>setFormCategoria(new Categoria())} 
+                            <button onClick={()=>setFormSubcategoria(new Subcategoria())} 
                                 className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
                                 
                                 <h2>Agregar</h2>
@@ -122,30 +137,30 @@ export default function AdminCategoria() {
                         {/**Cabecera */}
                         <div className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
 
+                            <h1>Categoria</h1>
                             <h1>Nombre</h1>
-                            <h1>Es para elaborar</h1>
                             <h1>Acciones</h1>
 
                         </div>
 
                         {/**Articulos */}
-                        {categoriasMostradas.length > 0 && categoriasMostradas.map((categoria, index)=>{
+                        {subcategoriasMostradas.length > 0 && subcategoriasMostradas.map((subcategoria, index)=>{
                             
                             if (index < (paginaSeleccionada*cantidadPorPagina) && index >= (cantidadPorPagina*(paginaSeleccionada-1))) {
 
                                 return(
                                     
-                                    <div key={categoria.id} className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
+                                    <div key={subcategoria.id} className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
                                         
                                         <div>
-                                            <h3>{categoria.denominacion}</h3>
+                                            <h3>{subcategoria.categoria?.denominacion}</h3>
                                         </div>
-                                        <div className="flex">
-                                            <div className={`${categoria.esParaElaborar ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                        <div>
+                                            <h3>{subcategoria.denominacion}</h3>
                                         </div>
                                         <div className="flex justify-around">
-                                            <button onClick={()=>setFormCategoria(categoria)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
-                                            <button onClick={()=>{borradoLogico(categoria)}}><img className="h-15" src={`/svg/LogoBorrar.svg`} alt="" /></button>
+                                            <button onClick={()=>setFormSubcategoria(subcategoria)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
+                                            <button onClick={()=>{borradoLogico(subcategoria)}}><img className="h-15" src={`/svg/LogoBorrar.svg`} alt="" /></button>
                                         </div>
     
                                     </div>
@@ -160,7 +175,7 @@ export default function AdminCategoria() {
 
                             {/**Informacion articulos mostrados y totales */}
                             <div className="h-10 flex items-center">
-                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < categoriasMostradas.length ? (paginaSeleccionada*cantidadPorPagina) : categoriasMostradas.length} de {categoriasMostradas.length}</h4>
+                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < subcategoriasMostradas.length ? (paginaSeleccionada*cantidadPorPagina) : subcategoriasMostradas.length} de {subcategoriasMostradas.length}</h4>
                             </div>
 
                             {/**Control de paginado a traves de botones */}
@@ -173,13 +188,13 @@ export default function AdminCategoria() {
                             })}><img className="h-10" src="/svg/AnteriorPagina.svg" alt="" /></button>
 
                             <button onClick={()=>setPaginaSeleccionada(prev=> {
-                                if (paginaSeleccionada < Math.ceil(categoriasMostradas.length / cantidadPorPagina)) {
+                                if (paginaSeleccionada < Math.ceil(subcategoriasMostradas.length / cantidadPorPagina)) {
                                     return prev+1
                                 }
                                 return prev;
                             })}><img className="h-10" src="/svg/SiguientePagina.svg" alt="" /></button>
                             
-                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(categoriasMostradas.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
+                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(subcategoriasMostradas.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
 
                         </div>                        
 
@@ -188,9 +203,9 @@ export default function AdminCategoria() {
                 </div>
 
                 {/**Editar, crear manufacturado */}
-                <div className={`${!formCategoria && "hidden"}`}>
+                <div className={`${!formSubcategoria && "hidden"}`}>
                     
-                    <AdminFormCategoria categoria={formCategoria} cargarAdminCatalogo={cargarCategorias} cerrarEditar={cerrarForm}/>
+                    <AdminFormCategoria subcategoria={formSubcategoria} cargarAdminSubcategoria={cargarSubcategorias} cerrarEditar={cerrarForm}/>
 
                 </div>
 

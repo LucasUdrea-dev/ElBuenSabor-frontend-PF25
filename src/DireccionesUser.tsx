@@ -3,7 +3,7 @@ import axios from 'axios';
 import AgregarDireccion from './AgregarDireccion';
 import EliminarDireccion from './EliminarDireccion';
 import EditDireccion from './EditDireccion';
-import { Direccion, Ciudad, Provincia, Pais, host } from '../ts/Clases'; 
+import { Direccion, host } from '../ts/Clases'; 
 
 
 

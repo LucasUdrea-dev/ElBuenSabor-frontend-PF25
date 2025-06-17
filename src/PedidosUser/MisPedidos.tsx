@@ -182,10 +182,15 @@ const MisPedidos: React.FC = () => {
                     setLoading(true)
                     recargarPedidos()
                     }}
-                  className="bg-[#555555] hover:bg-[#666666] px-3 py-1 rounded text-sm font-lato transition-colors"
+                  className="px-3 py-1 rounded text-sm font-lato
+                  transition-all
+                  ease-in-out
+                  duration-700
+                  hover:rotate-360
+                  "
                   title="Actualizar pedidos"
                 >
-                  🔄
+                  <img src="./svg/refreshOrdenes.svg" alt="" />
                 </button>
                 <select 
                   className="bg-[#444444] text-white px-4 py-2 rounded border border-[#555555] font-lato"
