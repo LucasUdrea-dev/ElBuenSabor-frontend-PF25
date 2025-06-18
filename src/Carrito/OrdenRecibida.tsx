@@ -8,7 +8,7 @@ export default function OrdenRecibida() {
 
     const [params] = useSearchParams()
 
-    const status = params.get("collection_status") || params.get("status")
+    const status = params.get("status")
 
     const carritoContext = useContext(CarritoContext)
 
@@ -83,7 +83,7 @@ export default function OrdenRecibida() {
 
     const verificarPagoYGuardar = async()=>{
         if (pedidoTerminado.tipoPago.tipoPago == "MERCADOPAGO") {
-            if (status === "approved") {
+            if (status == "approved") {
                 await guardarPedido()
             }
         }else{
