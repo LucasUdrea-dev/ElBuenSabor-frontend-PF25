@@ -21,6 +21,8 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
 
     }
 
+    if (!articulo) return null
+
     return(
         <>
         

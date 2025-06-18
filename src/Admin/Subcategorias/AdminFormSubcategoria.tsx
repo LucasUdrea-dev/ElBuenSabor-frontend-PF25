@@ -80,10 +80,6 @@ export default function AdminFormSubcategoria({subcategoria, cerrarEditar, carga
         return true
     }
 
-    useEffect(()=>{
-        console.log(form)
-    }, [form])
-
     if (!form) return null;
     
     return(

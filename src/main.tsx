@@ -15,6 +15,7 @@ import MisPedidos from './PedidosUser/MisPedidos.tsx'
 import AdminCategoria from './Admin/Categorias/AdminCategoria.tsx'
 import AppAdmin from './Admin/AppAdmin.tsx'
 import AdminSubcategoria from './Admin/Subcategorias/AdminSubcategoria.tsx'
+import AdminInsumo from './Admin/Insumos/AdminInsumo.tsx'
 
 
 
@@ -39,6 +40,7 @@ createRoot(document.getElementById('root')!).render(
 
           <Route path='/admin' element={<AppAdmin/>}>
             <Route path='/admin/adminCatalogo' element={<AdminCatalogo/>}/>
+            <Route path='/admin/adminInsumo' element={<AdminInsumo/>}/>
             <Route path='/admin/adminCategoria' element={<AdminCategoria/>}/>
             <Route path='/admin/adminSubcategoria' element={<AdminSubcategoria/>}/>
           </Route>

@@ -26,7 +26,7 @@ export default function SelectorInsumo({abierto, cerrar, setForm}: Props) {
         try {
             
             const response = await axios.get(URL)
-            console.log(response.data)
+            
             setListaInsumos(response.data)
         } catch (error) {
             console.error(error)

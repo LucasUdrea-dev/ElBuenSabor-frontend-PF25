@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, host, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
+import { Categoria, host } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
 import axios from "axios";
 
@@ -123,10 +123,6 @@ export default function AdminFormCategoria({categoria, cerrarEditar, cargarAdmin
             setPreviewImagen(obtenerImagen(String(categoria?.imagen)))
         }
     }
-
-    useEffect(()=>{
-        console.log(form)
-    }, [form])
 
     if (!form) return null;
     

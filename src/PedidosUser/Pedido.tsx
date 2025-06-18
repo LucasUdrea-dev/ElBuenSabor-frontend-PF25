@@ -116,31 +116,6 @@ const PedidoComponent: React.FC<PedidoProps> = ({
   };
 
 
-
-
-  const formatearFechaString = (fecha: Date | string | undefined): string => {
-    if (!fecha) return '';
-    
-    try {
-      const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
-      
-      if (isNaN(fechaObj.getTime())) {
-        return typeof fecha === 'string' ? fecha : '';
-      }
-      
-      return fechaObj.toLocaleDateString('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (error) {
-      console.error('Error al formatear fecha:', error);
-      return typeof fecha === 'string' ? fecha : '';
-    }
-  };
-
-
-
   const obtenerHoraPedido = (fecha: Date | string | undefined): string => {
     if (!fecha) return '';
     
@@ -166,7 +141,7 @@ const PedidoComponent: React.FC<PedidoProps> = ({
 
   const obtenerTiempoInfo = (): string => {
     if (tipo === 'pendientes' && pedido.tiempoEstimado && pedido.tiempoEstimado !== "0 minutos") {
-      return `${pedido.tiempoEstimado} - ${obtenerTipoEnvio()}`;
+      return `${new Date(new Date(pedido.fecha).getTime() + (Number(pedido.tiempoEstimado) * 60 * 1000)).toLocaleTimeString().slice(0,5)} - ${obtenerTipoEnvio()}`;
     }
     return `${obtenerHoraPedido(pedido.fecha)} - ${obtenerTipoEnvio()}`;
   };
@@ -189,7 +164,7 @@ const PedidoComponent: React.FC<PedidoProps> = ({
               {obtenerTiempoInfo()}
             </p>
             <p className="text-xs text-[#777777]">
-              {formatearFechaString(pedido.fecha)}
+              {`${new Date(pedido.fecha).toLocaleDateString()}`}
             </p>
           </div>
 
