@@ -20,7 +20,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Cocinero", 
       icono: "/svg/IconsDashboard/Cocinero.svg",
       descripcion: "Panel de cocina y pedidos",
-      ruta: "/cocina"
+      ruta: '/admin/adminCocinero'
     },
     { 
       nombre: "Repartidor", 
@@ -32,7 +32,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Cajero", 
       icono: "/svg/IconsDashboard/Cajero.svg",
       descripcion: "Punto de venta y cobros",
-      ruta: "/caja"
+      ruta: '/admin/adminCajero'
     },
     { 
       nombre: "Clientes", 
