@@ -53,16 +53,16 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       ruta: "/empleados"
     },
     { 
-      nombre: "Catálogo", 
-      icono: "/svg/IconsDashboard/Catálogo.svg",
-      descripcion: "Productos y menú",
-      ruta: "/admin/adminCatalogo"
-    },
-    { 
       nombre: "Promociones", 
       icono: "/svg/IconsDashboard/Semielaborados.svg",
       descripcion: "Combo de productos y ofertas",
       ruta: "/promociones"
+    },
+    { 
+      nombre: "Catálogo", 
+      icono: "/svg/IconsDashboard/Catálogo.svg",
+      descripcion: "Productos y menú",
+      ruta: "/admin/adminCatalogo"
     },
     { 
       nombre: "Insumos", 
@@ -71,16 +71,16 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       ruta: "/insumos"
     },
     { 
-      nombre: "Categorías", 
-      icono: "/svg/IconsDashboard/Categorías.svg",
-      descripcion: "Organización de productos",
-      ruta: "/categorias"
-    },
-    { 
       nombre: "Subcategorias", 
       icono: "/svg/IconsDashboard/subcategoria.svg",
       descripcion: "Organización de Subcategorias",
-      ruta: "/subcategorias"
+      ruta: "/admin/adminSubcategoria"
+    },
+    { 
+      nombre: "Categorías", 
+      icono: "/svg/IconsDashboard/Categorías.svg",
+      descripcion: "Organización de productos",
+      ruta: "/admin/adminCategoria"
     },
   ];
 

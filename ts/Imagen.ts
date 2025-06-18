@@ -1,10 +1,12 @@
+import { host } from "./Clases";
+
 export async function subirImagen(imagen: File){
 
     const formData = new FormData();
     formData.append("imagen", imagen)
 
     try {
-        const response = await fetch(`http://localhost:8080/api/imagenes`, {
+        const response = await fetch(host+`/api/imagenes`, {
             method: "POST",
             body: formData
         })
@@ -26,7 +28,7 @@ export async function subirImagen(imagen: File){
 
 export async function borrarImagen(nombreImagen: string) {
     
-    const response = await fetch(`http://localhost:8080/api/imagenes/${nombreImagen}`, {
+    const response = await fetch(host+`/api/imagenes/${nombreImagen}`, {
         method: "DELETE"
     })
 
@@ -40,7 +42,7 @@ export async function borrarImagen(nombreImagen: string) {
 
 export function obtenerImagen(nombreImagen: string) {
     
-    const url: string = `/img/${nombreImagen}`
+    const url: string = host+`/api/imagenes/${nombreImagen}`
 
     return url;
 

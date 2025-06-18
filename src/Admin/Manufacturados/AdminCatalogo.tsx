@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ArticuloManufacturado, ArticuloInsumo, Subcategoria, Sucursal } from '../../../ts/Clases.ts'; // Adjust the path as needed
+import { ArticuloManufacturado, ArticuloInsumo, Subcategoria, Sucursal, host } from '../../../ts/Clases.ts'; // Adjust the path as needed
 
 import AdminFormManufacturado from "./AdminFormManufacturado.tsx";
 import AdminMostrarManufacturado from "./AdminMostrarManufacturado.tsx";
@@ -22,7 +22,7 @@ export default function AdminCatalogo() {
 
     const borradoLogico = async (articulo: ArticuloManufacturado)=>{
 
-        const URL = `http://localhost:8080/api/ArticuloManufacturado/${articulo.id}`
+        const URL = host+`/api/ArticuloManufacturado/${articulo.id}`
 
         articulo.existe = !articulo.existe
 
@@ -48,7 +48,7 @@ export default function AdminCatalogo() {
 
     const cargarManufacturados = async ()=>{
 
-        const URL = "http://localhost:8080/api/ArticuloManufacturado"
+        const URL =  host+"/api/ArticuloManufacturado"
 
         try {
             
@@ -56,7 +56,7 @@ export default function AdminCatalogo() {
             setArticulosManufacturados(response.data)
 
         } catch (error) {
-            
+            console.log(error)
         }
         
     }

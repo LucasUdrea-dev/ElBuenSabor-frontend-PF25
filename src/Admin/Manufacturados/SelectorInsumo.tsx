@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArticuloInsumo, ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo } from "../../../ts/Clases";
+import { ArticuloInsumo, ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, host } from "../../../ts/Clases";
 import axios from "axios";
 
 interface Props{
@@ -21,11 +21,11 @@ export default function SelectorInsumo({abierto, cerrar, setForm}: Props) {
     },[])
 
     const traerInsumos = async ()=>{
-        const URLCategorias = "http://localhost:8080/api/insumos"
+        const URL = host+"/api/insumos/paraElaborar"
 
         try {
             
-            const response = await axios.get(URLCategorias)
+            const response = await axios.get(URL)
             console.log(response.data)
             setListaInsumos(response.data)
         } catch (error) {

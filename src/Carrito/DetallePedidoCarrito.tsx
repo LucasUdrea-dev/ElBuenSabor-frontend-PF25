@@ -33,7 +33,7 @@ export default function DetallePedidoCarrito({detallePedido}: Props) {
                 <div className={`grid grid-cols-[2fr_4fr_2fr_20px] gap-2 items-center `}>
                     <div className={`flex items-center h-15 w-15`}>
                         <img className="h-14 rounded-xl w-14 border-2 border-[#D93F21] object-cover m-auto" 
-                        src={obtenerImagen(detallePedido.articulo.imagen)} alt="" />
+                        src={obtenerImagen(detallePedido.articulo.imagenArticulo)} alt="" />
                     </div>
                     <div className="flex flex-col text-xl">
                         <div>
@@ -79,7 +79,7 @@ export default function DetallePedidoCarrito({detallePedido}: Props) {
                     `}>
                     <button className="w-15 h-full" onClick={()=>borrarArticulo(detallePedido.articulo)}>
                         <svg className="m-auto" width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M5.83325 10.2083H29.1666M14.5833 16.0417V24.7917M20.4166 16.0417V24.7917M7.29159 10.2083L8.74992 27.7083C8.74992 28.4819 9.05721 29.2237 9.60419 29.7707C10.1512 30.3177 10.893 30.625 11.6666 30.625H23.3333C24.1068 30.625 24.8487 30.3177 25.3956 29.7707C25.9426 29.2237 26.2499 28.4819 26.2499 27.7083L27.7083 10.2083M13.1249 10.2083V5.83333C13.1249 5.44656 13.2786 5.07563 13.5521 4.80214C13.8255 4.52865 14.1965 4.375 14.5833 4.375H20.4166C20.8034 4.375 21.1743 4.52865 21.4478 4.80214C21.7213 5.07563 21.8749 5.44656 21.8749 5.83333V10.2083" stroke="#FAF8F5" stroke-width="2.91667" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M5.83325 10.2083H29.1666M14.5833 16.0417V24.7917M20.4166 16.0417V24.7917M7.29159 10.2083L8.74992 27.7083C8.74992 28.4819 9.05721 29.2237 9.60419 29.7707C10.1512 30.3177 10.893 30.625 11.6666 30.625H23.3333C24.1068 30.625 24.8487 30.3177 25.3956 29.7707C25.9426 29.2237 26.2499 28.4819 26.2499 27.7083L27.7083 10.2083M13.1249 10.2083V5.83333C13.1249 5.44656 13.2786 5.07563 13.5521 4.80214C13.8255 4.52865 14.1965 4.375 14.5833 4.375H20.4166C20.8034 4.375 21.1743 4.52865 21.4478 4.80214C21.7213 5.07563 21.8749 5.44656 21.8749 5.83333V10.2083" stroke="#FAF8F5" strokeWidth="2.91667" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
 
                     </button>

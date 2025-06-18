@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, Direccion, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
+import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, host, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
 import SelectorInsumo from "./SelectorInsumo";
 import axios from "axios";
@@ -30,7 +30,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     }, [])
 
     const traerCategorias = async ()=>{
-        const URLCategorias = "http://localhost:8080/api/Categoria/completas"
+        const URLCategorias = host+"/api/Categoria/ventas"
 
         try {
             
@@ -155,23 +155,19 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                 
                 const response = await axios.put(URL, form)
 
-                alert("Manufacturado actualizado con exito!")
                 console.log("Se actualizo el articulo: ", response.status)
-
+                return true
             }else{
                 const response = await axios.post(URL, form)
     
-                alert("Manufacturado creado con exito!")
                 console.log("Se guardo el articulo", response.status)
+                return true
             }
-            
-            cerrarFormulario()
         } catch (error) {
             console.error("ERROR", error)
-            cerrarFormulario()
+            return false
         }
 
-        return true
     }
 
     const handleImagen = (e: React.ChangeEvent<HTMLInputElement>)=>{
@@ -214,7 +210,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
                 {/**Cabecera formulario */}
                 <div className="flex justify-between text-4xl p-5 rounded-t-4xl items-center bg-[#D9D9D98C]">
-                    <h1>Detalle Producto</h1>
+                    <h1 className="text-white">Detalle Producto</h1>
                     <button onClick={cerrarFormulario} className="p-2 rounded-xl">
 
                         <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
