@@ -1,36 +1,32 @@
 import { useEffect, useState } from "react";
-import { ArticuloManufacturado, ArticuloManufacturadoDetalleInsumo, Categoria, host, Subcategoria, Sucursal, UnidadMedida } from "../../../ts/Clases"
+import { ArticuloInsumo, Categoria, host, Subcategoria, tiposUnidadMedida } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
-import SelectorInsumo from "./SelectorInsumo";
 import axios from "axios";
 
 interface Props{
-    articulo: ArticuloManufacturado | null;
+    articulo: ArticuloInsumo | null;
     cerrarEditar: ()=> void;
-    cargarAdminCatalogo: ()=>void
+    cargarAdminInsumo: ()=>void
 }
 
-export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAdminCatalogo}: Props) {
+export default function AdminFormInsumo({articulo, cerrarEditar, cargarAdminInsumo}: Props) {
 
     const [listaCategorias, setListaCategorias] = useState<Categoria[]>([])
-    const [sucursalActual, setSucursalActual] = useState<Sucursal>()
-    const [form, setForm] = useState<ArticuloManufacturado >(new ArticuloManufacturado())
+    const [form, setForm] = useState<ArticuloInsumo>(new ArticuloInsumo())
     const [imagen, setImagen] = useState<File | null>(null)
     const [previewImagen, setPreviewImagen] = useState<string | null>(null)
     const [indexCategoria, setIndexCategoria] = useState(1)
-    const [seleccionarArticulo, setSeleccionarArticulo] = useState(false)
     const [seccionActiva, setSeccionActiva] = useState(1)
 
     //Carga de categorias
     useEffect(()=>{
-        
-        traerSucursal()
+
         traerCategorias()
 
     }, [])
 
     const traerCategorias = async ()=>{
-        const URLCategorias = host+"/api/Categoria/ventas"
+        const URLCategorias = host+"/api/Categoria/insumos"
 
         try {
             
@@ -41,20 +37,6 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
             console.error(error)
         }
 
-    }
-
-    const traerSucursal = async ()=>{
-        const URLSucursal = "http://localhost:8080/api/sucursales/1"
-
-        try {
-            
-            const response = await axios.get(URLSucursal)
-            
-            setSucursalActual(response.data)
-
-        } catch (error) {
-            console.error(error)
-        }
     }
 
     useEffect(()=>{
@@ -73,7 +55,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     },[articulo])
 
     const cerrarFormulario = ()=>{
-        cargarAdminCatalogo()
+        cargarAdminInsumo()
         cerrarEditar()
         setSeccionActiva(1)
         setImagen(null)
@@ -84,18 +66,8 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
     const handleSubmit = async ()=>{
 
         try {
-            
-            let unidadMedidaManufacturado = new UnidadMedida()
-            unidadMedidaManufacturado = {
-                id: 1,
-                unidad: "unidad"
-            }
-
-            const sucursalFinal = {...sucursalActual}
 
             let formFinal = {...form}
-            formFinal = {...formFinal, sucursal: sucursalFinal}
-            formFinal = {...formFinal, unidadMedida: unidadMedidaManufacturado}
 
             delete formFinal.subcategoria.categoria?.subcategorias
 
@@ -126,7 +98,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
             setForm(formFinal)
 
-            const guardadoExitoso = await guardarArticuloManufacturado(formFinal)
+            const guardadoExitoso = await guardarArticuloInsumo(formFinal)
 
             if (guardadoExitoso) {
                 console.log("Se guardo el articulo")
@@ -145,9 +117,9 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
     }
     
-    const guardarArticuloManufacturado = async (form: ArticuloManufacturado)=>{
-        let URL = form.id ? host+`/api/ArticuloManufacturado/${form.id}`
-        : host+`/api/ArticuloManufacturado`;
+    const guardarArticuloInsumo = async (form: ArticuloInsumo)=>{
+        let URL = form.id ? host+`/api/insumos/${form.id}`
+        : host+`/api/insumos`;
         
         try {
 
@@ -193,10 +165,6 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
         setSeccionActiva((prev)=> prev - 1)
     }
 
-    const cerrarSeleccionarArticulo = ()=>{
-        setSeleccionarArticulo(false)
-    }
-
     if (!form) return null;
     
     return(
@@ -206,7 +174,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
                 {/**Cabecera formulario */}
                 <div className="flex justify-between text-4xl p-5 rounded-t-4xl items-center bg-[#D9D9D98C]">
-                    <h1 className="text-white">Detalle Producto</h1>
+                    <h1 className="text-white">Detalle Insumo</h1>
                     <button onClick={cerrarFormulario} className="p-2 rounded-xl">
 
                         <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -260,12 +228,36 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                         )}
                                     </div>
                                     <div>
-                                        <h3>Tiempo estimado{"(en minutos)"}:</h3>
-                                        <input value={form.tiempoEstimado.split(" ")[0]} onChange={(e)=>setForm((prev)=> ({...prev, tiempoEstimado: e.target.value}))} type="number" />
-                                        {!form.tiempoEstimado && (
+                                        <h3>Precio de compra{"(p/U)"}:</h3>
+                                        <input value={form.precioCompra ? form.precioCompra : ""} onChange={(e)=>setForm((prev)=> ({...prev, precioCompra: Number(e.target.value)}))} type="number" />
+                                        {!form.precioCompra && (
                                             <h4>Campo incompleto</h4>
                                         )}
                                     </div>
+                                </div>
+                                <div>
+                                    <h3>Unidad de medida: {form.unidadMedida.unidad}</h3>
+                                    <select value={form.unidadMedida.id ? form.unidadMedida.id : 0} 
+                                        onChange={(e)=>setForm((prev)=>{
+
+                                            const unidadEncontrada = tiposUnidadMedida.find((unidad)=> unidad.id == Number(e.target.value))
+                                            if (unidadEncontrada) {
+                                                return {...prev, unidadMedida: unidadEncontrada}
+                                                
+                                            }
+
+                                            return prev
+
+                                        })}>
+                                        
+                                        <option value={0}>Seleccionar...</option>
+                                        {tiposUnidadMedida.map((unidadMedida)=>(
+                                            <option key={unidadMedida.id} value={Number(unidadMedida.id)}>{unidadMedida.unidad}</option>
+                                        ))}
+                                    </select>
+                                    {!form.unidadMedida.id && (
+                                        <h4>Campo sin seleccionar</h4>
+                                    )}
                                 </div>
                                 <div>
                                     <h3>Descripcion:</h3>
@@ -276,7 +268,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                 </div>
                                 <div>
                                     <button onClick={()=>{
-                                        if(form.nombre && form.precio && form.tiempoEstimado && form.descripcion) {
+                                        if(form.nombre && form.precio && form.precioCompra && form.descripcion && form.unidadMedida.id) {
                                             siguienteSeccion()
                                         }else{
                                             return "<h2>Debe llenar todos los campos</h2>"
@@ -287,57 +279,12 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                         </div>
                     </div>
 
-                    {/**Agrega una imagen */}
-                    <div>
-                        {/**Titulo seccion */}
-                        <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
-                            <div className="text-center m-auto bg-white h-7 w-7 rounded-4xl text-2xl">
-                                <h1 className="m-auto h-7 text-black">2</h1>
-                            </div>
-                            <div className=" text-3xl">
-                                <h2>Agrega una imagen</h2>
-                            </div>
-                        </div>
-
-                        {/**Contenido */}
-                        <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
-                            <div className="h-full min-h-5 w-7">
-                                <div className="text-center m-auto bg-white h-full w-1 rounded-4xl text-2xl">
-                                </div>
-                            </div>
-                            {/**Cargar imagen y vista previa */}
-                            <div className={`text-2xl *:py-5 
-                                overflow-hidden
-                                transition-all duration-500 ease-in-out ${seccionActiva == 2 ? "max-h-screen" : "max-h-0"}`}>
-                                
-                                <div className="grid grid-cols-2 gap-5 items-center">
-                                    <div className="bg-[#D9D9D9] h-50 rounded-4xl">
-                                        {(articulo?.imagenArticulo || imagen) && (
-                                            <img className="h-full w-full object-cover rounded-4xl" src={String(previewImagen)} alt="" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <h3>Agregar imagen:</h3>
-                                        <input onChange={handleImagen} accept="image/*" type="file" />
-                                    </div>
-                                </div>
-                                {(!imagen && !articulo?.imagenArticulo) && (
-                                    <h4>Debe cargar una imagen</h4>
-                                )}
-                                <div className="flex gap-5 *:p-2 *:rounded-4xl">
-                                    <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={(imagen || articulo?.imagenArticulo) ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/**Selecciona las categorias */}
                     <div>
                         {/**Titulo seccion */}
                         <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
                             <div className="text-center m-auto bg-white h-7 w-7 rounded-4xl text-2xl">
-                                <h1 className="m-auto h-7 text-black">3</h1>
+                                <h1 className="m-auto h-7 text-black">2</h1>
                             </div>
                             <div className=" text-3xl">
                                 <h2>Selecciona las categorias</h2>
@@ -353,11 +300,8 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             <div className={`text-2xl *:py-5 
                                 overflow-y-auto
                                 transition-all duration-500 ease-in-out 
-                                ${seccionActiva == 3 ? "max-h-screen" : "max-h-0"}`}>
-                                <div>
-                                    <h3>Preparacion:</h3>
-                                    <textarea value={form.preparacion} onChange={(e)=>setForm((prev)=>({...prev, preparacion: e.target.value}))} className="focus:outline-none border-b py-2 w-full" name="preparacion"></textarea>
-                                </div>
+                                ${seccionActiva == 2 ? "max-h-screen" : "max-h-0"}`}>
+                                
                                 <div>
                                     <h3>Categoria:</h3>
                                     <select value={indexCategoria} onChange={(e)=>setIndexCategoria(Number(e.target.value))} name="categoria">
@@ -416,15 +360,15 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                         </div>
                     </div>
 
-                    {/**Especifica los ingredientes */}
+                    {/**Agrega una imagen */}
                     <div>
                         {/**Titulo seccion */}
                         <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
                             <div className="text-center m-auto bg-white h-7 w-7 rounded-4xl text-2xl">
-                                <h1 className="m-auto h-7 text-black">4</h1>
+                                <h1 className="m-auto h-7 text-black">3</h1>
                             </div>
                             <div className=" text-3xl">
-                                <h2>Especifica los ingredientes</h2>
+                                <h2>Agrega una imagen</h2>
                             </div>
                         </div>
 
@@ -434,69 +378,28 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                                 <div className="text-center m-auto bg-white h-full w-1 rounded-4xl text-2xl">
                                 </div>
                             </div>
+                            {/**Cargar imagen y vista previa */}
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-500 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`
-                                }>
+                                transition-all duration-500 ease-in-out ${seccionActiva == 3 ? "max-h-screen" : "max-h-0"}`}>
                                 
-                                <div>
-                                    <div className="grid grid-cols-[2fr_2fr_1fr_1fr] py-5">
-                                        <h3>Insumo:</h3>
-                                        <h3>Cantidad:</h3>
+                                <div className="grid grid-cols-2 gap-5 items-center">
+                                    <div className="bg-[#D9D9D9] h-50 rounded-4xl">
+                                        {(articulo?.imagenArticulo || imagen) && (
+                                            <img className="h-full w-full object-cover rounded-4xl" src={String(previewImagen)} alt="" />
+                                        )}
                                     </div>
-                                    {/**Se listan los ingredientes y se modifica
-                                     * la cantidad utilizando el input
-                                     * Luego unidad de medida y boton para borrar ingrediente
-                                     */}
-                                    {form.detalleInsumos.length > 0 && form.detalleInsumos.map((detalle)=>(
-                                        <div key={detalle.articuloInsumo.id} className="grid grid-cols-[2fr_2fr_1fr_1fr] items-center">
-                                            <h3>{detalle.articuloInsumo.nombre}</h3>
-                                            <input value={detalle.cantidad ? detalle.cantidad : ""} onChange={(e)=>{
-                                                setForm((prev)=>{
-                                                    let nuevosDetalles: ArticuloManufacturadoDetalleInsumo[] = []
-
-                                                    //Se crea un nuevo array de detalles
-                                                    //en el que se modifica la cantidad unicamente del detalle
-                                                    //correspondiente al input y luego se asigna el array nuevo
-                                                    //con la modificacion hecha, al objeto form(ArticuloManufacturado)
-                                                    nuevosDetalles = prev.detalleInsumos.map((det)=>
-                                                    det.articuloInsumo.id == detalle.articuloInsumo.id  ?
-                                                    {...det, cantidad: Number(e.target.value)} 
-                                                    : det
-                                                    )
-
-                                                    return {...prev, detalleInsumos: nuevosDetalles}
-
-                                                })
-                                            }} type="number" />
-                                            <h3>{detalle.articuloInsumo.unidadMedida?.unidad}</h3>
-                                            {/**Borra el detalle correspondiente del array 
-                                             * detallesInsumos
-                                             */}
-                                            <button onClick={()=>{
-                                                setForm((prev)=>{
-                                                    return {...prev, detalleInsumos: prev.detalleInsumos.filter((det)=> det.id != detalle.id)}
-                                                })
-                                            }}>
-                                                <img src="/svg/BorrarDetalle.svg" alt="" />
-                                            </button>
-                                        </div>
-                                    ))}   
+                                    <div>
+                                        <h3>Agregar imagen:</h3>
+                                        <input onChange={handleImagen} accept="image/*" type="file" />
+                                    </div>
                                 </div>
-
-                                <div>
-                                    <button onClick={()=>setSeleccionarArticulo(true)} className="bg-white px-2 text-[#D93F21]">Agregar ingrediente</button>
-                                </div>
-
-                                <SelectorInsumo abierto={seleccionarArticulo} cerrar={cerrarSeleccionarArticulo} setForm={setForm}/>
-                                
-                                {form.detalleInsumos.length < 2 && (
-                                    <h4>Debe ingresar por lo menos 2 ingredientes</h4>
+                                {(!imagen && !articulo?.imagenArticulo) && (
+                                    <h4>Debe cargar una imagen</h4>
                                 )}
-
                                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                                     <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>
-                                    <button onClick={form.detalleInsumos.length >= 2 ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
+                                    <button onClick={(imagen || articulo?.imagenArticulo) ? siguienteSeccion : ()=>{}} className="bg-[#D93F21]">Siguiente</button>
                                 </div>
                             </div>
                         </div>
@@ -507,7 +410,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                         {/**Titulo seccion */}
                         <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
                             <div className="text-center m-auto bg-white h-7 w-7 rounded-4xl text-2xl">
-                                <h1 className="m-auto h-7 text-black">5</h1>
+                                <h1 className="m-auto h-7 text-black">4</h1>
                             </div>
                             <div className=" text-3xl">
                                 <h2>Confirmar</h2>
@@ -522,7 +425,7 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
                             </div>
                             <div className={`text-2xl *:py-5 
                                 overflow-hidden
-                                transition-all duration-500 ease-in-out ${seccionActiva == 5 ? "max-h-screen" : "max-h-0"}`}>
+                                transition-all duration-500 ease-in-out ${seccionActiva == 4 ? "max-h-screen" : "max-h-0"}`}>
                                 
                                 <div className="w-2/4">
                                     
@@ -551,7 +454,8 @@ export default function AdminFormManufacturado({articulo, cerrarEditar, cargarAd
 
                                 <div className="flex justify-between">
                                     <div className="grid grid-cols-[1fr_10fr] justify-center items-center">
-                                        <input checked={form.existe} onChange={(e)=>setForm((prev)=> ({...prev, existe: e.target.checked}))} className="h-5" type="checkbox" /><label>¿Desea publicarlo en el catálogo?</label>
+                                        <input checked={form.existe} onChange={(e)=>setForm((prev)=> ({...prev, existe: e.target.checked}))} className="h-5" type="checkbox" /><label>¿Desea que esté disponible?</label>
+                                        <input checked={form.esParaElaborar} onChange={(e)=>setForm((prev)=> ({...prev, esParaElaborar: e.target.checked}))} className="h-5" type="checkbox" /><label>¿Es para elaborar?</label>
                                     </div>
                                     <div className="flex justify-center gap-5 *:p-2 *:rounded-4xl">
                                         <button onClick={anteriorSeccion} className="bg-white text-black">Anterior</button>

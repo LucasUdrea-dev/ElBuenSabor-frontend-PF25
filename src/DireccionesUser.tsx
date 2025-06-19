@@ -3,89 +3,31 @@ import axios from 'axios';
 import AgregarDireccion from './AgregarDireccion';
 import EliminarDireccion from './EliminarDireccion';
 import EditDireccion from './EditDireccion';
-import { Direccion, Ciudad, Provincia, Pais } from '../ts/Clases'; 
+import { Direccion, host } from '../ts/Clases'; 
 
 
 
 export default function DireccionesUser() {
-  const paisArgentina: Pais = { id: 1, nombre: "Argentina", provincias: [] };
-
-  const provinciaMendoza: Provincia = {
-    id: 1,
-    nombre: "Mendoza",
-    pais: paisArgentina,
-    ciudadList: []
-  };
-
-  const ciudadMendoza: Ciudad = {
-    id: 1,
-    nombre: "Ciudad de Mendoza",
-    provincia: provinciaMendoza
-  };
-
-  const ciudadLasHeras: Ciudad = {
-    id: 2,
-    nombre: "Las Heras",
-    provincia: provinciaMendoza
-  };
-
-  const ciudadGuaymallen: Ciudad = {
-    id: 3,
-    nombre: "Guaymallén",
-    provincia: provinciaMendoza
-  };
-
-  const [direcciones, setDirecciones] = useState<Direccion[]>([
-    {
-      id: 1,
-      nombreCalle: "Calle Falsa",
-      numeracion: "123",
-      alias: "Casa",
-      descripcionEntrega: "Aclaración 1",
-      latitud: 12.345678,
-      longitud: 123.456789,
-      ciudad: ciudadMendoza
-    },
-    {
-      id: 2,
-      nombreCalle: "Avenida Siempre Viva",
-      numeracion: "742",
-      alias: "Oficina",
-      descripcionEntrega: "Aclaración 2",
-      latitud: 23.456789,
-      longitud: -98.765432,
-      ciudad: ciudadLasHeras
-    },
-    {
-      id: 3,
-      nombreCalle: "Calle de los Héroes",
-      numeracion: "456",
-      alias: "Departamento",
-      descripcionEntrega: "Aclaración 3",
-      latitud: 34.56789,
-      longitud: 87.654321,
-      ciudad: ciudadGuaymallen
-    },
-  ]);
-
-      const [cargando, setCargando] = useState(true);
-      const [isAgregarDireccionOpen, setAgregarDireccionOpen] = useState(false);
-      const [isEliminarDireccionOpen, setEliminarDireccionOpen] = useState(false);
-      const [direccionAEliminar, setDireccionAEliminar] = useState<number | null | undefined>(null);
-      const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
-      const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
+  
+  const [direcciones, setDirecciones] = useState<Direccion[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [isAgregarDireccionOpen, setAgregarDireccionOpen] = useState(false);
+  const [isEliminarDireccionOpen, setEliminarDireccionOpen] = useState(false);
+  const [direccionAEliminar, setDireccionAEliminar] = useState<number | null | undefined>(null);
+  const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
+  const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
       
 
   // Simula ID de usuario actual (debería venir de contexto o props)
-  const idUsuario = 1;
-  const apiUrl = 'http://localhost:8080/api/Direccion/usuario/{id}'; // Cambia esta URL a la de tu backend
+  const idUsuario = 2;
+  const apiUrl = host+`/api/usuarios/direcciones/${idUsuario}`; // Cambia esta URL a la de tu backend
 
 
   useEffect(() => {
   
     const fetchDirecciones = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/usuario/${idUsuario}`);
+        const response = await axios.get(apiUrl);
         setDirecciones(response.data);
       } catch (error) {
         console.error('Error al cargar las direcciones:', error);
@@ -96,7 +38,7 @@ export default function DireccionesUser() {
 
   
     fetchDirecciones();
-  }, [apiUrl, idUsuario]);
+  }, []);
 
 
   //funcion para eliminar una direccion

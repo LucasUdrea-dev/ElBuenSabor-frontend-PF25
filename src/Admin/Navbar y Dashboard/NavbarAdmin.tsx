@@ -62,13 +62,6 @@ export default function NavbarAdmin() {
 
     const handleDashboardSelection = (seccion: string) => {
         console.log(`Sección seleccionada: ${seccion}`)
-        // Lógica para Semielaborados
-        if (seccion === "Catalogo") {
-            // navegación por Link en el Dashboard
-            setMostrarDashboard(false)
-            return
-        }
-        // lógica para navegar a otras secciones
         setMostrarDashboard(false)
     }
 
@@ -157,7 +150,6 @@ export default function NavbarAdmin() {
                         </div>
                     )}
                 </div>
-            </div>
 
             {estaLogeado && (
                 <>
@@ -175,6 +167,7 @@ export default function NavbarAdmin() {
                     )}
                 </>
             )}
+
 
             <LoginEmpleados isOpen={isLoginEmpleadosOpen} onClose={cerrarLoginEmpleados} />
         </>

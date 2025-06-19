@@ -98,7 +98,7 @@ export default function Navbar() {
                                 </button>
                                 {mostrarDesplegableUsuario && (
                                     <div className={`absolute z-50 mt-0 w-1/1`}>
-                                        <DesplegableUsuario alCerrarSesion={cerrarSesion} />
+                                        <DesplegableUsuario alCerrarSesion={cerrarSesion} cambiarDesplegableUsuario={cambiarDesplegableUsuario} />
                                     </div>
                                 )}
                             </div>

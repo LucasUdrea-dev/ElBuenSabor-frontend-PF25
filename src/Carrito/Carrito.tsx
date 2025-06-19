@@ -34,7 +34,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
 
     const botonContinuar = ()=>{
         if(pedido.tipoEnvio.tipoDelivery == "DELIVERY"){
-            if (pedido.direccionPedido.direccion.id) {
+            if (pedido.direccionPedido?.direccion.id) {
                 setDetallePago(true)
             }
         }else{
@@ -57,10 +57,9 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
             <div className={`w-80 flex flex-col h-full`}>
                 <div className="text-center text-2xl mt-2">
                     <h1>MI ORDEN</h1>
-                    <button onClick={()=>localStorage.removeItem("carrito")}>Resetear</button>
                 </div>
                 <div className="py-5 px-2">
-                    {(pedido.detallePedidoList.length < 1 && pedido.detallePromocionList.length < 1) ? (
+                    {(pedido.detallePedidoList?.length < 1 && pedido.detallePromocionList.length < 1) ? (
                         <div className="m-auto text-center w-2/3 flex flex-col justify-center h-90">
                             <h3>Tu orden esta vacia</h3>
                             <Link className="bg-[#D93F21] text-white p-1" to={"/catalogo"}>
@@ -73,11 +72,11 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
                              * en el carrito
                              */}
                             <div className="flex flex-col gap-2 overflow-hidden border-b-1 border-gray-300">
-                                {pedido.detallePromocionList.map((detalle)=> (
+                                {pedido.detallePromocionList?.map((detalle)=> (
                                     <DetallePromocionCarrito key={detalle.promocion.id} detallePromocion={detalle}/>
                                 ))}
-                                {pedido.detallePedidoList.map((detalle)=> (
-                                    <DetallePedidoCarrito key={detalle.articulo.id} detallePedido={detalle}/>
+                                {pedido.detallePedidoList?.map((detalle)=> (
+                                    <DetallePedidoCarrito key={detalle.articulo?.id} detallePedido={detalle}/>
                                 ))}
                             </div>
 
@@ -88,11 +87,11 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
 
                                 {/**Seleccionar Delivery o Retirar*/}
                                 <div className="flex justify-between">
-                                    <button onClick={()=>paraRetirar()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio.tipoDelivery == "TAKEAWAY" ? "opacity-100" : "opacity-40"}`}>
+                                    <button onClick={()=>paraRetirar()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio?.tipoDelivery == "TAKEAWAY" ? "opacity-100" : "opacity-40"}`}>
                                         <img src="./svg/enTienda.svg" alt="" />
                                         <h1>En Local</h1>
                                     </button>
-                                    <button onClick={()=>paraDelivery()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio.tipoDelivery == "DELIVERY" ? "opacity-100" : "opacity-40"}`}>
+                                    <button onClick={()=>paraDelivery()} className={`flex items-center border rounded-2xl px-2 ${pedido.tipoEnvio?.tipoDelivery == "DELIVERY" ? "opacity-100" : "opacity-40"}`}>
                                         <img src="./svg/delivery.svg" alt="" />
                                         <h1>Delivery</h1>
                                     </button>
@@ -107,7 +106,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
                                         </h1>
                                     </div>
                                     <div>
-                                        {pedido.tipoEnvio.tipoDelivery == "DELIVERY" && (
+                                        {pedido.tipoEnvio?.tipoDelivery == "DELIVERY" && (
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
                                                     <img src="./svg/logoUbicacionCarrito.svg" alt="" />
@@ -122,7 +121,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
                                                     </div>    
                                                 </div>
                                                 <div className="text-red-400 text-center">
-                                                    {!pedido.direccionPedido.direccion.id && (
+                                                    {!pedido.direccionPedido?.direccion.id && (
                                                         <h1>Seleccione una direccion</h1>
                                                     )}
                                                 </div>
@@ -136,7 +135,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
                                 {/**Precios */}
                                 <div>
                                     
-                                    {pedido.tipoEnvio.tipoDelivery == "DELIVERY" && (
+                                    {pedido.tipoEnvio?.tipoDelivery == "DELIVERY" && (
                                         <div>
                                             <div className="flex justify-between opacity-70">
                                                 <h1>Subtotal:</h1>
@@ -151,7 +150,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
 
                                     <div className="flex justify-between">
                                         <h1>TOTAL:</h1>
-                                        <h1>${pedido.tipoEnvio.tipoDelivery == "DELIVERY" ? `${calcularPrecioTotal() + (calcularPrecioTotal()*10/100)}` : `${calcularPrecioTotal()}`}</h1>
+                                        <h1>${pedido.tipoEnvio?.tipoDelivery == "DELIVERY" ? `${calcularPrecioTotal() + (calcularPrecioTotal()*10/100)}` : `${calcularPrecioTotal()}`}</h1>
                                     </div>
 
                                 </div>
