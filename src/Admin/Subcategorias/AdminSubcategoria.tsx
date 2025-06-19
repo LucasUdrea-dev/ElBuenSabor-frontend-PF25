@@ -93,7 +93,7 @@ export default function AdminSubcategoria() {
     return(
         <>
         
-            <div className="bg-[#333333] w-full h-screen py-10">
+            <div className="bg-[#333333] w-full min-h-screen py-10">
 
                 {/**Tabla */}
                 <div className={`bg-white w-11/12 m-auto rounded-2xl ${(formSubcategoria) && "hidden"}`}>

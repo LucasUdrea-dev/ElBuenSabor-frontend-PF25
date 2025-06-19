@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import SliderPromociones from "./SliderPromociones";
-import { ArticuloVentaDTO, Categoria, host, Promocion } from "../../ts/Clases";
+import { ArticuloInsumo, ArticuloManufacturado, Categoria, host, Promocion } from "../../ts/Clases";
 import { obtenerImagen } from "../../ts/Imagen";
 import ArticuloCardCatalogo from "./ArticuloCardCatalogo";
 import axios from "axios";
@@ -12,8 +12,8 @@ export default function Catalogo() {
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("")
     const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState("")
-    const [todosArticulos, setTodosArticulos] = useState<ArticuloVentaDTO[]>([])
-    const [articulosFiltrados, setArticulosFiltrados] = useState<ArticuloVentaDTO[]>([])
+    const [todosArticulos, setTodosArticulos] = useState<(ArticuloInsumo | ArticuloManufacturado)[]>([])
+    const [articulosFiltrados, setArticulosFiltrados] = useState<(ArticuloInsumo | ArticuloManufacturado)[]>([])
     const [ordenamiento, setOrdenamiento] = useState("");
     const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
 
@@ -74,7 +74,7 @@ export default function Catalogo() {
         try {
             const response = await axios.get(URL)
 
-            const articulosObtenidos: ArticuloVentaDTO[] = response.data
+            const articulosObtenidos: (ArticuloInsumo | ArticuloManufacturado)[] = response.data
 
             setTodosArticulos(articulosObtenidos)
             
@@ -86,7 +86,7 @@ export default function Catalogo() {
 
     //Filtrar los articulos que se van a mostrar
     useEffect(()=>{
-        let datosFiltrados: ArticuloVentaDTO[] = todosArticulos;
+        let datosFiltrados: (ArticuloInsumo | ArticuloManufacturado)[] = todosArticulos;
 
         //Filtro por nombre
         if (buscador) {

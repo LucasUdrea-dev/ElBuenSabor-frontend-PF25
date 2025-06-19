@@ -1,10 +1,10 @@
-import { useContext, useState } from "react";
-import { ArticuloVentaDTO } from "../../ts/Clases";
+import { useContext, useEffect, useState } from "react";
+import { ArticuloInsumo, ArticuloManufacturado} from "../../ts/Clases";
 import { obtenerImagen } from "../../ts/Imagen";
 import { CarritoContext } from "../Carrito/CarritoContext";
 
 interface Props{
-    articulo: ArticuloVentaDTO;
+    articulo: ArticuloManufacturado | ArticuloInsumo;
     isOpen: boolean
     onClose: ()=> void
 }
@@ -62,7 +62,7 @@ export default function DetalleArticulo({articulo, isOpen, onClose}: Props) {
                             {/**Si tiene insumos se muestran los ingredientes
                              * Si no tiene insumos se muestra la descripcion
                              */}
-                            {articulo.detalleInsumos?.length > 0 ? 
+                            {articulo?.detalleInsumos?.length > 0 ? 
                                 <p>Ingredientes:
                                     {articulo.detalleInsumos.map((detalle, index, insumos)=>{
                                         if (index === insumos.length - 1) {

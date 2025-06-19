@@ -27,7 +27,7 @@ export default function SelectorCategoria({abierto, cerrar, setForm}: Props) {
         try {
             
             const response = await axios.get(URL)
-            console.log(response.data)
+            
             setListaCategorias(response.data)
         } catch (error) {
             console.error(error)

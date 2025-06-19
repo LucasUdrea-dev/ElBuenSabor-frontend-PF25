@@ -115,13 +115,19 @@ export class Articulo{
     esParaElaborar?: boolean = false;
     imagenArticulo: string = "";
     subcategoria: Subcategoria = new Subcategoria();
-    unidadMedida?: UnidadMedida = new UnidadMedida();
+    unidadMedida: UnidadMedida = new UnidadMedida();
 }
 
 export class UnidadMedida{
-    id?: number | null = null;
+    id: number | null = null;
     unidad: string = ""
 }
+
+export const tiposUnidadMedida: UnidadMedida[] = [
+    {id: 1, unidad: "unidad"},
+    {id: 2, unidad: "gr"},
+    {id: 3, unidad: "ml"}
+]
 
 export class ArticuloVentaDTO {
     id?: number;

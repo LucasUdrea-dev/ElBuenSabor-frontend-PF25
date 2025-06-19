@@ -69,22 +69,40 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
     }
 
-    const [pedido, setPedido] = useState<Pedido>(()=>{
-        try {
-            const carritoGuardado = localStorage.getItem("carrito")
-            return carritoGuardado ? JSON.parse(carritoGuardado) : inicializarPedido()
-        } catch (error) {
-            console.error("Error al leer el carrito guardado: ", error)
-            return inicializarPedido()
-        }
-    })
+    const [pedido, setPedido] = useState<Pedido>(new Pedido())
 
     useEffect(()=>{
+        const cargarCarrito = async()=>{
+            
+            try {
+                const carritoGuardado = localStorage.getItem("carrito")
+                if (carritoGuardado) {
+                    
+                    setPedido(JSON.parse(carritoGuardado))
+                }else{
+                    const pedidoInicial = await inicializarPedido()
+                    setPedido(pedidoInicial)
+                }
+                
+            } catch (error) {
+                console.error("Error al leer el carrito guardado: ", error)
+                const pedidoInicial = await inicializarPedido()
+                setPedido(pedidoInicial)
+            }
+        }
+
+        cargarCarrito()
+    }, [])
+
+    useEffect(()=>{
+
         console.log(pedido)
-        try {
-            localStorage.setItem("carrito", JSON.stringify(pedido))
-        } catch (error) {
-            console.error("Error al guardar el carrito en localstorage: ", error)
+        if (pedido.sucursal.id || pedido.usuario.id) {
+            try {
+                localStorage.setItem("carrito", JSON.stringify(pedido))
+            } catch (error) {
+                console.error("Error al guardar el carrito en localstorage: ", error)
+            }
         }
     }, [pedido])
 

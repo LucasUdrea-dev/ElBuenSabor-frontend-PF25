@@ -68,7 +68,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Insumos", 
       icono: "/svg/IconsDashboard/Insumos.svg",
       descripcion: "Materias primas y stock",
-      ruta: "/insumos"
+      ruta: "/admin/adminInsumo"
     },
     { 
       nombre: "Subcategorias", 
