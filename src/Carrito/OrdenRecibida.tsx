@@ -18,8 +18,9 @@ export default function OrdenRecibida() {
 
     const {pedido, vaciarPedido} = carritoContext
 
-    let pedidoTerminado: Pedido = pedido
+    
     const [pedidoConfirmado, setPedidoConfirmado] = useState<Pedido>(new Pedido())
+    const [pedidoTerminado, setPedidoTerminado] = useState<Pedido>(new Pedido());
     const [guardado, setGuardado] = useState(false)
     const navigate = useNavigate()
 
@@ -30,6 +31,11 @@ export default function OrdenRecibida() {
     const reiniciarCarrito = ()=>{
         vaciarPedido()
     }
+
+    useEffect(()=>{
+        console.log("TERMINADO")
+        console.log(pedidoTerminado)
+    }, [pedidoTerminado])
 
     useEffect(()=>{
         console.log()
@@ -44,8 +50,7 @@ export default function OrdenRecibida() {
         try {
             
             const response = await axios.post(URL, pedidoTerminado)
-
-            console.log("RESPONSE.DATA: " + response.data)
+            
             await obtenerPedidoGuardado(response.data)
             setGuardado(true)
             pedidoGuardado = true
@@ -92,10 +97,17 @@ export default function OrdenRecibida() {
     }
 
     useEffect(()=>{
+
+        if (pedido.sucursal.id && pedido.usuario.id) {
+            setPedidoTerminado(pedido)
+        }
+    }, [status])
+
+    useEffect(()=>{
         if (!pedidoGuardado) {
             verificarPagoYGuardar()
         }
-    }, [])
+    }, [pedidoTerminado])
 
     const calcularPrecioTotalPedidoConfirmado = ()=>{
 
@@ -180,14 +192,14 @@ export default function OrdenRecibida() {
                             </div>
 
                             {pedidoConfirmado.detallePedidoList.map((detalle)=>(
-                                <div className="grid grid-cols-3 items-center border-1 py-2 px-5">
+                                <div key={detalle.articulo?.id} className="grid grid-cols-3 items-center border-1 py-2 px-5">
                                     <h1>{detalle.articulo?.nombre}</h1>
                                     <h1 className="text-center">{detalle.cantidad}</h1>
                                     <h1 className="text-center">{detalle.cantidad * (detalle.articulo ? detalle.articulo.precio : 0)}</h1>
                                 </div>
                             ))}
                             {pedidoConfirmado.detallePromocionList.map((detalle)=>(
-                                <div className="grid grid-cols-3 items-center border-1 py-2 px-5">
+                                <div key={detalle.promocion.id} className="grid grid-cols-3 items-center border-1 py-2 px-5">
                                     <h1>{detalle.promocion.denominacion}</h1>
                                     <h1 className="text-center">{detalle.cantidad}</h1>
                                     <h1 className="text-center">${detalle.cantidad * detalle.promocion.precioRebajado}</h1>

@@ -69,7 +69,10 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
     }
 
-    const [pedido, setPedido] = useState<Pedido>(new Pedido())
+    const [pedido, setPedido] = useState<Pedido>(()=>{
+        const carritoGuardado = localStorage.getItem("carrito")
+        return carritoGuardado ? JSON.parse(carritoGuardado) : new Pedido()
+    })
 
     useEffect(()=>{
         const cargarCarrito = async()=>{
