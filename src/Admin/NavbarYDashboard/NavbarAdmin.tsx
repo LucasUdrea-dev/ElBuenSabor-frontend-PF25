@@ -154,7 +154,7 @@ export default function NavbarAdmin() {
 
         <div>
           {estaLogeado ? (
-            <div className="m-0 grid grid-cols-[3fr_1fr] gap-0 items-center">
+            <div className="m-0 grid gap-0 items-center">
               <div className="relative">
                 <button
                   className="m-auto"
@@ -162,7 +162,7 @@ export default function NavbarAdmin() {
                   type="button"
                 >
                   <div
-                    className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${
+                    className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-l-white border-x-1 ${
                       mostrarDesplegableUsuario &&
                       "border-y-1 border-y-gray-700"
                     }`}
