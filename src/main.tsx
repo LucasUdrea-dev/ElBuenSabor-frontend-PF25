@@ -15,6 +15,7 @@ import MisPedidos from './PedidosUser/MisPedidos.tsx'
 import AppAdmin from './Admin/AppAdmin.tsx'
 import Cajero from './Admin/Cajero/Cajero.tsx'
 import Cocinero from './Admin/Cocinero/Cocinero.tsx'
+import Administracion from './Admin/Administracion/Administracion.tsx'
 
 
 
@@ -41,6 +42,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/admin/adminCatalogo' element={<AdminCatalogo/>}/>
             <Route path='/admin/adminCajero' element={<Cajero/>}/>
             <Route path='/admin/adminCocinero' element={<Cocinero/>}/>
+            <Route path='/admin/administracion' element={<Administracion/>}/>
+
+
 
 
           </Route>

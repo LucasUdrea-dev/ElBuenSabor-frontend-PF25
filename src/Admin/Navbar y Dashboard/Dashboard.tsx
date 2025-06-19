@@ -14,7 +14,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Administración", 
       icono: "/svg/IconsDashboard/Administracion.svg",
       descripcion: "Gestión general del sistema",
-      ruta: "/admin"
+      ruta: '/admin/administracion'
     },
     { 
       nombre: "Cocinero", 
