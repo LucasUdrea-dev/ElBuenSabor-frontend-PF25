@@ -144,6 +144,14 @@ export class ArticuloVentaDTO {
 export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
     tiempoEstimado?: string;
+    stockArticuloInsumo: StockArticuloInsumo = new StockArticuloInsumo();
+}
+
+export class StockArticuloInsumo {
+    id?: number | null = null
+    minStock: number = 0
+    cantidad: number = 0
+    sucursal: Sucursal = new Sucursal()
 }
 
 export class ArticuloManufacturado extends Articulo{

@@ -6,7 +6,7 @@ import { obtenerImagen } from "../../../ts/Imagen.ts";
 import LoginEmpleados from "../LoginEmpleados/LoginEmpleados.tsx";
 
 export default function NavbarAdmin() {
-  const [estaLogeado, setEstaLogeado] = useState(false);
+  const [estaLogeado, setEstaLogeado] = useState(true);
   const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] =
     useState(false);
   const [mostrarDashboard, setMostrarDashboard] = useState(false);

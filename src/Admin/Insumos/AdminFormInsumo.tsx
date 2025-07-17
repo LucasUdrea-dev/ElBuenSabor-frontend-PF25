@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArticuloInsumo, Categoria, host, Subcategoria, tiposUnidadMedida } from "../../../ts/Clases"
+import { ArticuloInsumo, Categoria, host, StockArticuloInsumo, Subcategoria, Sucursal, tiposUnidadMedida } from "../../../ts/Clases"
 import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
 import axios from "axios";
 
@@ -11,6 +11,7 @@ interface Props{
 
 export default function AdminFormInsumo({articulo, cerrarEditar, cargarAdminInsumo}: Props) {
 
+    const [sucursalActual, setSucursalActual] = useState<Sucursal>(new Sucursal())
     const [listaCategorias, setListaCategorias] = useState<Categoria[]>([])
     const [form, setForm] = useState<ArticuloInsumo>(new ArticuloInsumo())
     const [imagen, setImagen] = useState<File | null>(null)
@@ -22,8 +23,13 @@ export default function AdminFormInsumo({articulo, cerrarEditar, cargarAdminInsu
     useEffect(()=>{
 
         traerCategorias()
+        traerSucursal()
 
     }, [])
+
+    useEffect(()=>{
+        console.log(sucursalActual)
+    }, [sucursalActual])
 
     const traerCategorias = async ()=>{
         const URLCategorias = host+"/api/Categoria/insumos"
@@ -37,6 +43,20 @@ export default function AdminFormInsumo({articulo, cerrarEditar, cargarAdminInsu
             console.error(error)
         }
 
+    }
+
+    const traerSucursal = async ()=>{
+        const URLSucursal = "http://localhost:8080/api/sucursales/1"
+
+        try {
+            
+            const response = await axios.get(URLSucursal)
+            
+            setSucursalActual(response.data)
+
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     useEffect(()=>{
@@ -68,6 +88,14 @@ export default function AdminFormInsumo({articulo, cerrarEditar, cargarAdminInsu
         try {
 
             let formFinal = {...form}
+
+            const sucursalFinal = {...sucursalActual}
+
+            if (!formFinal.stockArticuloInsumo) {
+                formFinal.stockArticuloInsumo = new StockArticuloInsumo()
+            }
+            
+            formFinal.stockArticuloInsumo.sucursal = sucursalFinal;
 
             delete formFinal.subcategoria.categoria?.subcategorias
 
