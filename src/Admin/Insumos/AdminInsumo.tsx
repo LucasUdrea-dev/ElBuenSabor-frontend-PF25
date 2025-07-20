@@ -4,6 +4,7 @@ import axios from "axios";
 import AdminFormInsumo from "./AdminFormInsumo.tsx";
 import { obtenerImagen } from "../../../ts/Imagen.ts";
 import ModificarStock from "./ModificarStock.tsx";
+import AdminMostrarInsumo from "./AdminMostrarInsumo.tsx";
 
 interface ModificarStock{
     articulo: ArticuloInsumo
@@ -207,9 +208,9 @@ export default function AdminInsumo() {
                                                     <div className={`${articulo.stockArticuloInsumo.cantidad > articulo.stockArticuloInsumo.minStock ? "bg-green-600" : "bg-red-500"} h-10 w-10 m-auto rounded-4xl`}></div>
                                                 </div>
                                                 <div className="flex justify-around">
-                                                    <button title="Quitar stock" onClick={()=>setModificarStock({articulo: articulo, operacion: "quitar"})}><img className="h-15" src="/img/simboloMenos.png" alt="" /></button>
-                                                    <button title="Modificar cantidad minima" onClick={()=>setModificarStock({articulo: articulo, operacion: "minimo"})}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
-                                                    <button title="Agregar stock" onClick={()=>setModificarStock({articulo: articulo, operacion: "agregar"})}><img className="h-15" src="/img/simboloMas.png" alt="" /></button>
+                                                    <button title="Quitar stock" onClick={()=>setModificarStock({articulo: articulo, operacion: "quitar"})}><img className="max-h-15" src="/img/simboloMenos.png" alt="" /></button>
+                                                    <button title="Modificar cantidad minima" onClick={()=>setModificarStock({articulo: articulo, operacion: "minimo"})}><img className="max-h-15" src="/img/stockMin.png" alt="" /></button>
+                                                    <button title="Agregar stock" onClick={()=>setModificarStock({articulo: articulo, operacion: "agregar"})}><img className="max-h-15" src="/img/simboloMas.png" alt="" /></button>
                                                 </div>
             
                                             </div>
@@ -254,14 +255,12 @@ export default function AdminInsumo() {
 
                 </div>
                 
-                {/**MostrarManufacturado 
-                 * 
+                {/**Mostrar Insumo*/} 
                 <div className={`${!mostrarArticulo && "hidden"}`}>
 
-                    <AdminMostrarManufacturado articulo={mostrarArticulo} abrirEditar={setFormManufacturado} cerrarMostrar={cerrarDetalle}/>
+                    <AdminMostrarInsumo articulo={mostrarArticulo} abrirEditar={setFormInsumo} cerrarMostrar={cerrarDetalle}/>
 
                 </div>
-                */}
 
                 {/**Editar, crear manufacturado*/}
 

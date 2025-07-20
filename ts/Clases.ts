@@ -154,6 +154,12 @@ export class StockArticuloInsumo {
     sucursal: Sucursal = new Sucursal()
 }
 
+export class HistoricoStockArticuloInsumo{
+    id?: number | null = null
+    cantidad: number = 0
+    fechaActualizacion: string = ""
+}
+
 export class ArticuloManufacturado extends Articulo{
     tiempoEstimado: string = "";
     preparacion: string = "";

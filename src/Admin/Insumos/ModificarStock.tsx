@@ -113,7 +113,7 @@ export default function ModificarStock({modificar, cerrarModal}: Props) {
 
                         <div className="w-1/2">
                             <h1 className="max-full">
-                                {(modificar.operacion == "minimo") ? "Stock minimo:" : `Stock actual: ${modificar.articulo?.stockArticuloInsumo.cantidad}`}
+                                {(modificar.operacion == "minimo") ? "Stock minimo:" : `Stock actual: ${modificar.articulo?.stockArticuloInsumo.cantidad} ${modificar.articulo.unidadMedida.unidad}${(modificar.articulo.unidadMedida.unidad == "unidad" && modificar.articulo.stockArticuloInsumo.cantidad != 1) ? "es" : ""}`}
                             </h1>
                             <input value={input} onBlur={()=>{
                                 const entero = Math.floor(Number(input))
