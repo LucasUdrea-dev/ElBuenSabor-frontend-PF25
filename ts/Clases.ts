@@ -8,7 +8,7 @@ export class Promocion {
     tipoPromocion?: TipoPromocion = new TipoPromocion();
     existe: boolean = false;
     sucursal?: Sucursal;
-    promocionArticuloList?: PromocionArticulo[];
+    promocionArticuloList: PromocionArticulo[] = [];
     imagen: string = "";
 }
 
@@ -144,6 +144,20 @@ export class ArticuloVentaDTO {
 export class ArticuloInsumo extends Articulo{
     precioCompra: number = 0;
     tiempoEstimado?: string;
+    stockArticuloInsumo: StockArticuloInsumo = new StockArticuloInsumo();
+}
+
+export class StockArticuloInsumo {
+    id?: number | null = null
+    minStock: number = 0
+    cantidad: number = 0
+    sucursal: Sucursal = new Sucursal()
+}
+
+export class HistoricoStockArticuloInsumo{
+    id?: number | null = null
+    cantidad: number = 0
+    fechaActualizacion: string = ""
 }
 
 export class ArticuloManufacturado extends Articulo{

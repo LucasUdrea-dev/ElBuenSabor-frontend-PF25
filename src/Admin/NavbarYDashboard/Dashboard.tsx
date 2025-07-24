@@ -56,7 +56,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Promociones", 
       icono: "/svg/IconsDashboard/Semielaborados.svg",
       descripcion: "Combo de productos y ofertas",
-      ruta: "/promociones"
+      ruta: "/admin/adminPromocion"
     },
     { 
       nombre: "Catálogo", 
