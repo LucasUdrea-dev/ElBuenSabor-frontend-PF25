@@ -19,6 +19,7 @@ import Cocinero from './Admin/Cocinero/Cocinero.tsx'
 import Administracion from './Admin/Administracion/Administracion.tsx'
 import AdminSubcategoria from './Admin/Subcategorias/AdminSubcategoria.tsx'
 import AdminInsumo from './Admin/Insumos/AdminInsumo.tsx'
+import AdminPromocion from './Admin/Promociones/AdminPromocion.tsx'
 
 
 
@@ -47,6 +48,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/admin/adminInsumo' element={<AdminInsumo/>}/>
             <Route path='/admin/adminCategoria' element={<AdminCategoria/>}/>
             <Route path='/admin/adminSubcategoria' element={<AdminSubcategoria/>}/>
+            <Route path='/admin/adminPromocion' element={<AdminPromocion/>}/>
             
             <Route path='/admin/adminCajero' element={<Cajero/>}/>
             <Route path='/admin/adminCocinero' element={<Cocinero/>}/>

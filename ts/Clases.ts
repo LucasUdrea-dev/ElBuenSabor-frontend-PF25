@@ -8,7 +8,7 @@ export class Promocion {
     tipoPromocion?: TipoPromocion = new TipoPromocion();
     existe: boolean = false;
     sucursal?: Sucursal;
-    promocionArticuloList?: PromocionArticulo[];
+    promocionArticuloList: PromocionArticulo[] = [];
     imagen: string = "";
 }
 
