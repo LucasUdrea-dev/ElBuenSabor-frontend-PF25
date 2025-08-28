@@ -16,6 +16,9 @@ import AppAdmin from './Admin/AppAdmin.tsx'
 import Cajero from './Admin/Cajero/Cajero.tsx'
 import Cocinero from './Admin/Cocinero/Cocinero.tsx'
 import Administracion from './Admin/Administracion/Administracion.tsx'
+import Clientes from './Admin/Clientes/Clientes.tsx'
+import Facturas from './Admin/Facturas/Facturas.tsx'
+import Empleados from './Admin/Empleados/Empleados.tsx'
 
 
 
@@ -43,7 +46,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/admin/adminCajero' element={<Cajero/>}/>
             <Route path='/admin/adminCocinero' element={<Cocinero/>}/>
             <Route path='/admin/administracion' element={<Administracion/>}/>
-
+            <Route path='/admin/clientes' element={<Clientes/>}/>
+            <Route path='/admin/facturas' element={<Facturas/>}/>
+            <Route path='/admin/empleados' element={<Empleados/>}/>
 
 
 

@@ -226,3 +226,17 @@ export  interface PreferenceMP{
     id: string;
     statusCode: number;
 }
+
+export class Empleado {
+    id?: number;
+    nombre: string = "";
+    apellido: string = "";
+    email: string = "";
+    telefono: string = "";
+    cargo: string = "";
+    existe?: boolean = true;
+    sueldo?: number; // Cambiado de salario a sueldo para coincidir con backend
+    fechaAlta?: Date; // Cambiado de fechaIngreso a fechaAlta para coincidir con backend
+    idSucursal?: Sucursal; // Agregada relación con Sucursal
+    imagenEmpleado?: string;
+}
