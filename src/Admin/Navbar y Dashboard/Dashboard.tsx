@@ -38,19 +38,25 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Clientes", 
       icono: "/svg/IconsDashboard/ClientesAdmin.svg",
       descripcion: "Administrar base de clientes",
-      ruta: "/admin/clientes"
+      ruta: "/clientes"
     },
     { 
       nombre: "Facturas", 
       icono: "/svg/IconsDashboard/Facturas.svg",
       descripcion: "Facturación y reportes",
-      ruta: "/admin/facturas"
+      ruta: "/facturas"
     },
     { 
       nombre: "Empleados", 
       icono: "/svg/IconsDashboard/Empleados.svg",
       descripcion: "Gestión de personal",
-      ruta: "/admin/empleados"
+      ruta: "/empleados"
+    },
+    { 
+      nombre: "Promociones", 
+      icono: "/svg/IconsDashboard/Semielaborados.svg",
+      descripcion: "Combo de productos y ofertas",
+      ruta: "/admin/adminPromocion"
     },
     { 
       nombre: "Catálogo", 
@@ -59,28 +65,22 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       ruta: "/admin/adminCatalogo"
     },
     { 
-      nombre: "Promociones", 
-      icono: "/svg/IconsDashboard/Semielaborados.svg",
-      descripcion: "Combo de productos y ofertas",
-      ruta: "/promociones"
-    },
-    { 
       nombre: "Insumos", 
       icono: "/svg/IconsDashboard/Insumos.svg",
       descripcion: "Materias primas y stock",
-      ruta: "/insumos"
-    },
-    { 
-      nombre: "Categorías", 
-      icono: "/svg/IconsDashboard/Categorías.svg",
-      descripcion: "Organización de productos",
-      ruta: "/categorias"
+      ruta: "/admin/adminInsumo"
     },
     { 
       nombre: "Subcategorias", 
       icono: "/svg/IconsDashboard/subcategoria.svg",
       descripcion: "Organización de Subcategorias",
-      ruta: "/subcategorias"
+      ruta: "/admin/adminSubcategoria"
+    },
+    { 
+      nombre: "Categorías", 
+      icono: "/svg/IconsDashboard/Categorías.svg",
+      descripcion: "Organización de productos",
+      ruta: "/admin/adminCategoria"
     },
   ];
 
