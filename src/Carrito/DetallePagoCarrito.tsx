@@ -44,7 +44,7 @@ export default function DetallePagoCarrito({isOpen, cerrarModal, cerrarCarrito}:
                         </div>
                         <div>
                             <h3>{pedido.tipoEnvio.tipoDelivery == "DELIVERY" ?
-                            `Delivery - ${pedido.direccionPedido.direccion.nombreCalle} ${pedido.direccionPedido.direccion.numeracion}, ${pedido.direccionPedido.direccion.ciudad?.nombre}`
+                            `Delivery - ${pedido.direccionPedido?.direccion.nombreCalle} ${pedido.direccionPedido?.direccion.numeracion}, ${pedido.direccionPedido?.direccion.ciudad?.nombre}`
                             :
                             `Retiro En Local - ${pedido.sucursal.direccion?.nombreCalle} ${pedido.sucursal.direccion?.numeracion}, ${pedido.sucursal.direccion?.ciudad?.nombre}`
                             }</h3>
@@ -63,8 +63,8 @@ export default function DetallePagoCarrito({isOpen, cerrarModal, cerrarCarrito}:
                                 ))}
                                 {pedido.detallePedidoList.map((detalle)=>(
                                     <div className="flex justify-between">
-                                        <h1>{detalle.cantidad} x {detalle.articulo.nombre}</h1>
-                                        <h1>${detalle.articulo.precio * detalle.cantidad}</h1>
+                                        <h1>{detalle.cantidad} x {detalle.articulo?.nombre}</h1>
+                                        <h1>${detalle.articulo!.precio * detalle.cantidad}</h1>
                                     </div>
                                 ))}
                             </div>

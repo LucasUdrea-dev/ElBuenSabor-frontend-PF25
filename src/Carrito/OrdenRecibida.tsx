@@ -1,9 +1,14 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { CarritoContext } from "./CarritoContext"
-import { Pedido } from "../../ts/Clases"
-import { useNavigate } from "react-router-dom"
+import { host, Pedido } from "../../ts/Clases"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import axios from "axios"
 
 export default function OrdenRecibida() {
+
+    const [params] = useSearchParams()
+
+    const status = params.get("status")
 
     const carritoContext = useContext(CarritoContext)
 
@@ -13,9 +18,13 @@ export default function OrdenRecibida() {
 
     const {pedido, vaciarPedido} = carritoContext
 
-    const [pedidoConfirmado, setPedidoConfirmado] = useState<Pedido>(pedido)
+    
+    const [pedidoConfirmado, setPedidoConfirmado] = useState<Pedido>(new Pedido())
+    const [pedidoTerminado, setPedidoTerminado] = useState<Pedido>(new Pedido());
     const [guardado, setGuardado] = useState(false)
     const navigate = useNavigate()
+
+    let pedidoGuardado: boolean = false
 
     {/**Funcion que se tiene que activar
         una vez que se confirma el guardado del pedido */}
@@ -23,12 +32,89 @@ export default function OrdenRecibida() {
         vaciarPedido()
     }
 
+    useEffect(()=>{
+        console.log("TERMINADO")
+        console.log(pedidoTerminado)
+    }, [pedidoTerminado])
+
+    useEffect(()=>{
+        console.log()
+    }, [pedidoConfirmado])
+
+    const guardarPedido = async()=>{
+
+        const URL = host+"/api/pedidos"
+
+        sacarDireccionPedido()
+
+        try {
+            
+            const response = await axios.post(URL, pedidoTerminado)
+            
+            await obtenerPedidoGuardado(response.data)
+            setGuardado(true)
+            pedidoGuardado = true
+            reiniciarCarrito()
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
+    const obtenerPedidoGuardado = async(id: number)=>{
+        const URL = host+`/api/pedidos/${id}`
+
+        try {
+            
+            const response = await axios.get(URL);
+
+            setPedidoConfirmado(response.data)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
+
+    const sacarDireccionPedido = ()=>{
+
+        pedidoTerminado.fecha = new Date().toISOString()
+
+        if (pedidoTerminado.tipoEnvio.tipoDelivery != "DELIVERY") {
+            delete pedidoTerminado.direccionPedido;
+        }
+    }
+
+    const verificarPagoYGuardar = async()=>{
+        if (pedidoTerminado.tipoPago.tipoPago == "MERCADOPAGO") {
+            if (status == "approved") {
+                await guardarPedido()
+            }
+        }else{
+            await guardarPedido()
+        }
+    }
+
+    useEffect(()=>{
+
+        if (pedido.sucursal.id && pedido.usuario.id) {
+            setPedidoTerminado(pedido)
+        }
+    }, [status])
+
+    useEffect(()=>{
+        if (!pedidoGuardado) {
+            verificarPagoYGuardar()
+        }
+    }, [pedidoTerminado])
+
     const calcularPrecioTotalPedidoConfirmado = ()=>{
 
         let precioTotal = 0
 
         for (const detalle of pedidoConfirmado.detallePedidoList) {
-            precioTotal = precioTotal + (detalle.articulo.precio * detalle.cantidad)
+            precioTotal = precioTotal + ((detalle.articulo ? detalle.articulo.precio : 0) * detalle.cantidad)
         }
 
         for (const detalle of pedidoConfirmado.detallePromocionList) {
@@ -38,11 +124,17 @@ export default function OrdenRecibida() {
         return precioTotal
 
     }
+
+    if (!guardado) {
+        return(
+            <div className="bg-[#333333] h-screen w-full"></div>
+        )
+    }
     
     return(
         <>
         
-        <div className="bg-[#333333] h-full w-full py-10">
+        <div className="bg-[#333333] h-full w-full py-40">
 
             <div className="bg-white rounded-2xl m-auto w-2/3 max-w-2xl">
                     
@@ -59,7 +151,7 @@ export default function OrdenRecibida() {
                         ? "llegara" : "estara listo"} aproximadamente a las {new Date(new Date().getTime() + (Number(pedidoConfirmado.tiempoEstimado) * 60 * 1000) ).toLocaleTimeString().slice(0, 5)}
                         </h3>
                         <h3>{pedidoConfirmado.tipoEnvio.tipoDelivery == "DELIVERY" ?
-                            `Envio a domicilio: ${pedidoConfirmado.direccionPedido.direccion.nombreCalle} ${pedidoConfirmado.direccionPedido.direccion.numeracion}, ${pedidoConfirmado.direccionPedido.direccion.ciudad.nombre}`
+                            `Envio a domicilio: ${pedidoConfirmado.direccionPedido?.direccion.nombreCalle} ${pedidoConfirmado.direccionPedido?.direccion.numeracion}, ${pedidoConfirmado.direccionPedido?.direccion.ciudad.nombre}`
                             :
                             `Retiro en local: ${pedidoConfirmado.sucursal.direccion?.nombreCalle} ${pedidoConfirmado.sucursal.direccion?.numeracion}, ${pedidoConfirmado.sucursal.direccion?.ciudad.nombre}`}
                         </h3>
@@ -100,14 +192,14 @@ export default function OrdenRecibida() {
                             </div>
 
                             {pedidoConfirmado.detallePedidoList.map((detalle)=>(
-                                <div className="grid grid-cols-3 items-center border-1 py-2 px-5">
-                                    <h1>{detalle.articulo.nombre}</h1>
+                                <div key={detalle.articulo?.id} className="grid grid-cols-3 items-center border-1 py-2 px-5">
+                                    <h1>{detalle.articulo?.nombre}</h1>
                                     <h1 className="text-center">{detalle.cantidad}</h1>
-                                    <h1 className="text-center">{detalle.cantidad * detalle.articulo.precio}</h1>
+                                    <h1 className="text-center">{detalle.cantidad * (detalle.articulo ? detalle.articulo.precio : 0)}</h1>
                                 </div>
                             ))}
                             {pedidoConfirmado.detallePromocionList.map((detalle)=>(
-                                <div className="grid grid-cols-3 items-center border-1 py-2 px-5">
+                                <div key={detalle.promocion.id} className="grid grid-cols-3 items-center border-1 py-2 px-5">
                                     <h1>{detalle.promocion.denominacion}</h1>
                                     <h1 className="text-center">{detalle.cantidad}</h1>
                                     <h1 className="text-center">${detalle.cantidad * detalle.promocion.precioRebajado}</h1>

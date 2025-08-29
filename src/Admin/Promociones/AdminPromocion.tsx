@@ -1,37 +1,38 @@
 import { useEffect, useState } from "react"
-import { ArticuloManufacturado, host } from '../../../ts/Clases.ts'; // Adjust the path as needed
+import { host, Promocion } from '../../../ts/Clases.ts'; // Adjust the path as needed
 
-import AdminFormManufacturado from "./AdminFormManufacturado.tsx";
-import AdminMostrarManufacturado from "./AdminMostrarManufacturado.tsx";
 import axios from "axios";
+import { obtenerImagen } from "../../../ts/Imagen.ts";
+import AdminMostrarPromocion from "./AdminMostrarPromocion.tsx";
+import AdminFormPromocion from "./AdminFormPromocion.tsx";
 
-export default function AdminCatalogo() {
+export default function AdminPromocion() {
 
-    const [articulosManufacturados, setArticulosManufacturados] = useState<ArticuloManufacturado[]>([])
-    const [articulosManufacturadosMostrados, setArticulosManufacturadosMostrados] = useState<ArticuloManufacturado[]>([])
+    const [promociones, setPromociones] = useState<Promocion[]>([])
+    const [promocionesMostradas, setPromocionesMostradas] = useState<Promocion[]>([])
     const [buscador, setBuscador] = useState("")
     const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
-    const [mostrarArticulo, setMostrarArticulo] = useState<ArticuloManufacturado | null>(null)
-    const [formManufacturado, setFormManufacturado] = useState<ArticuloManufacturado | null>(null)
+    const [mostrarPromocion, setMostrarPromocion] = useState<Promocion | null>(null)
+    const [formPromocion, setFormPromocion] = useState<Promocion | null>(null)
 
     const cantidadPorPagina = 10;
     
     useEffect(()=>{
-        cargarManufacturados()
+        cargarPromociones()
     }, [])
 
-    const borradoLogico = async (articulo: ArticuloManufacturado)=>{
+    const borradoLogico = async (promocion: Promocion)=>{
 
-        const URL = host+`/api/ArticuloManufacturado/${articulo.id}`
+        const URL = host+`/api/promociones/${promocion.id}`
 
-        articulo.existe = !articulo.existe
+        promocion.existe = !promocion.existe
 
         try {
             
-            const response = await axios.put(URL, articulo)
+            const response = await axios.put(URL, promocion)
 
             console.log("Se borro logicamente el articulo: " + response.status)
-            cargarManufacturados()
+            cargarPromociones()
         } catch (error) {
             console.error(error)
         }
@@ -39,21 +40,21 @@ export default function AdminCatalogo() {
     }
 
     const cerrarDetalle = ()=>{
-        setMostrarArticulo(null)
+        setMostrarPromocion(null)
     }
 
     const cerrarForm = ()=>{
-        setFormManufacturado(null)
+        setFormPromocion(null)
     }
 
-    const cargarManufacturados = async ()=>{
+    const cargarPromociones = async ()=>{
 
-        const URL =  host+"/api/ArticuloManufacturado"
+        const URL =  host+"/api/promociones"
 
         try {
             
             const response = await axios.get(URL)
-            setArticulosManufacturados(response.data)
+            setPromociones(response.data)
 
         } catch (error) {
             console.log(error)
@@ -63,17 +64,17 @@ export default function AdminCatalogo() {
 
     useEffect(()=>{
 
-        let filtrado: ArticuloManufacturado[] = articulosManufacturados
+        let filtrado: Promocion[] = promociones
 
         if (buscador) {
-            filtrado = filtrado.filter((articulo)=>
-            articulo.nombre.toLowerCase().includes(buscador.toLowerCase()))
+            filtrado = filtrado.filter((promocion)=>
+            promocion.denominacion.toLowerCase().includes(buscador.toLowerCase()))
         }
 
         setPaginaSeleccionada(1)
-        setArticulosManufacturadosMostrados(filtrado)
+        setPromocionesMostradas(filtrado)
 
-    }, [articulosManufacturados, buscador])
+    }, [promociones, buscador])
     
     return(
         <>
@@ -81,7 +82,7 @@ export default function AdminCatalogo() {
             <div className="bg-[#333333] w-full min-h-screen py-10">
 
                 {/**Tabla */}
-                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(mostrarArticulo || formManufacturado) && "hidden"}`}>
+                <div className={`bg-white w-11/12 m-auto rounded-2xl ${(mostrarPromocion || formPromocion) && "hidden"}`}>
 
                     {/**Titulo, agregar y buscador */}
                     <div className="flex justify-between p-5 h-2/12">
@@ -89,7 +90,7 @@ export default function AdminCatalogo() {
                         <h1 className="pl-5 text-4xl">Catálogo</h1>
 
                         <div className="flex gap-5 pr-[2%] text-2xl">
-                            <button onClick={()=>setFormManufacturado(new ArticuloManufacturado())} className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
+                            <button onClick={()=>setFormPromocion(new Promocion())} className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2">
                                 <h2>Agregar</h2>
                                 <img className="h-5" src="/svg/Agregar.svg" alt="" />
                             </button>
@@ -106,7 +107,7 @@ export default function AdminCatalogo() {
                         {/**Cabecera */}
                         <div className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
 
-                            <h1>Categoría</h1>
+                            <h1>Imagen</h1>
                             <h1>Nombre</h1>
                             <h1>Precio</h1>
                             <h1>Publicado</h1>
@@ -115,28 +116,30 @@ export default function AdminCatalogo() {
                         </div>
 
                         {/**Articulos */}
-                        {articulosManufacturadosMostrados.length > 0 && articulosManufacturadosMostrados.map((articulo, index)=>{
+                        {promocionesMostradas.length > 0 && promocionesMostradas.map((promocion, index)=>{
                             
                             if (index < (paginaSeleccionada*cantidadPorPagina) && index >= (cantidadPorPagina*(paginaSeleccionada-1))) {
 
                                 return(
                                     
-                                    <div key={articulo.id} className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
+                                    <div key={promocion.id} className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
                                         
+                                        <div className="bg-cover bg-no-repeat bg-center" style={{backgroundImage: `url('${obtenerImagen(promocion.imagen)}')`}}></div>
+
                                         <div>
-                                            <h3>{articulo.subcategoria.categoria?.denominacion}</h3>
+                                            <h3>{promocion.denominacion}</h3>
                                         </div>
-                                        <div>
-                                            <h3>{articulo.nombre}</h3>
-                                        </div>
-                                        <h3>${articulo.precio}</h3>
+
+                                        <h3>${promocion.precioRebajado}</h3>
+
                                         <div className="flex">
-                                            <div className={`${articulo.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                            <div className={`${promocion.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
                                         </div>
+
                                         <div className="flex justify-around">
-                                            <button onClick={()=>setMostrarArticulo(articulo)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
-                                            <button onClick={()=>setFormManufacturado(articulo)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
-                                            <button onClick={()=>{borradoLogico(articulo)}}><img className="h-15" src={`/svg/${articulo.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt="" /></button>
+                                            <button onClick={()=>setMostrarPromocion(promocion)}><img className="h-15" src="/svg/LogoVer.svg" alt="" /></button>
+                                            <button onClick={()=>setFormPromocion(promocion)}><img className="h-15" src="/svg/LogoEditar.svg" alt="" /></button>
+                                            <button onClick={()=>{borradoLogico(promocion)}}><img className="h-15" src={`/svg/${promocion.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt="" /></button>
                                         </div>
     
                                     </div>
@@ -151,7 +154,7 @@ export default function AdminCatalogo() {
 
                             {/**Informacion articulos mostrados y totales */}
                             <div className="h-10 flex items-center">
-                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < articulosManufacturadosMostrados.length ? (paginaSeleccionada*cantidadPorPagina) : articulosManufacturadosMostrados.length} de {articulosManufacturadosMostrados.length}</h4>
+                                <h4>{(paginaSeleccionada*cantidadPorPagina)-cantidadPorPagina+1}-{paginaSeleccionada*cantidadPorPagina < promocionesMostradas.length ? (paginaSeleccionada*cantidadPorPagina) : promocionesMostradas.length} de {promocionesMostradas.length}</h4>
                             </div>
 
                             {/**Control de paginado a traves de botones */}
@@ -164,13 +167,13 @@ export default function AdminCatalogo() {
                             })}><img className="h-10" src="/svg/AnteriorPagina.svg" alt="" /></button>
 
                             <button onClick={()=>setPaginaSeleccionada(prev=> {
-                                if (paginaSeleccionada < Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina)) {
+                                if (paginaSeleccionada < Math.ceil(promocionesMostradas.length / cantidadPorPagina)) {
                                     return prev+1
                                 }
                                 return prev;
                             })}><img className="h-10" src="/svg/SiguientePagina.svg" alt="" /></button>
                             
-                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(articulosManufacturadosMostrados.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
+                            <button onClick={()=>setPaginaSeleccionada(Math.ceil(promocionesMostradas.length / cantidadPorPagina))}><img className="h-10" src="/svg/UltimaPagina.svg" alt="" /></button>
 
                         </div>                        
 
@@ -179,16 +182,16 @@ export default function AdminCatalogo() {
                 </div>
                 
                 {/**MostrarManufacturado */}
-                <div className={`${!mostrarArticulo && "hidden"}`}>
+                <div className={`${!mostrarPromocion && "hidden"}`}>
 
-                    <AdminMostrarManufacturado articulo={mostrarArticulo} abrirEditar={setFormManufacturado} cerrarMostrar={cerrarDetalle}/>
+                    <AdminMostrarPromocion promocion={mostrarPromocion} abrirEditar={setFormPromocion} cerrarMostrar={cerrarDetalle}/>
 
                 </div>
 
                 {/**Editar, crear manufacturado */}
-                <div className={`${!formManufacturado && "hidden"}`}>
+                <div className={`${!formPromocion && "hidden"}`}>
 
-                    <AdminFormManufacturado articulo={formManufacturado} cargarAdminCatalogo={cargarManufacturados} cerrarEditar={cerrarForm}/>
+                    <AdminFormPromocion promocion={formPromocion} cargarAdminCatalogo={cargarPromociones} cerrarEditar={cerrarForm}/>
 
                 </div>
 

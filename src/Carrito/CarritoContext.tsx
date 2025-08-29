@@ -1,5 +1,6 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { ArticuloVentaDTO, DetallePedido, DetallePromocion, Direccion, DireccionPedido, Pedido, Promocion, sucursalMendoza, tiposEnvioEnum, tiposPagoEnum } from "../../ts/Clases";
+import { ArticuloInsumo, ArticuloManufacturado, DetallePedido, DetallePromocion, Direccion, DireccionPedido, host, Pedido, Promocion, Sucursal, tiposEnvioEnum, tiposPagoEnum, Usuario } from "../../ts/Clases";
+import axios from "axios";
 
 interface CarritoContextType{
     pedido: Pedido
@@ -8,9 +9,9 @@ interface CarritoContextType{
     calcularPrecioTotal: ()=>number
     cambiarDireccion: (direccion: Direccion)=>void
     cambiarMetodoPago: (metodo: string)=>void
-    agregarArticulo: (articulo: ArticuloVentaDTO, cantidad: number)=>void
-    quitarArticulo: (articulo: ArticuloVentaDTO)=>void
-    borrarArticulo: (articulo: ArticuloVentaDTO)=>void
+    agregarArticulo: (articulo: ArticuloManufacturado | ArticuloInsumo, cantidad: number)=>void
+    quitarArticulo: (articulo: ArticuloManufacturado | ArticuloInsumo)=>void
+    borrarArticulo: (articulo: ArticuloManufacturado | ArticuloInsumo)=>void
     agregarPromocion: (promocion: Promocion, cantidad: number)=>void
     quitarPromocion: (promocion: Promocion)=>void
     borrarPromocion: (promocion: Promocion)=>void
@@ -21,31 +22,90 @@ export const CarritoContext = createContext<CarritoContextType | undefined>(unde
 
 export default function CarritoProvider({children}: PropsWithChildren) {
 
-    const inicializarPedido = ()=>{
+    const inicializarPedido = async()=>{
         let pedidoNuevo = new Pedido()
 
-        pedidoNuevo = {...pedidoNuevo, sucursal: sucursalMendoza}
+        const datosSucursal: Sucursal = await obtenerSucursal()
+        const datosUsuario: Usuario = await obtenerUsuario()
+
+        pedidoNuevo = {...pedidoNuevo, sucursal: datosSucursal, usuario: datosUsuario}
 
         return pedidoNuevo
 
     }
 
-    const [pedido, setPedido] = useState<Pedido>(()=>{
+    const obtenerSucursal = async()=>{
+        const URL = host+`/api/sucursales/${1}`
+
         try {
-            const carritoGuardado = localStorage.getItem("carrito")
-            return carritoGuardado ? JSON.parse(carritoGuardado) : inicializarPedido()
+            
+            const response = await axios.get(URL)
+
+            const sucursal: Sucursal = response.data
+
+            return sucursal;
+
         } catch (error) {
-            console.error("Error al leer el carrito guardado: ", error)
-            return inicializarPedido()
+            console.error(error)
+            return new Sucursal()
         }
+
+    }
+
+    const obtenerUsuario = async()=>{
+        const URL = host+`/api/usuarios/${2}`
+
+        try {
+            const response = await axios.get(URL)
+
+            const usuario: Usuario = response.data
+
+            return usuario;
+
+        } catch (error) {
+            console.error(error)
+            return new Usuario()
+        }
+
+    }
+
+    const [pedido, setPedido] = useState<Pedido>(()=>{
+        const carritoGuardado = localStorage.getItem("carrito")
+        return carritoGuardado ? JSON.parse(carritoGuardado) : new Pedido()
     })
 
     useEffect(()=>{
+        const cargarCarrito = async()=>{
+            
+            try {
+                const carritoGuardado = localStorage.getItem("carrito")
+                if (carritoGuardado) {
+                    
+                    setPedido(JSON.parse(carritoGuardado))
+                }else{
+                    const pedidoInicial = await inicializarPedido()
+                    setPedido(pedidoInicial)
+                }
+                
+            } catch (error) {
+                console.error("Error al leer el carrito guardado: ", error)
+                const pedidoInicial = await inicializarPedido()
+                setPedido(pedidoInicial)
+            }
+        }
+
+        cargarCarrito()
+    }, [])
+
+    useEffect(()=>{
+
         console.log(pedido)
-        try {
-            localStorage.setItem("carrito", JSON.stringify(pedido))
-        } catch (error) {
-            console.error("Error al guardar el carrito en localstorage: ", error)
+        if (pedido.sucursal.id || pedido.usuario.id) {
+            try {
+                localStorage.setItem("carrito", JSON.stringify(pedido))
+            } catch (error) {
+                console.error("Error al guardar el carrito en localstorage: ", error)
+            }
         }
     }, [pedido])
 
@@ -61,8 +121,10 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
         let precioTotal = 0
 
-        for (const detalle of pedido.detallePedidoList) {
-            precioTotal = precioTotal + (detalle.articulo.precio * detalle.cantidad)
+        for (const detalle of pedido?.detallePedidoList) {
+            if (detalle.articulo) {
+                precioTotal = precioTotal + (detalle.articulo.precio * detalle.cantidad)
+            }
         }
 
         for (const detalle of pedido.detallePromocionList) {
@@ -73,10 +135,10 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
     }
 
-    const vaciarPedido = ()=>{
+    const vaciarPedido = async()=>{
 
         localStorage.removeItem("carrito")
-        setPedido(inicializarPedido())
+        setPedido(await inicializarPedido())
 
     }
 
@@ -86,13 +148,13 @@ export default function CarritoProvider({children}: PropsWithChildren) {
             
             let mayorTiempo = 0
 
-            if (prev.detallePromocionList.length > 0) {
+            if (prev.detallePromocionList?.length > 0) {
                 return {...prev, tiempoEstimado: "30"}
             }
 
-            prev.detallePedidoList.map((detalle)=> {
-                if (Number(detalle.articulo.tiempoEstimado.split(" ")[0]) > mayorTiempo) {
-                    mayorTiempo = Number(detalle.articulo.tiempoEstimado.split(" ")[0])
+            prev.detallePedidoList?.map((detalle)=> {
+                if (Number(detalle.articulo?.tiempoEstimado?.split(" ")[0]) > mayorTiempo) {
+                    mayorTiempo = Number(detalle.articulo?.tiempoEstimado?.split(" ")[0])
                 }
             })
 
@@ -128,16 +190,16 @@ export default function CarritoProvider({children}: PropsWithChildren) {
         })
     }
 
-    const agregarArticulo = (articulo: ArticuloVentaDTO, cantidad: number)=>{
+    const agregarArticulo = (articulo: ArticuloManufacturado | ArticuloInsumo, cantidad: number)=>{
 
         setPedido((prev)=>{
 
-            const encontrado = prev.detallePedidoList.find((detalle)=> detalle.articulo.id == articulo.id)
+            const encontrado = prev.detallePedidoList.find((detalle)=> detalle.articulo?.id == articulo.id)
             let nuevoDetallePedido: DetallePedido[];
 
             if (encontrado) {
                 nuevoDetallePedido = prev.detallePedidoList.map(detalle =>
-                    detalle.articulo.id == articulo.id ? 
+                    detalle.articulo?.id == articulo.id ? 
                     {...detalle, cantidad: detalle.cantidad + (cantidad ? cantidad : 1)}
                     :
                     detalle
@@ -152,12 +214,12 @@ export default function CarritoProvider({children}: PropsWithChildren) {
 
     }
 
-    const quitarArticulo = (articulo: ArticuloVentaDTO)=>{
+    const quitarArticulo = (articulo: ArticuloInsumo | ArticuloManufacturado)=>{
         setPedido((prev)=>{
             let nuevoDetallePedido: DetallePedido[];
 
             nuevoDetallePedido = prev.detallePedidoList.map((detalle)=>
-            detalle.articulo.id == articulo.id ?
+            detalle.articulo?.id == articulo.id ?
             {...detalle, cantidad: detalle.cantidad - 1}
             :
             detalle
@@ -167,10 +229,10 @@ export default function CarritoProvider({children}: PropsWithChildren) {
         })
     }
 
-    const borrarArticulo = (articulo: ArticuloVentaDTO)=>{
+    const borrarArticulo = (articulo: ArticuloInsumo | ArticuloManufacturado)=>{
         setPedido((prev)=>{
 
-            const nuevoDetallePedido = prev.detallePedidoList.filter((detalle)=> detalle.articulo.id != articulo.id)
+            const nuevoDetallePedido = prev.detallePedidoList.filter((detalle)=> detalle.articulo?.id != articulo.id)
 
             return {...prev, detallePedidoList: nuevoDetallePedido}
 

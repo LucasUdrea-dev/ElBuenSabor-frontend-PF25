@@ -1,27 +1,52 @@
 
-import { ArticuloManufacturado } from "../../../ts/Clases";
+import { Promocion } from "../../../ts/Clases";
 import { obtenerImagen } from "../../../ts/Imagen";
 
 
 interface Props{
-    articulo: ArticuloManufacturado | null;
+    promocion: Promocion | null;
     cerrarMostrar: () => void
-    abrirEditar: (articulo: ArticuloManufacturado | null)=>void
+    abrirEditar: (promocion: Promocion | null)=>void
 }
 
-export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abrirEditar}: Props) {
+export default function AdminMostrarManufacturado({promocion, cerrarMostrar, abrirEditar}: Props) {
     
     const calcularCostoTotal = ()=>{
         let total = 0
-        articulo?.detalleInsumos.map((detalle)=>{
-            total += (detalle.articuloInsumo.precioCompra * detalle.cantidad)
+
+        promocion?.promocionArticuloList?.map((detallePromo)=>{
+
+            if (("precioCompra" in detallePromo.articulo!)) {
+                total += (detallePromo.articulo?.precioCompra * detallePromo.cantidad)
+            }else if ("detalleInsumos" in detallePromo.articulo!){
+                
+                detallePromo.articulo?.detalleInsumos.map((detalle)=>{
+                    total += (detalle.articuloInsumo.precioCompra * detalle.cantidad)
+                })
+
+            }
         })
 
         return total
 
     }
 
-    if (!articulo) return null
+    const calcularPrecioRegular = ()=>{
+        let total = 0
+
+        promocion?.promocionArticuloList?.map((detallePromo)=>{
+
+            if (detallePromo.articulo) {
+                total += (detallePromo.articulo.precio * detallePromo.cantidad)
+            }
+
+        })
+
+        return total;
+
+    }
+
+    if (!promocion) return null
 
     return(
         <>
@@ -46,14 +71,14 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                     <div className="flex justify-between items-center text-2xl">
                         <div className="grid grid-cols-[3fr_1fr]">
                             <div className="flex gap-5 items-center">
-                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={obtenerImagen(String(articulo?.imagenArticulo))} alt="" />
+                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={obtenerImagen(String(promocion.imagen))} alt="" />
                                 <div className="flex flex-col gap-2">
-                                    <h2 className="text-3xl font-bold">{articulo?.nombre}</h2>
+                                    <h2 className="text-3xl font-bold">{promocion.denominacion}</h2>
                                     <div className="flex gap-2">
-                                        <h3 className="bg-[#D93F21] text-white rounded-4xl p-1 px-5">{articulo?.subcategoria.categoria?.denominacion}</h3>
+                                        <h3 className="bg-[#D93F21] text-white rounded-4xl p-1 px-5">Promocion</h3>
                                         <div className="flex items-center gap-2">
-                                            <div className={`${articulo?.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
-                                            <h1>{articulo?.existe ? "Disponible" : "No Disponible"}</h1>
+                                            <div className={`${promocion?.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                            <h1>{promocion?.existe ? "Disponible" : "No Disponible"}</h1>
                                         </div>
                                     </div>
                                 </div>
@@ -63,7 +88,7 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                         <div>
                             <button onClick={()=>{
                                 cerrarMostrar()
-                                abrirEditar(articulo)
+                                abrirEditar(promocion)
                             }} className="bg-[#D93F21] text-white p-2 px-5 rounded-4xl">Editar</button>
                         </div>
                     </div>
@@ -71,16 +96,18 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                     {/**Informacion costo, precio y ganancia */}
                     <div className="*:border-gray-500 *:border *:border-collapse text-gray-500 text-center *:py-2">
 
-                        <div className="grid grid-cols-3 m-auto w-full">
+                        <div className="grid grid-cols-4 m-auto w-full">
                             <h3>Precio Costo</h3>
+                            <h3>Precio Regular</h3>
                             <h3>Precio Venta</h3>
                             <h3>Ganancia</h3>
                         </div>
-                        <div className="grid grid-cols-3">
+                        <div className="grid grid-cols-4">
 
                             <h3>${calcularCostoTotal()}</h3>
-                            <h3>${articulo?.precio}</h3>
-                            <h3>${Number(articulo?.precio) - calcularCostoTotal()}</h3>
+                            <h3>${calcularPrecioRegular()}</h3>
+                            <h3>${promocion.precioRebajado}</h3>
+                            <h3>${Number(promocion.precioRebajado) - calcularCostoTotal()}</h3>
 
                         </div>
 
@@ -101,20 +128,20 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
 
                             <h3>Cantidad</h3>
                             <h3>Denominación</h3>
-                            <h3>Costo Unitario</h3>
-                            <h3>Costo Total</h3>
+                            <h3>Precio Unitario</h3>
+                            <h3>Precio Total</h3>
 
                         </div>
 
                         {/**Listado de todos los ingredientes */}
-                        {Number(articulo?.detalleInsumos.length) > 0 && articulo?.detalleInsumos.map((detalle, index)=>(
+                        {Number(promocion.promocionArticuloList?.length) > 0 && promocion.promocionArticuloList?.map((detallePromo, index)=>(
 
                             <div key={index} className="grid grid-cols-4">
                                 
-                                <h3>{detalle.cantidad} {detalle.articuloInsumo.unidadMedida?.unidad}</h3>
-                                <h3>{detalle.articuloInsumo.nombre}</h3>
-                                <h3>${detalle.articuloInsumo.precioCompra}</h3>
-                                <h3>${detalle.cantidad * detalle.articuloInsumo.precioCompra}</h3>
+                                <h3>{detallePromo.cantidad}</h3>
+                                <h3>{detallePromo.articulo?.nombre}</h3>
+                                <h3>${detallePromo.articulo?.precio}</h3>
+                                <h3>${detallePromo.cantidad * Number(detallePromo.articulo?.precio)}</h3>
 
                             </div>
                         ))}

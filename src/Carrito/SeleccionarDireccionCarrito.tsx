@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState } from "react"
-import { Ciudad, Direccion, Pais, Provincia } from "../../ts/Clases"
+import { Direccion, host } from "../../ts/Clases"
 import { CarritoContext } from "./CarritoContext";
 import AgregarDireccion from "../AgregarDireccion";
+import axios from "axios";
 
 interface Props{
   isOpen: boolean
@@ -9,66 +10,8 @@ interface Props{
 }
 
 export default function SeleccionarDireccionCarrito({isOpen, cerrarModal}: Props) {
-    
-    const paisArgentina: Pais = { id: 1, nombre: "Argentina", provincias: [] };
-    
-    const provinciaMendoza: Provincia = {
-    id: 1,
-    nombre: "Mendoza",
-    pais: paisArgentina,
-    ciudadList: []
-    };
 
-    const ciudadMendoza: Ciudad = {
-    id: 1,
-    nombre: "Ciudad de Mendoza",
-    provincia: provinciaMendoza
-    };
-
-    const ciudadLasHeras: Ciudad = {
-    id: 2,
-    nombre: "Las Heras",
-    provincia: provinciaMendoza
-    };
-
-    const ciudadGuaymallen: Ciudad = {
-    id: 3,
-    nombre: "Guaymallén",
-    provincia: provinciaMendoza
-    };
-
-    const [direcciones, setDirecciones] = useState<Direccion[]>(
-      [{
-      id: 1,
-      nombreCalle: "Calle Falsa",
-      numeracion: "123",
-      alias: "Casa",
-      descripcionEntrega: "Aclaración 1",
-      latitud: 12.345678,
-      longitud: 123.456789,
-      ciudad: ciudadMendoza
-    },
-    {
-      id: 2,
-      nombreCalle: "Avenida Siempre Viva",
-      numeracion: "742",
-      alias: "Oficina",
-      descripcionEntrega: "Aclaración 2",
-      latitud: 23.456789,
-      longitud: -98.765432,
-      ciudad: ciudadLasHeras
-    },
-    {
-      id: 3,
-      nombreCalle: "Calle de los Héroes",
-      numeracion: "456",
-      alias: "Departamento",
-      descripcionEntrega: "Aclaración 3",
-      latitud: 34.56789,
-      longitud: 87.654321,
-      ciudad: ciudadGuaymallen
-    }]
-    )
+    const [direcciones, setDirecciones] = useState<Direccion[]>([])
 
     const [agregarDireccion, setAgregarDireccion] = useState(false)
     const [direccionSeleccionada, setDireccionSeleccionada] = useState(0)
@@ -76,7 +19,33 @@ export default function SeleccionarDireccionCarrito({isOpen, cerrarModal}: Props
     //Volver a traer las direcciones del usuario
     useEffect(()=>{
 
+        obtenerDirecciones()
+
     }, [agregarDireccion])
+
+    useEffect(()=>{
+        
+        obtenerDirecciones()
+
+    }, [])
+
+    const obtenerDirecciones = async()=>{
+
+        const URL = host+`/api/usuarios/direcciones/${2}`
+        
+        try {
+            
+            const response = await axios.get(URL)
+
+            const direccionesObtenidas: Direccion[] = response.data
+
+            setDirecciones(direccionesObtenidas)
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }
 
     const cerrarAgregarDireccion = ()=>{
       setAgregarDireccion(false)

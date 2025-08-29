@@ -1,23 +1,33 @@
 
-import { ArticuloManufacturado } from "../../../ts/Clases";
+import { useEffect, useState } from "react";
+import { ArticuloInsumo, HistoricoStockArticuloInsumo, host} from "../../../ts/Clases";
 import { obtenerImagen } from "../../../ts/Imagen";
+import axios from "axios";
 
 
 interface Props{
-    articulo: ArticuloManufacturado | null;
+    articulo: ArticuloInsumo | null;
     cerrarMostrar: () => void
-    abrirEditar: (articulo: ArticuloManufacturado | null)=>void
+    abrirEditar: (articulo: ArticuloInsumo | null)=>void
 }
 
 export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abrirEditar}: Props) {
-    
-    const calcularCostoTotal = ()=>{
-        let total = 0
-        articulo?.detalleInsumos.map((detalle)=>{
-            total += (detalle.articuloInsumo.precioCompra * detalle.cantidad)
-        })
 
-        return total
+    const [historicos, setHistoricos] = useState<HistoricoStockArticuloInsumo[]>([])
+
+    useEffect(()=>{
+        cargarHistoricos()
+    }, [articulo])
+
+    const cargarHistoricos = async()=>{
+        const URL = host+`/api/historicoStock/insumo/${articulo?.id}`
+
+        try {
+            const response = await axios.get(URL)
+            setHistoricos(response.data)
+        } catch (error) {
+            console.error(error)
+        }
 
     }
 
@@ -30,7 +40,7 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                 
                 {/**Titulo */}
                 <div className="flex justify-between text-4xl p-5 rounded-t-4xl items-center bg-gray-200 shadow-md shadow-gray-500">
-                    <h1>Detalle Producto</h1>
+                    <h1>Detalle Insumo</h1>
                     <button onClick={()=>cerrarMostrar()} className="bg-[#D93F21] p-2 rounded-xl">
 
                         <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,8 +62,8 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                                     <div className="flex gap-2">
                                         <h3 className="bg-[#D93F21] text-white rounded-4xl p-1 px-5">{articulo?.subcategoria.categoria?.denominacion}</h3>
                                         <div className="flex items-center gap-2">
-                                            <div className={`${articulo?.existe ? "bg-green-600" : "bg-gray-500"} h-10 w-10 m-auto rounded-4xl`}></div>
-                                            <h1>{articulo?.existe ? "Disponible" : "No Disponible"}</h1>
+                                            <div className={`${(articulo.stockArticuloInsumo.cantidad > articulo.stockArticuloInsumo.minStock) ? "bg-green-600" : "bg-red-500"} h-10 w-10 m-auto rounded-4xl`}></div>
+                                            <h1>{articulo?.existe ? "Stock Suficiente" : "Stock Insuficiente"}</h1>
                                         </div>
                                     </div>
                                 </div>
@@ -72,15 +82,15 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                     <div className="*:border-gray-500 *:border *:border-collapse text-gray-500 text-center *:py-2">
 
                         <div className="grid grid-cols-3 m-auto w-full">
-                            <h3>Precio Costo</h3>
-                            <h3>Precio Venta</h3>
-                            <h3>Ganancia</h3>
+                            <h3>Stock Minimo</h3>
+                            <h3>Stock Actual</h3>
+                            <h3>Precio Costo Total</h3>
                         </div>
                         <div className="grid grid-cols-3">
 
-                            <h3>${calcularCostoTotal()}</h3>
-                            <h3>${articulo?.precio}</h3>
-                            <h3>${Number(articulo?.precio) - calcularCostoTotal()}</h3>
+                            <h3>{articulo.stockArticuloInsumo.minStock} {articulo.unidadMedida.unidad}</h3>
+                            <h3>{articulo.stockArticuloInsumo.cantidad} {articulo.unidadMedida.unidad}</h3>
+                            <h3>${articulo.precioCompra * articulo.stockArticuloInsumo.cantidad}</h3>
 
                         </div>
 
@@ -90,31 +100,29 @@ export default function AdminMostrarManufacturado({articulo, cerrarMostrar, abri
                     <div>
                         <div className="flex items-center">
                             <img src="/svg/DetallePreparacion.svg" alt="" />
-                            <h1 className="text-3xl font-bold">Detalle Preparación</h1>
+                            <h1 className="text-3xl font-bold">Existencias</h1>
                         </div>
                         <div></div>
                     </div>
 
                     {/**Preparacion */}
                     <div className="*:border-gray-500 *:border *:border-collapse text-gray-500 text-center *:py-2">
-                        <div className="grid grid-cols-4 w-full m-auto">
+                        <div className="grid grid-cols-3 w-full m-auto">
 
+                            <h3>Fecha y hora</h3>
                             <h3>Cantidad</h3>
-                            <h3>Denominación</h3>
-                            <h3>Costo Unitario</h3>
-                            <h3>Costo Total</h3>
+                            <h3>Costo Actualizado</h3>
 
                         </div>
 
                         {/**Listado de todos los ingredientes */}
-                        {Number(articulo?.detalleInsumos.length) > 0 && articulo?.detalleInsumos.map((detalle, index)=>(
+                        {Number(historicos.length) > 0 && historicos.map((historico, index)=>(
 
-                            <div key={index} className="grid grid-cols-4">
+                            <div key={index} className="grid grid-cols-3">
                                 
-                                <h3>{detalle.cantidad} {detalle.articuloInsumo.unidadMedida?.unidad}</h3>
-                                <h3>{detalle.articuloInsumo.nombre}</h3>
-                                <h3>${detalle.articuloInsumo.precioCompra}</h3>
-                                <h3>${detalle.cantidad * detalle.articuloInsumo.precioCompra}</h3>
+                                <h3>{new Date(historico.fechaActualizacion).toLocaleDateString()} {new Date(historico.fechaActualizacion).toLocaleTimeString()}</h3>
+                                <h3>{historico.cantidad} {articulo.unidadMedida.unidad}</h3>
+                                <h3>${articulo.precioCompra * historico.cantidad}</h3>
 
                             </div>
                         ))}
