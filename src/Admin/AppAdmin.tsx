@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import NavbarAdmin from "./Navbar y Dashboard/NavbarAdmin";
+import NavbarAdmin from "./NavbaryDashboard/NavbarAdmin";
 
 export default function App() {
 
