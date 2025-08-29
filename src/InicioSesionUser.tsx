@@ -21,112 +21,112 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?
 
 
 
-  //estados para manejar los datos del formulario (names)
-  const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+//estados para manejar los datos del formulario (names)
+const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
 
 
   //Estado para manejar los errores de validación
-    
-    const [errors, setErrors] = useState<Errors>({});
-    const [showPassword, setShowPassword] = useState(false);
-    const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
-    const [formData, setFormData] = useState({ email: "", contrasena: "",});
-    const navigate = useNavigate();
+
+  const [errors, setErrors] = useState<Errors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
+  const [formData, setFormData] = useState({ email: "", contrasena: "", });
+  const navigate = useNavigate();
 
 
 
 
 
-     //limpiar
-      useEffect(() => {
-        if (!isOpen) {
-          setFormData({ email: "", contrasena: "",});
-          setErrors({});
-        }
-      }, [isOpen]);
-    
+  //limpiar
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({ email: "", contrasena: "", });
+      setErrors({});
+    }
+  }, [isOpen]);
 
-       // Maneja el cambio en los campos del formulario
-         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-          setFormData({ ...formData, [e.target.name]: e.target.value });
-        };
-      
 
-      // Función para validar los campos del formulario
-        const validarCampos = (): boolean => {
-          const result = schema.safeParse(formData);
-          
-          const newErrors = result.success 
-              ? {} 
-              : result.error.issues.reduce((acc, issue) => {
-                  acc[issue.path[0] as keyof typeof acc] = issue.message;
-                  return acc;
-                }, {} as Errors);
-      
-            setErrors(newErrors);
-            return Object.keys(newErrors).length === 0;
-          };
-      
-      
-      
-      const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validarCampos()) return;
-        try {
-            const response = await axios.post(API_URL, { email: formData.email, contrasena: formData.contrasena });
+  // Maneja el cambio en los campos del formulario
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token); // Almacenar el token
-                onClose(); 
-                navigate('/catalogo'); // Redirigir a la página de catálogo
-            }
-        } catch (err) {
-            console.error("Error al iniciar sesión:", err);
-            if (axios.isAxiosError(err)) {
-              const mensaje = err.response?.data?.message || "Error en el inicio de sesión.";
-              setErrors({ general: mensaje });
-            } else {
-              setErrors({ general: "Error desconocido en el inicio de sesión." });
-            }
-        }
-    };
+
+  // Función para validar los campos del formulario
+  const validarCampos = (): boolean => {
+    const result = schema.safeParse(formData);
+
+    const newErrors = result.success
+      ? {}
+      : result.error.issues.reduce((acc, issue) => {
+        acc[issue.path[0] as keyof typeof acc] = issue.message;
+        return acc;
+      }, {} as Errors);
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validarCampos()) return;
+    try {
+      const response = await axios.post(API_URL, { email: formData.email, contrasena: formData.contrasena });
+
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token); // Almacenar el token
+        onClose();
+        navigate('/catalogo'); // Redirigir a la página de catálogo
+      }
+    } catch (err) {
+      console.error("Error al iniciar sesión:", err);
+      if (axios.isAxiosError(err)) {
+        const mensaje = err.response?.data?.message || "Error en el inicio de sesión.";
+        setErrors({ general: mensaje });
+      } else {
+        setErrors({ general: "Error desconocido en el inicio de sesión." });
+      }
+    }
+  };
 
 
 
 
   //Inico con Google y Facebook
   const handleGoogleLogin = async () => {
-      const provider = new GoogleAuthProvider();
-        try {
-          const result = await signInWithPopup(auth, provider);
-          console.log("Usuario con Google:", result.user);
-          // Aquí se podría enviar el usuario al backend
-        } catch (error) {
-          console.error("Error al iniciar sesión con Google:", error);
-        }
-    };
-  
-    const handleFacebookLogin = async () => {
-        const provider = new FacebookAuthProvider();
-        try {
-          const result = await signInWithPopup(auth, provider);
-          console.log("Usuario con Facebook:", result.user);
-        } catch (error) {
-          console.error("Error al iniciar sesión con Facebook:", error);
-        }
-    };
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Usuario con Google:", result.user);
+      // Aquí se podría enviar el usuario al backend
+    } catch (error) {
+      console.error("Error al iniciar sesión con Google:", error);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    const provider = new FacebookAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Usuario con Facebook:", result.user);
+    } catch (error) {
+      console.error("Error al iniciar sesión con Facebook:", error);
+    }
+  };
 
 
-    // función para abrir el modal de recuperación de contraseña:
-    const handleOpenRecuperar = () => {
-          setIsRecuperarOpen(true);
-    };
+  // función para abrir el modal de recuperación de contraseña:
+  const handleOpenRecuperar = () => {
+    setIsRecuperarOpen(true);
+  };
 
 
-    const handleCloseRecuperar = () => {
-          setIsRecuperarOpen(false);
-    };
-  
+  const handleCloseRecuperar = () => {
+    setIsRecuperarOpen(false);
+  };
+
 
   if (!isOpen) return null;
 
@@ -145,7 +145,7 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?
         </button>
 
         <h2 className="text-2xl font-bold mb-7 font-lato text-center">Iniciar Sesión</h2>
-        
+
 
         {errors.general && (
           <div className="text-red-600 font-lato mb-2 text-center font-lato">{errors.general}</div>
@@ -196,9 +196,9 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?
           </button>
 
           <div className="text-center mb-4 font-lato">
-            <button 
-              type="button" 
-              onClick={handleOpenRecuperar} 
+            <button
+              type="button"
+              onClick={handleOpenRecuperar}
               className="text-blue-500"
             >
               ¿Olvidó su contraseña?
@@ -211,17 +211,17 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?
             <button onClick={handleFacebookLogin}>
               <img src="public/svg/devicon_facebook.svg" alt="" className="w-10 h-10" />
             </button>
-              <button onClick={handleGoogleLogin}>
+            <button onClick={handleGoogleLogin}>
               <img src="public/svg/flat-color-icons_google.svg" alt="" className="w-10 h-10" />
             </button>
           </div>
 
-          
+
         </form>
       </div>
 
-      
-            <RecuperarContrasena isOpen={isRecuperarOpen} onClose={handleCloseRecuperar} />
+
+      <RecuperarContrasena isOpen={isRecuperarOpen} onClose={handleCloseRecuperar} />
 
     </div>
   );
