@@ -4,7 +4,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import axios from 'axios';
 
 //url ejemplo
-const API_URL = "http://localhost:8080/api/usuarios/recuperar-contrasena";
+const API_URL = "http://localhost:8080/api/auth";
 
 const RecuperarContrasena = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [email, setEmail] = useState("");

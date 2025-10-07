@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import { Direccion, host } from "../../ts/Clases"
 import { CarritoContext } from "./CarritoContext";
-import AgregarDireccion from "../AgregarDireccion";
+import AgregarDireccion from "../Direcciones User/AgregarDireccion";
 import axios from "axios";
 
 interface Props{

@@ -3,7 +3,8 @@ import axios from "axios";
 import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import { z } from "zod";
-import { Usuario } from "../ts/Clases";
+import { userAuthentication, Usuario } from "../../ts/Clases";
+
 
 
 // Esquema de validación con Zod
@@ -20,7 +21,7 @@ const schema = z.object({
 });
 
 // URL ejemplo
-const API_URL = "http://localhost:8080/api/usuarios/registrarse";
+const API_URL = "http://localhost:8080/api/auth/crear";
 
 
 // Tipo para manejar los errores de validación
@@ -86,41 +87,56 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 
 
-  const handleRegistro = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!validarCampos()) return;
 
-    setIsLoading(true);
-    setErrors({});
+    const handleRegistro = async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    // Adaptar los datos al tipo UsuarioEntidad
-    const usuario: Usuario = {
-      nombre: formData.nombre,
-      apellido:formData.apellido,
-      email: formData.email,
-      telefono: formData.telefono,
-      contrasena: formData.contrasena,
-      repetirContrasena:formData.repetirContrasena
+      if (!validarCampos()) return;
 
-    };
+      setIsLoading(true);
+      setErrors({});
 
-    try {
-      const response = await axios.post(API_URL, usuario);
-      console.log("Usuario registrado:", response.data);
-      onClose();
+      // Instanciamos Usuario
+      const usuario = new Usuario();
+      usuario.nombre = formData.nombre;
+      usuario.apellido = formData.apellido;
+      usuario.email = formData.email;
+      usuario.existe = true;
+      usuario.imagenUsuario = ""; // o podrías permitir cargar una imagen
+      usuario.telefonoList = [
+        { id: null, numero: parseInt(formData.telefono) }
+      ];
 
-    } catch (err: any) {
-      console.error("Error al registrar usuario:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Hubo un problema al registrar al usuario.";
-      
-      setErrors({ general: errorMessage });
-    } finally {
-      setIsLoading(false);
-    }
+      // Instanciamos userAuthentication
+      const auth = new userAuthentication();
+      auth.username = formData.email;
+      auth.password = formData.contrasena;
+
+      // Armamos el objeto final que espera el backend
+      const datosRegistro = {
+        ...usuario,
+        userAuth: auth
+      };
+
+      try {
+        console.log("Enviando al backend:", JSON.stringify(datosRegistro, null, 2));
+        const response = await axios.post(API_URL, datosRegistro);
+        console.log("Usuario registrado:", response.data);
+        onClose();
+      } catch (err: any) {
+        console.error("Error al registrar usuario:", err);
+        const errorMessage =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Hubo un problema al registrar al usuario.";
+
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsLoading(false);
+      }
   };
+
 
 
   

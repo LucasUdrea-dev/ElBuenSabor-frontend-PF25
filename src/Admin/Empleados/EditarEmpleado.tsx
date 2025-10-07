@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
-import { Empleado } from "../../../ts/Clases";
+import { Empleado, Telefono } from "../../../ts/Clases";
 
 // Esquema de validación con Zod
 const schema = z.object({
@@ -12,30 +12,26 @@ const schema = z.object({
   cargo: z.string().min(1, "El cargo es obligatorio"),
 });
 
-// URL ejemplo 
-// const API_URL = "http://localhost:8080/api/empleados";
-
-// Tipo para manejar los errores de validación
+// Tipo para errores de validación
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
 interface EditarEmpleadoProps {
   isOpen: boolean;
   empleado: Empleado | null;
   onClose: () => void;
-  onEmpleadoActualizado: (empleado: Empleado) => void; // Callback para actualizar la lista
+  onEmpleadoActualizado: (empleado: Empleado) => void;
 }
 
-const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: EditarEmpleadoProps) => {
+const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClose, onEmpleadoActualizado }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
     telefono: "",
     email: "",
     contrasena: "",
-    cargo: "",
+    rol: "",
   });
 
-  // Estado para manejar los errores de validación
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,10 +42,10 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
       setFormData({
         nombre: empleado.nombre || "",
         apellido: empleado.apellido || "",
-        telefono: empleado.telefono || "",
+        telefono: empleado.telefonoList?.[0]?.numero?.toString() || "",
         email: empleado.email || "",
-        contrasena: "", // Por seguridad, no mostrar contraseña actual
-        cargo: empleado.cargo || "",
+        contrasena: "",
+        rol:"",
       });
       setErrors({});
       setIsLoading(false);
@@ -65,35 +61,30 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
         telefono: "",
         email: "",
         contrasena: "",
-        cargo: "",
+        rol: "",
       });
       setErrors({});
       setIsLoading(false);
     }
   }, [isOpen]);
 
-
-  // Maneja el cambio en los campos del formulario
+  // Manejador de cambios
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
-
-  // Función para validar los campos del formulario
+  // Validar campos
   const validarCampos = (): boolean => {
-    // Si la contraseña está vacía, no validarla (mantener la existente)
-    const dataToValidate = formData.contrasena 
-      ? formData 
-      : { ...formData, contrasena: "password123" }; // Contraseña temporal para validación
+    const dataToValidate = formData.contrasena
+      ? formData
+      : { ...formData, contrasena: "password123" }; // Contraseña temporal
 
     const result = schema.safeParse(dataToValidate);
-    
-    const newErrors = result.success 
-      ? {} 
+
+    const newErrors = result.success
+      ? {}
       : result.error.issues.reduce((acc, issue) => {
-          // No mostrar error de contraseña si está vacía (se mantiene la existente)
-          if (issue.path[0] === 'contrasena' && !formData.contrasena) {
+          if (issue.path[0] === "contrasena" && !formData.contrasena) {
             return acc;
           }
           acc[issue.path[0] as keyof typeof acc] = issue.message;
@@ -104,6 +95,7 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
     return Object.keys(newErrors).length === 0;
   };
 
+  // Enviar actualización
   const handleActualizar = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -112,37 +104,40 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
     setIsLoading(true);
     setErrors({});
 
-    // Actualizar empleado (solo campos modificados)
+    // Construir objeto actualizado
     const empleadoActualizado: Empleado = {
       ...empleado,
       nombre: formData.nombre,
       apellido: formData.apellido,
       email: formData.email,
-      telefono: formData.telefono,
-      cargo: formData.cargo,
-      // Solo actualizar contraseña si se proporcionó una nueva
-      ...(formData.contrasena && { contrasena: formData.contrasena }),
+      rol: { id: null, fechaAlta: new Date().toISOString(), tipoRol: { id: null, rol: 2 } }, // Rol EMPLOYEE
+      telefonoList: [
+        new Telefono(), // Genera uno nuevo
+      ],
     };
 
-    try {
-      // Implementar llamada al backend
-      // const response = await axios.put(`${API_URL}/${empleado.id}`, empleadoActualizado);
-      // console.log("Empleado actualizado:", response.data);
-      
-      // Simulación de delay para mostrar loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Empleado actualizado:", empleadoActualizado);
-      onEmpleadoActualizado(empleadoActualizado); // Callback para actualizar la lista
-      onClose();
+    // Actualizar número de teléfono
+    empleadoActualizado.telefonoList[0].numero = Number(formData.telefono);
 
+    // Solo actualizar contraseña si se ingresó
+    if (formData.contrasena) {
+      (empleadoActualizado as any).contrasena = formData.contrasena;
+    }
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulación de delay
+      console.log("Empleado actualizado:", empleadoActualizado);
+
+      onEmpleadoActualizado(empleadoActualizado);
+      onClose();
     } catch (err: any) {
       console.error("Error al actualizar empleado:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Hubo un problema al actualizar el empleado.";
-      
-      setErrors({ general: errorMessage });
+      setErrors({
+        general:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Hubo un problema al actualizar el empleado.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -164,90 +159,27 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
 
         <h2 className="text-2xl font-bold mb-7 font-lato text-center">Editar Empleado</h2>
 
-        {errors.general && (
-          <div className="text-red-600 font-lato mb-2 text-center">{errors.general}</div>
-        )}
+        {errors.general && <div className="text-red-600 mb-2 text-center">{errors.general}</div>}
 
         <form onSubmit={handleActualizar}>
-          {/* Campo Nombre */}
-          <div className="mb-4">
-            <label className="block mb-2 font-lato">Nombre</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full p-2 border rounded font-lato ${
-                errors.nombre ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.nombre && <p className="text-red-500 text-sm mt-1 font-lato">{errors.nombre}</p>}
-          </div>
-
-          {/* Campo Apellido */}
-          <div className="mb-4">
-            <label className="block mb-2 font-lato">Apellido</label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full p-2 border rounded font-lato ${
-                errors.apellido ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.apellido && <p className="text-red-500 text-sm mt-1 font-lato">{errors.apellido}</p>}
-          </div>
-
-          {/* Campo Email */}
-          <div className="mb-4">
-            <label className="block mb-2 font-lato">Correo Electrónico</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full p-2 border rounded font-lato ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1 font-lato">{errors.email}</p>}
-          </div>
-
-          {/* Campo Teléfono */}
-          <div className="mb-4">
-            <label className="block mb-2 font-lato">Teléfono</label>
-            <input
-              type="tel"
-              name="telefono"
-              value={formData.telefono}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full p-2 border rounded font-lato ${
-                errors.telefono ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.telefono && <p className="text-red-500 text-sm mt-1 font-lato">{errors.telefono}</p>}
-          </div>
-
-          {/* Campo Cargo */}
-          <div className="mb-4">
-            <label className="block mb-2 font-lato">Cargo</label>
-            <input
-              type="text"
-              name="cargo"
-              value={formData.cargo}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full p-2 border rounded font-lato ${
-                errors.cargo ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.cargo && <p className="text-red-500 text-sm mt-1 font-lato">{errors.cargo}</p>}
-          </div>
+          {["nombre", "apellido", "email", "telefono", "cargo"].map((campo) => (
+            <div key={campo} className="mb-4">
+              <label className="block mb-2 font-lato capitalize">{campo}</label>
+              <input
+                type={campo === "email" ? "email" : campo === "telefono" ? "tel" : "text"}
+                name={campo}
+                value={(formData as any)[campo]}
+                onChange={handleChange}
+                disabled={isLoading}
+                className={`w-full p-2 border rounded font-lato ${
+                  (errors as any)[campo] ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {(errors as any)[campo] && (
+                <p className="text-red-500 text-sm mt-1 font-lato">{(errors as any)[campo]}</p>
+              )}
+            </div>
+          ))}
 
           {/* Campo Contraseña */}
           <div className="mb-6 relative">
@@ -278,7 +210,6 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
               />
             </button>
             {errors.contrasena && <p className="text-red-500 text-sm mt-1 font-lato">{errors.contrasena}</p>}
-            <p className="text-gray-500 text-xs mt-1 font-lato">Dejar vacío para mantener la contraseña actual</p>
           </div>
 
           {/* Botones */}
@@ -291,14 +222,14 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
             >
               Cancelar
             </button>
-            
+
             <button
               type="submit"
               disabled={isLoading}
               className={`py-2 px-4 rounded-full w-full font-lato transition-all duration-200 ${
-                isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed opacity-70' 
-                  : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
+                isLoading
+                  ? "bg-gray-400 cursor-not-allowed opacity-70"
+                  : "bg-[#0A76E1] hover:bg-[#0A5BBE] text-white"
               }`}
             >
               {isLoading ? (
@@ -307,7 +238,7 @@ const EditarEmpleado = ({ isOpen, empleado, onClose, onEmpleadoActualizado }: Ed
                   Actualizando...
                 </div>
               ) : (
-                'Actualizar'
+                "Actualizar"
               )}
             </button>
           </div>

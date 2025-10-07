@@ -6,7 +6,7 @@ export default function App() {
 
   return (
     <>
-        <div className="w-1/1">
+        <div className="w-full min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
             <div className="m-0">
                 <Navbar/>
             </div>

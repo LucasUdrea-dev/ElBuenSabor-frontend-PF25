@@ -8,7 +8,7 @@ export default function Footer() {
         <>
         
             <div className="text-white">
-                <div className="bg-[#D93F21] h-15 w-full ">
+                <div className="bg-[#D93F21] h-15 w-full font-lato ">
                     {location.pathname === "/inicio" ? (
                         <div className="h-full w-2/5 m-auto flex items-center justify-between">
                             <a href="#comoFunciona">Como Funciona</a>
@@ -23,7 +23,7 @@ export default function Footer() {
                         </div>
                     )}
                 </div>
-                <div className="bg-[#333333] flex items-center">
+                <div className="bg-[#333333] flex items-center font-lato">
                     <Link className="text-1xl m-auto" to="/inicio">2025 elbuensabor.com.ar</Link>
                 </div>
             </div>

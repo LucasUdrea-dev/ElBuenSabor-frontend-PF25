@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
-import RecuperarContrasena from "../../UserAuth/RecuperarContrasena";
+import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "./firebaseConfig";
+import RecuperarContrasena from "./RecuperarContrasena";
 import { z } from "zod";
-import { userAuthentication } from "../../../ts/Clases";
-import { useEmpleado  } from "./EmpleadoContext";
-
-
+import { userAuthentication } from "../../ts/Clases";
+import { useUser } from "./UserContext";
 
 const schema = z.object({
   username: z.string().min(1, "El usuario es obligatorio").email("Formato de email inválido"),
@@ -18,10 +18,10 @@ const API_URL = "http://localhost:8080/api/auth/login";
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
 //componente 
-const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
 
     //Estado para manejar los errores de validación
-    const { login } = useEmpleado ();
+    const { login } = useUser();
     const [errors, setErrors] = useState<Errors>({});
     const [showPassword, setShowPassword] = useState(false);
     const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
@@ -69,7 +69,7 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
 
     // Manejo de inicio de sesión
-      const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
       console.log("Formulario enviado");
       console.log("Datos del formulario:", formData);
@@ -90,25 +90,11 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         console.log("Respuesta del servidor:", response.data);
 
         if (response.data.jwt) {
-        
-          try {
-            login(response.data.jwt); // Actualizar el contexto de empleado
-            localStorage.setItem('token', response.data.jwt); // Almacenar el token
-            console.log("Token almacenado, cerrando modal y navegando...");
-            onClose();
-            navigate('/admin/administracion'); // Redirigir a la página principal de admin
-
-          } catch (loginError) {
-            console.error("Error en login:", loginError);
-            
-            // MODIFICACIÓN 3: Verifica el tipo de error y muestra el mensaje apropiado
-            // Si es un Error con mensaje, lo muestra; sino muestra un mensaje genérico
-            if (loginError instanceof Error) {
-              setErrors({ general: loginError.message });
-            } else {
-              setErrors({ general: "Acceso Denegado: No tienes permisos para acceder a la sección de administración." });
-            }
-          }
+          login(response.data.jwt); // Actualizar el contexto de usuario
+          localStorage.setItem('token', response.data.jwt); // Almacenar el token
+          console.log("Token almacenado, cerrando modal y navegando...");
+          onClose();
+          navigate('/catalogo'); // Redirigir a la página de catálogo
         } else {
           console.error("No se recibió token en la respuesta");
           setErrors({ general: "No se recibió token de autenticación" });
@@ -119,11 +105,39 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
         if (axios.isAxiosError(err)) {
           console.error("Error de Axios:", err.response?.data);
           setErrors({ general: "Datos incorrectos" });
+
         } else {
           setErrors({ general: "Error desconocido en el inicio de sesión." });
         }
       }
     };
+
+
+
+    
+
+    //Inicio con Google y Facebook
+    const handleGoogleLogin = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Usuario con Google:", result.user);
+        // Aquí se podría enviar el usuario al backend
+      } catch (error) {
+        console.error("Error al iniciar sesión con Google:", error);
+      }
+    };
+
+    const handleFacebookLogin = async () => {
+      const provider = new FacebookAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("Usuario con Facebook:", result.user);
+      } catch (error) {
+        console.error("Error al iniciar sesión con Facebook:", error);
+      }
+    };
+
 
 
 
@@ -220,6 +234,17 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
               </button>
             </div>
 
+            <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
+
+            <div className="flex justify-center mb-4 space-x-10">
+              <button type="button" onClick={handleFacebookLogin}>
+                <img src="public/svg/devicon_facebook.svg" alt="" className="w-10 h-10" />
+              </button>
+              <button type="button" onClick={handleGoogleLogin}>
+                <img src="public/svg/flat-color-icons_google.svg" alt="" className="w-10 h-10" />
+              </button>
+            </div>
+
           </form>
         </div>
 
@@ -229,4 +254,4 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     );
 };
 
-export default InicioSesionEmpleado;
+export default InicioSesionUser;

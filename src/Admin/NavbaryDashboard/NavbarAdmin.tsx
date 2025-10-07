@@ -1,62 +1,33 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import DesplegableUsuario from "./DesplegableAdmin.tsx"
+import DesplegableAdmin from "./DesplegableAdmin.tsx"
 import Dashboard from "./Dashboard.tsx"
 import { obtenerImagen } from "../../../ts/Imagen.ts"
 import LoginEmpleados from "../LoginEmpleados/LoginEmpleados.tsx"
+import { useEmpleado } from "../LoginEmpleados/EmpleadoContext.tsx"
 
 export default function NavbarAdmin() {
     
-    const [estaLogeado, setEstaLogeado] = useState(false)
-    const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] = useState(false)
+    const { isAuthenticated, empleadoSesion, logout } = useEmpleado();
+    const [mostrarDesplegableAdmin, setMostrarDesplegableAdmin] = useState(false)
     const [mostrarDashboard, setMostrarDashboard] = useState(false)
     const [isLoginEmpleadosOpen, setLoginEmpleadosOpen] = useState(false)
 
-    // Función para verificar si hay una sesión activa
-    const verificarSesion = () => {
-        const token = localStorage.getItem('employeeToken');
-        const userRole = localStorage.getItem('userRole');
-        return !!token && userRole === 'employee';
-    };
-
-    useEffect(() => {
-        // Verificar si hay una sesión activa al cargar el componente
-        setEstaLogeado(verificarSesion());
-
-        // Escuchar cambios en localStorage para detectar login/logout
-        const handleStorageChange = () => {
-            setEstaLogeado(verificarSesion());
-        };
-
-        // Agregar listener para cambios en localStorage
-        window.addEventListener('storage', handleStorageChange);
-
-        // Limpiar el listener al desmontar el componente
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, [])
-
-    const cambiarDesplegableUsuario = () => {
-        setMostrarDesplegableUsuario(!mostrarDesplegableUsuario)
+    const cambiarDesplegableAdmin = () => {
+        setMostrarDesplegableAdmin(!mostrarDesplegableAdmin)
     }
 
     const cerrarSesion = () => {
-        // Limpiar localStorage
-        localStorage.removeItem('employeeToken');
-        localStorage.removeItem('userRole');
-        
-        // Actualizar estado
-        setEstaLogeado(false)
-        setMostrarDesplegableUsuario(false)
+        logout();
+        setMostrarDesplegableAdmin(false)
         setMostrarDashboard(false)
     }
 
     const toggleDashboard = () => {
         setMostrarDashboard(!mostrarDashboard)
         // Cerrar otros desplegables si están abiertos
-        if (mostrarDesplegableUsuario) {
-            setMostrarDesplegableUsuario(false)
+        if (mostrarDesplegableAdmin) {
+            setMostrarDesplegableAdmin(false)
         }
     }
 
@@ -79,15 +50,13 @@ export default function NavbarAdmin() {
     
     const cerrarLoginEmpleados = () => {
         setLoginEmpleadosOpen(false)
-        // Verificar sesión después de cerrar el modal (por si se logueó)
-        setEstaLogeado(verificarSesion());
     }
 
     return (
         <>
             <div className="bg-[#D93F21] h-15 flex justify-between items-center relative z-40">
                 <div className="flex items-center">
-                    {estaLogeado && (
+                    {isAuthenticated && (
                         <button 
                             onClick={toggleDashboard}
                             className="h-12 w-12 flex items-center justify-center text-white hover:bg-red-600 transition-colors duration-200 ml-2 rounded"
@@ -110,7 +79,7 @@ export default function NavbarAdmin() {
                         </button>
                     )}
 
-                    <Link className="h-15 flex items-center text-2xl text-white" key={"catalogo"} to={"/catalogo"}>
+                    <Link className="h-15 flex items-center text-2xl text-white" key={"administracion"} to={"/admin/administracion"}>
                         <svg className="h-12 p-0 ml-4" width="50" viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <mask id="mask0_10_65" maskUnits="userSpaceOnUse" x="0" y="27" width="70" height="72">
                                 <path d="M0 27.6633H70V98.4738H0V27.6633Z" fill="white"/>
@@ -128,30 +97,30 @@ export default function NavbarAdmin() {
                 </div>
 
                 <div>
-                    {estaLogeado ? (
+                    {isAuthenticated ? (
                         <div className="m-0 grid grid-cols-[3fr_1fr] gap-0 items-center">
                             <div className="relative">
-                                <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button">
-                                    <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                        <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
-                                        <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
-                                            Nombre Apellido
-                                            <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button className="m-auto" onClick={cambiarDesplegableAdmin} type="button">
+                                    <div className={`flex items-center gap-3 m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableAdmin && "border-y-1 border-y-gray-700"}`}>
+                                        <img className="w-10 h-10 rounded-full" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
+                                        <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto font-lato">
+                                            {empleadoSesion?.name} {empleadoSesion?.surname}
+                                            <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableAdmin ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </label>
                                     </div>
                                 </button>
-                                {mostrarDesplegableUsuario && (
+                                {mostrarDesplegableAdmin && (
                                     <div className="absolute z-50 mt-0 w-1/1">
-                                        <DesplegableUsuario alCerrarSesion={cerrarSesion} />
+                                        <DesplegableAdmin alCerrarSesion={cerrarSesion} cambiarDesplegableAdmin={cambiarDesplegableAdmin} />
                                     </div>
                                 )}
                             </div>
                         </div>
                     ) : (
                         <div>
-                            <button onClick={abrirLoginEmpleados} className="bg-white rounded-lg m-5 p-1" type="button">
+                            <button onClick={abrirLoginEmpleados} className="bg-white rounded m-5 p-1 font-lato" type="button">
                                 Iniciar Sesion
                             </button>
                         </div>
@@ -159,7 +128,7 @@ export default function NavbarAdmin() {
                 </div>
             </div>
 
-            {estaLogeado && (
+            {isAuthenticated && (
                 <>
                     <Dashboard 
                         onSeleccionar={handleDashboardSelection}

@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import DesplegableUsuario from "./DesplegableUsuario.tsx"
-import RegistroModal from "./Registro.tsx"
-import InicioSesionUs from "./InicioSesionUser.tsx"
+import RegistroModal from "../src/UserAuth/Registro.tsx"
+import InicioSesionUs from "../src/UserAuth/InicioSesionUser.tsx"
 import { obtenerImagen } from "../ts/Imagen.ts"
 import Carrito from "./Carrito/Carrito.tsx"
+import { useUser } from "./UserAuth/UserContext" 
+
 
 export default function Navbar() {
-    
-    const [estaLogeado, setEstaLogeado] = useState(false)
+
+    const { isAuthenticated, userSession, logout } = useUser();
     const [mostrarDesplegableUsuario, setMostrarDesplegableUsuario] = useState(false)
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const [isRegistroModalOpen, setRegistroModalOpen] = useState(false)
     const [isInicioSesionUsOpen, setInicioSesionUsOpen] = useState(false)
 
 
-    useEffect(() => {
-        setEstaLogeado(true)
-    }, [])
 
     const cambiarDesplegableUsuario = () => {
         setMostrarDesplegableUsuario(!mostrarDesplegableUsuario)
@@ -28,7 +27,7 @@ export default function Navbar() {
     }
 
     const cerrarSesion = () => {
-        setEstaLogeado(false)
+        logout();
         setMostrarDesplegableUsuario(false)
     }
 
@@ -74,7 +73,7 @@ export default function Navbar() {
             </div>
             <div>
 
-                {estaLogeado ? (
+                {isAuthenticated  ? (
 
                     <div className="flex relative">
                         <div className={`m-0 flex gap-0 items-center
@@ -86,10 +85,10 @@ export default function Navbar() {
                             {/**Opciones de usuario */}
                             <div className="relative">
                                 <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
-                                    <div className={`grid grid-cols-[3rem_10rem] items-center m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                        <img className="rounded-4xl" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
-                                        <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto">
-                                            Nombre Apellido
+                                    <div className={`flex items-center gap-3 m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
+                                        <img className="w-10 h-10 rounded-full" src={obtenerImagen("/public/svg/ImagenUsuario.svg")} alt="foto usuario" />
+                                        <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto font-lato">
+                                            {userSession?.name} {userSession?.surname}
                                             <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                             </svg>
@@ -123,13 +122,13 @@ export default function Navbar() {
 
                     <div>
                             
-                        <button onClick={abrirInicioSesionUs} className="text-white font-bold p-1" type="button">
+                        <button onClick={abrirInicioSesionUs} className="text-white font-lato p-1" type="button">
                             Iniciar Sesion
                         </button>
                         
 
                         
-                        <button onClick={abrirRegistroModal} className="bg-white rounded-lg m-5 p-1" type="button">
+                        <button onClick={abrirRegistroModal} className=" bg-white rounded font-lato m-5 p-1" type="button">
                             Registrarse
                         </button>
                     </div>
