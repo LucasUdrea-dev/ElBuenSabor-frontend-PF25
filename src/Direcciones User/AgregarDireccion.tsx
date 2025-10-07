@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Direccion, Ciudad, Provincia, Pais } from "../ts/Clases";
+import {  Direccion, Ciudad, Provincia, host } from "../../ts/Clases";
 import { z } from "zod";
+
+
 
 type Errors = {
   calle?: string;
@@ -12,12 +14,30 @@ type Errors = {
   general?: string;
 };
 
-const API_URL_DIRECCION = "http://localhost:8080/api/Direccion";
-const API_URL_CIUDADES = "http://localhost:8080/api/Ciudad";
-const API_URL_PROVINCIAS = "http://localhost:8080/api/Provincia";
 
-const direccionSchema = z.object({
-  calle: z.string().nonempty("La calle es obligatoria.").regex(/^[a-zA-Z0-9\sáéíóúÁÉÍÓÚüÜñÑ]+$/, "La calle solo puede contener letras y números."),
+const API_URL_PROVINCIA = host+"/api/Provincia"; 
+const API_URL_AGREGAR_DIRECCION = host+"/api/Direccion"; 
+
+
+const AgregarDireccion = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [calle, setCalle] = useState("");
+  const [numero, setNumero] = useState("");
+  const [ciudad, setCiudad] = useState<Ciudad>(new Ciudad);
+  const [provincia, setProvincia] = useState<Provincia>(new Provincia());
+  const [alias, setAlias] = useState("");
+  const [aclaraciones, setAclaraciones] = useState("");
+  const [latitud, setLatitud] = useState("");
+  const [longitud, setLongitud] = useState("");
+  const [piso, setPiso] = useState(""); 
+  const [depto, setDepto] = useState(""); 
+  const [ciudades, setCiudades] = useState<Ciudad[]>([]);
+  const [provincias, setProvincias] = useState<Provincia[]>([]);
+  const [errors, setErrors] = useState<Errors>({});
+
+
+
+  const direccionSchema = z.object({
+  calle: z.string().nonempty("La calle es obligatoria.").regex(/^[a-zA-Z0-9\s]+$/, "La calle solo puede contener letras y números."),
   numero: z.string().nonempty("El número es obligatorio.").regex(/^\d+$/, "El número debe ser solo dígitos."),
   ciudad: z.string().nonempty("La ciudad es obligatoria."),
   provincia: z.string().nonempty("La provincia es obligatoria."),
@@ -27,127 +47,167 @@ const direccionSchema = z.object({
   latitud: z.string().optional(),
   longitud: z.string().optional(),
   aclaraciones: z.string().optional(),
-});
+  });
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  direccion: Direccion;
-  onDireccionActualizada: () => void;  
 
-};
-
-const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }: Props) => {
-  const [calle, setCalle] = useState(direccion.nombreCalle);
-  const [numero, setNumero] = useState(direccion.numeracion);
-  const [ciudad, setCiudad] = useState(direccion.ciudad?.nombre || "");
-  const [provincia, setProvincia] = useState(direccion.ciudad?.provincia?.nombre || "");
-  const [alias, setAlias] = useState(direccion.alias);
-  const [latitud, setLatitud] = useState(direccion.latitud?.toString() || "");
-  const [longitud, setLongitud] = useState(direccion.longitud?.toString() || "");
-  const [piso, setPiso] = useState("");
-  const [depto, setDepto] = useState("");
-  const [aclaraciones, setAclaraciones] = useState("");
-  const [ciudades, setCiudades] = useState<string[]>([]);
-  const [provincias, setProvincias] = useState<string[]>([]);
-  const [errors, setErrors] = useState<Errors>({});
 
   useEffect(() => {
     if (isOpen) {
-      const fetchDatos = async () => {
-        const [resCiudades, resProvincias] = await Promise.all([
-          axios.get(API_URL_CIUDADES),
-          axios.get(API_URL_PROVINCIAS),
-        ]);
-        setCiudades(resCiudades.data);
-        setProvincias(resProvincias.data);
-
-        if (direccion.descripcionEntrega) {
-          const partes = direccion.descripcionEntrega.split(",");
-          const pisoVal = partes.find(p => p.includes("Piso"))?.split(":")[1]?.trim() || "";
-          const deptoVal = partes.find(p => p.includes("Depto"))?.split(":")[1]?.trim() || "";
-          setPiso(pisoVal);
-          setDepto(deptoVal);
-        }
+      // Cargar ciudades y localidades al abrir el modal
+      const fetchProvincias = async () => {
+        const response = await axios.get(API_URL_PROVINCIA);
+        setProvincias(response.data);
       };
-      fetchDatos();
+      fetchProvincias();
     }
-  }, [isOpen, direccion]);
+  }, [isOpen]);
 
-  const validarCampos = (): boolean => {
-    const result = direccionSchema.safeParse({
-      calle,
-      numero,
-      ciudad,
-      provincia,
-      alias,
-      piso,
-      depto,
-      latitud,
-      longitud,
-      aclaraciones: `Piso: ${piso}, Depto: ${depto}`,
-    });
+  useEffect(()=>{
+    fetchCiudades()
+  }, [provincia])
+  
+  
+  const fetchCiudades = async () => {
 
-    if (!result.success) {
-      const erroresZod: Errors = {};
-      result.error.errors.forEach((err) => {
-        const campo = err.path[0] as keyof Errors;
-        erroresZod[campo] = err.message;
-      });
-      setErrors(erroresZod);
-      return false;
+    if (provincia.id) {
+      const API_URL_CIUDADES = host+`/api/Ciudad/provincia/${provincia.id}`; 
+  
+      const response = await axios.get(API_URL_CIUDADES);
+      setCiudades(response.data);
+      
+    }else{
+      setCiudades([])
     }
-
-    setErrors({});
-    return true;
   };
 
-  const handleEditarDireccion = async (e: React.FormEvent) => {
+    const validarCamposConZod = (): boolean => {
+      const resultado = direccionSchema.safeParse({
+        calle,
+        numero,
+        ciudad,
+        provincia,
+        alias,
+        latitud,
+        longitud,
+        aclaraciones,
+      });
+
+      if (!resultado.success) {
+        const erroresZod: Errors = {};
+        resultado.error.errors.forEach((err) => {
+          const campo = err.path[0] as keyof Errors;
+          erroresZod[campo] = err.message;
+        });
+        setErrors(erroresZod);
+        return false;
+      }
+
+      setErrors({});
+      return true;
+    };
+
+
+
+    const verificarDireccionExistente = async (): Promise<boolean> => {
+    try {
+      const response = await axios.get(`${API_URL_AGREGAR_DIRECCION}/existe`, {
+        params: {
+          calle,
+          numero,
+          ciudad,
+          provincia,
+        },
+      });
+
+      return response.data.existe === true; // asumimos que responde { existe: true }
+    } catch (error) {
+      console.error("Error al verificar dirección:", error);
+      setErrors({
+        general: "No se pudo verificar si la dirección ya existe. Intente nuevamente.",
+      });
+      return true; // para prevenir el guardado en caso de error
+    }
+  };
+
+
+
+
+  const handleAgregarDireccion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validarCampos()) return;
 
-    const pais = new Pais();
-    pais.nombre = "Argentina";
+    if (!validarCamposConZod()) return;
 
-    const prov = new Provincia();
-    prov.nombre = provincia;
-    prov.pais = pais;
+    const aclaracionesConcatenadas = `Piso: ${piso}, Depto: ${depto}`;
+    setAclaraciones(aclaracionesConcatenadas);
 
-    const ciu = new Ciudad();
-    ciu.nombre = ciudad;
-    ciu.provincia = prov;
-
-    const dirActualizada = new Direccion();
-    dirActualizada.id = direccion.id;
-    dirActualizada.nombreCalle = calle;
-    dirActualizada.numeracion = numero;
-    dirActualizada.alias = alias;
-    dirActualizada.latitud = parseFloat(latitud || "0");
-    dirActualizada.longitud = parseFloat(longitud || "0");
-    dirActualizada.descripcionEntrega = `Piso: ${piso}, Depto: ${depto}`;
-    dirActualizada.ciudad = ciu;
+    const yaExiste = await verificarDireccionExistente();
+    if (yaExiste) {
+      setErrors({
+        general: "La dirección ya está registrada.",
+      });
+      return;
+    }
 
     try {
-    await axios.put(`${API_URL_DIRECCION}/${direccion.id}`, dirActualizada);
-    onClose();
-    onDireccionActualizada();  // <-- Aquí notificas que se actualizó
-  } catch (error) {
-    console.error("Error al editar la dirección:", error);
-    setErrors({ general: "Error al actualizar la dirección." });
-  }
-};
+
+      const nuevaDireccion = new Direccion();
+      nuevaDireccion.nombreCalle = calle;
+      nuevaDireccion.numeracion = numero;
+      nuevaDireccion.latitud = parseFloat(latitud || "0");
+      nuevaDireccion.longitud = parseFloat(longitud || "0");
+      nuevaDireccion.alias = alias;
+      nuevaDireccion.descripcionEntrega = aclaracionesConcatenadas;
+      nuevaDireccion.ciudad = ciudad
+
+
+    // Enviar la dirección al backend
+      const responseDireccion = await axios.post(API_URL_AGREGAR_DIRECCION, nuevaDireccion);
+      console.log("Dirección agregada:", responseDireccion.data);
+      onClose();
+    } catch (err) {
+      console.error("Error al agregar dirección:", err);
+      setErrors({
+        general: "Hubo un problema al agregar la dirección. Verifica los datos ingresados.",
+      });
+    }
+  };
+
+
+  //limpiar campos
+  useEffect(() => {
+    if (!isOpen) {
+      setCalle("");
+      setNumero("");
+      setCiudad(new Ciudad());
+      setProvincia(new Provincia());
+      setAlias("");
+      setAclaraciones("");
+      setLatitud("");
+      setLongitud("");
+      setPiso(""); 
+      setDepto(""); 
+      setErrors({});
+    }
+  }, [isOpen]);
+
 
   if (!isOpen) return null;
 
+
+
+
+  
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl text-center mb-4 text-black">Editar Dirección</h2>
 
-        {errors.general && <p className="text-red-600 text-center mb-4">{errors.general}</p>}
+        <h2 className="text-black text-2xl font-lato mb-6 text-center">Agregar una dirección de envío</h2>
 
-        <form onSubmit={handleEditarDireccion}>
+        {errors.general && (
+          <div className="text-red-600 font-lato mb-2 text-center font-lato">{errors.general}</div>
+        )}
 
+        <form onSubmit={handleAgregarDireccion}>
 
           <div className="mb-4">
           <label className="text-black block mb-2">Coordenadas</label>
@@ -231,16 +291,24 @@ const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }:
           <div className="w-1/2 pr-2">
             <label className="text-black block mb-2">Ciudad*</label>
             <select
-              value={ciudad}
-              onChange={(e) => setCiudad(e.target.value)}
+              value={ciudad.id}
+              onChange={(e) => {
+
+                const ciudadSeleccionada = ciudades.find((ciudad)=>ciudad.id == Number(e.target.value))
+                
+                if (ciudadSeleccionada) {
+                  setCiudad(ciudadSeleccionada)
+                }
+              }}
+
               className={`w-full p-2 border rounded ${
                 errors.ciudad ? "border-red-500" : "border-gray-300"
               }`}
             >
               <option value="">Seleccionar Ciudad</option>
               {ciudades.map((ciudad) => (
-                <option key={ciudad} value={ciudad}>
-                  {ciudad}
+                <option key={ciudad.id} value={ciudad.id}>
+                  {ciudad.nombre}
                 </option>
               ))}
             </select>
@@ -251,16 +319,26 @@ const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }:
           <div className="w-1/2 pr-2">
             <label className="text-black block mb-2">Provincia*</label>
             <select
-              value={provincia}
-              onChange={(e) => setProvincia(e.target.value)}
+              value={provincia.id}
+              onChange={(e) => {
+
+                const provinciaSeleccionada = provincias.find((prov)=>prov.id == Number(e.target.value))
+
+                if (provinciaSeleccionada) {
+                  setProvincia(provinciaSeleccionada);
+                }else{
+                  setProvincia(new Provincia())
+                }
+
+              }}
               className={`w-full p-2 border rounded ${
                 errors.provincia ? "border-red-500" : "border-gray-300"
               }`}
             >
               <option value="">Seleccionar provincia</option>
               {provincias.map((provincia) => (
-                <option key={provincia} value={provincia}>
-                  {provincia}
+                <option key={provincia.id} value={provincia.id}>
+                  {provincia.nombre}
                 </option>
               ))}
             </select>
@@ -315,4 +393,5 @@ const EditDirecciones = ({ isOpen, onClose, direccion,onDireccionActualizada  }:
     </div>
   );
 };
-export default EditDirecciones;
+
+export default AgregarDireccion;

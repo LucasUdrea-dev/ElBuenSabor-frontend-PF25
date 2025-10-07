@@ -221,7 +221,7 @@ export class Usuario{
     existe: boolean = true;
     imagenUsuario?: string;
     telefonoList: Telefono[] = []
-    rol: Rol = new Rol()
+    rol?: Rol; // Hacer que el rol sea opcional
     direccionList: Direccion[] = []
 
 }
@@ -265,6 +265,14 @@ export class Direccion{
     descripcionEntrega: string ="";
     ciudad: Ciudad = new Ciudad();
 }
+
+
+export class Empleado extends Usuario {
+    sueldo: number = 0;
+    fechaAlta: string = new Date().toISOString(); 
+    idSucursal: Sucursal = new Sucursal();
+}
+
 
 
 export class Ciudad {

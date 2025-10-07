@@ -38,7 +38,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Clientes", 
       icono: "/svg/IconsDashboard/ClientesAdmin.svg",
       descripcion: "Administrar base de clientes",
-      ruta: "/clientes"
+      ruta: "/admin/clientes"
     },
     { 
       nombre: "Facturas", 
@@ -50,7 +50,7 @@ export default function Dashboard({ onSeleccionar, isCollapsed = false, onToggle
       nombre: "Empleados", 
       icono: "/svg/IconsDashboard/Empleados.svg",
       descripcion: "Gestión de personal",
-      ruta: "/empleados"
+      ruta: "/admin/empleados"
     },
     { 
       nombre: "Promociones", 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Empleado } from '../../../ts/Clases.ts';
+import { Empleado, Sucursal } from '../../../ts/Clases.ts';
 import AgregarEmpleado from "./AgregarEmpleados.tsx";
 import EditarEmpleado from "./EditarEmpleado.tsx";
 
@@ -8,7 +8,7 @@ export default function Empleados() {
     const [empleadosMostrados, setEmpleadosMostrados] = useState<Empleado[]>([])
     const [buscador, setBuscador] = useState("")
     const [paginaSeleccionada, setPaginaSeleccionada] = useState(1)
-    const [mostrarEmpleado, setMostrarEmpleado] = useState<Empleado | null>(null)
+    const [mostrarEmpleado] = useState<Empleado | null>(null)
     
     // Estados para los modales
     const [mostrarModalAgregar, setMostrarModalAgregar] = useState(false)
@@ -18,104 +18,101 @@ export default function Empleados() {
     const cantidadPorPagina = 10;
 
     // Datos hardcodeados
-    const empleadosHardcodeados: Empleado[] = [
+     const sucursalMendoza: Sucursal = {
+        id: 1,
+        nombre: "Sucursal Central Mendoza",
+        horaApertura: "09:00",
+        horaCierre: "18:00",
+        existe: true,
+        direccion: {
+            id: 101,
+            nombreCalle: "Av. San Martín",
+            numeracion: "1100",
+            latitud: -32.890692,
+            longitud: -68.847145,
+            alias: "Oficina Principal",
+            descripcionEntrega: "Frente a la Plaza San Martín, edificio color crema.",
+            ciudad: {
+            id: 1,
+            nombre: "Ciudad de Mendoza",
+            provincia: {
+                id: 1,
+                nombre: "Mendoza",
+                pais: {
+                id: 1,
+                nombre: "Argentina",
+                provincias: [],
+                },
+                ciudadList: [],
+            },
+            },
+        },
+        };
+
+        //Hardcodeo de empleados
+        const empleadosHardcodeados: Empleado[] = [
         {
             id: 1,
             nombre: "Juan",
             apellido: "Pérez",
             email: "juan.perez@email.com",
-            telefono: "+54 261 123-4567",
-            cargo: "Gerente de Ventas",
             existe: true,
-            fechaAlta: new Date("2020-03-15"),
+            imagenUsuario: "",
+            telefonoList: [
+            { id: 1, numero: 2614567890 },
+            { id: 2, numero: 2615551234 },
+            ],
+            rol: {
+            id: null,
+            fechaAlta: new Date("2020-03-10").toISOString(),
+            tipoRol: { id: null, rol: 3 },
+            },
+            direccionList: [
+            {
+                id: 201,
+                nombreCalle: "9 de Julio",
+                numeracion: "750",
+                latitud: -32.8902,
+                longitud: -68.8421,
+                alias: "Casa",
+                descripcionEntrega: "Casa color verde, portón gris.",
+                ciudad: sucursalMendoza.direccion!.ciudad,
+            },
+            ],
             sueldo: 75000,
-            //idSucursal: { id: 1, nombre: "Sucursal Centro", direccion: "Av. San Martín 123" } as Sucursal
+            fechaAlta: "2020-03-15",
+            idSucursal: sucursalMendoza,
         },
         {
             id: 2,
-            nombre: "María Elena",
-            apellido: "González López",
-            email: "maria.gonzalez@empresa.com",
-            telefono: "+54 9 261 234-5678",
-            cargo: "Desarrolladora Frontend",
+            nombre: "María",
+            apellido: "Gómez",
+            email: "maria.gomez@email.com",
             existe: true,
-            fechaAlta: new Date("2021-07-22"),
-            sueldo: 65000,
-            //idSucursal: { id: 2, nombre: "Sucursal Norte", direccion: "Calle Las Heras 456" } as Sucursal
+            imagenUsuario: "",
+            telefonoList: [{ id: 3, numero: 2614789000 }],
+            rol: {
+            id: null,
+            fechaAlta: new Date("2021-05-01").toISOString(),
+            tipoRol: { id: null, rol: 3 },
+            },
+            direccionList: [
+            {
+                id: 202,
+                nombreCalle: "San Juan",
+                numeracion: "450",
+                latitud: -32.8921,
+                longitud: -68.8456,
+                alias: "Departamento",
+                descripcionEntrega: "Piso 3, dpto B.",
+                ciudad: sucursalMendoza.direccion!.ciudad,
+            },
+            ],
+            sueldo: 95000,
+            fechaAlta: "2021-05-10",
+            idSucursal: sucursalMendoza,
         },
-        {
-            id: 3,
-            nombre: "Carlos Alberto",
-            apellido: "Rodríguez Martinez",
-            email: "carlos.rodriguez@empresa.com",
-            telefono: "+54 9 261 345-6789",
-            cargo: "Analista de Sistemas",
-            existe: false,
-            fechaAlta: new Date("2019-11-10"),
-            sueldo: 60000,
-            //idSucursal: { id: 1, nombre: "Sucursal Centro", direccion: "Av. San Martín 123" } as Sucursal
-        },
-        {
-            id: 4,
-            nombre: "Ana Sofía",
-            apellido: "Hernández Silva",
-            email: "ana.hernandez@empresa.com",
-            telefono: "+54 9 261 456-7890",
-            cargo: "Diseñadora UX/UI",
-            existe: true,
-            fechaAlta: new Date("2022-01-18"),
-            sueldo: 58000,
-            //idSucursal: { id: 3, nombre: "Sucursal Sur", direccion: "Av. Belgrano 789" } as Sucursal
-        },
-        {
-            id: 5,
-            nombre: "Roberto Luis",
-            apellido: "Fernández Castro",
-            email: "roberto.fernandez@empresa.com",
-            telefono: "+54 9 261 567-8901",
-            cargo: "Contador Senior",
-            existe: true,
-            fechaAlta: new Date("2018-05-30"),
-            sueldo: 70000,
-            //idSucursal: { id: 1, nombre: "Sucursal Centro", direccion: "Av. San Martín 123" } as Sucursal
-        },
-        {
-            id: 6,
-            nombre: "Laura Patricia",
-            apellido: "Jiménez Morales",
-            email: "laura.jimenez@empresa.com",
-            telefono: "+54 9 261 678-9012",
-            cargo: "Recursos Humanos",
-            existe: true,
-            fechaAlta: new Date("2020-09-14"),
-            sueldo: 55000,
-            //idSucursal: { id: 2, nombre: "Sucursal Norte", direccion: "Calle Las Heras 456" } as Sucursal
-        },
-        {
-            id: 7,
-            nombre: "Diego Alejandro",
-            apellido: "Torres Vargas",
-            email: "diego.torres@empresa.com",
-            telefono: "+54 9 261 789-0123",
-            cargo: "Marketing Digital",
-            existe: false,
-            fechaAlta: new Date("2021-12-05"),
-            sueldo: 52000,
-            //idSucursal: { id: 3, nombre: "Sucursal Sur", direccion: "Av. Belgrano 789" } as Sucursal
-        },
-        {
-            id: 8,
-            nombre: "Valentina Isabel",
-            apellido: "Ruiz Mendoza",
-            email: "valentina.ruiz@empresa.com",
-            telefono: "+54 9 261 890-1234",
-            cargo: "Desarrolladora Backend",
-            existe: true,
-            fechaAlta: new Date("2022-08-11"),
-            sueldo: 68000,
-            //idSucursal: { id: 1, nombre: "Sucursal Centro", direccion: "Av. San Martín 123" } as Sucursal
-        }
-    ];
+        ];
     
     useEffect(() => {
         cargarEmpleados()
@@ -282,16 +279,16 @@ export default function Empleados() {
                                             <h3 className="truncate max-w-[350px]" title={empleado.email}> {empleado.email} </h3>
                                         </div>
                                         <div>
-                                            <h3>{empleado.telefono}</h3>
+                                            <h3>{empleado.telefonoList.map(t => t.numero).join(", ")}</h3>
                                         </div>
                                         <div>
-                                            <h3>{empleado.cargo}</h3>
+                                            <h3>{empleado.rol ? [empleado.rol.tipoRol.rol] : "Sin rol"}</h3>
                                         </div>
                                         <div className="flex justify-around">
                             
-                                            <button onClick={() => setMostrarEmpleado(empleado)}>
+                                            {/*<button onClick={() => setMostrarEmpleado(empleado)}>
                                                 <img className="h-11 mr-2" src="/svg/LogoVer.svg" alt="Ver detalles" />
-                                            </button>
+                                            </button>*/}
                                             
                                             {/* Modal de edición - Permite modificar datos del empleado */}
                                             <button onClick={() => abrirModalEditar(empleado)}>

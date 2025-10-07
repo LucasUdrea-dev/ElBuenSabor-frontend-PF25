@@ -89,11 +89,13 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
       nombre: formData.nombre,
       apellido: formData.apellido,
       email: formData.email,
-      telefono: formData.telefono,
-      cargo: formData.cargo,
+      telefonoList: [],
       existe: true,
-      fechaAlta: new Date(),
+      fechaAlta: new Date().toISOString(),
       sueldo: 0, // Se puede agregar después o tener un valor por defecto
+      idSucursal: { id: 1, nombre: ""}, // Sucursal por defecto
+      rol: { id: null, fechaAlta: new Date().toISOString(), tipoRol: { id: null, rol: 2 } }, // Rol EMPLOYEE
+      direccionList: [],
     };
 
     try {

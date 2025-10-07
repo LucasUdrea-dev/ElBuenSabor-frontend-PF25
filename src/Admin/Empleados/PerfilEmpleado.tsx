@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import EditCorreoUser from './EditCorreoUser';
-import EditContrasenaUser from './EditContrasenaUser';
-import { userAuthentication, Usuario } from '../ts/Clases';
+import EditCorreoUser from '../../EditCorreoUser';
+import EditContrasenaUser from '../../EditContrasenaUser';
+import { userAuthentication, Usuario } from '../../../ts/Clases';
 
 
 // Esquema de validación
@@ -18,7 +18,7 @@ const usuarioSchema = z.object({
 
 });
 
-export default function EditarPerfilUser() {
+export default function PerfilEmpleado() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
   const [formData, setFormData] = useState<Usuario>(new Usuario());
@@ -73,6 +73,7 @@ export default function EditarPerfilUser() {
   []);
   
 
+  
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
         setFormData((prev) => {
@@ -117,7 +118,7 @@ export default function EditarPerfilUser() {
     setAuthErrores({});
 
 
-    console.log('Usuario válido:', datosValidados);
+    console.log('Empleado válido:', datosValidados);
     setUsuario(formData);
     setErrores({});
 
@@ -155,10 +156,7 @@ export default function EditarPerfilUser() {
     navigate('/catalogo');
   };
 
-  const irADirecciones = () => {
-    navigate('/misDirecciones');
-  };
-
+  
 
 
 
@@ -172,17 +170,12 @@ export default function EditarPerfilUser() {
         <div className="flex flex-col md:flex-row p-6 gap-8">
           <div className="flex flex-col items-center justify-center gap-1 md:w-1/3 mb-30">
             <img
-              src="../public/svg/imagenUsuario.svg"
+              src="../../../public/svg/ImagenUsuario.svg"
               alt="Imagen de Usuario"
               className="w-82 h-82"
             />
             <div className="flex flex-row gap-4 mt-4">
-              <button
-                onClick={irADirecciones}
-                className="px-5 py-2 rounded-lg bg-[#666666] hover:bg-[#7a7a7a] text-white font-medium shadow transition duration-300"
-              >
-                Mis direcciones
-              </button>
+              
               <button
                 onClick={() => {
                   console.log("Abrir selector de imagen o lógica de actualización");
@@ -255,7 +248,7 @@ export default function EditarPerfilUser() {
                       type="button"
                       className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
-                      <img src="../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
+                      <img src="../../../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
                     </button>
                   </div>
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.email ?? '\u00A0'}</p>
@@ -278,7 +271,7 @@ export default function EditarPerfilUser() {
                       type="button"
                       className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
-                      <img src="../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
+                      <img src="../../../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
                     </button>
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{Autherrores.password ?? '\u00A0'}</p>
                 </div>
