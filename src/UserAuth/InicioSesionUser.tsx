@@ -8,40 +8,47 @@ import { z } from "zod";
 import { userAuthentication } from "../../ts/Clases";
 import { useUser } from "./UserContext";
 
+
 const schema = z.object({
   username: z.string().min(1, "El usuario es obligatorio").email("Formato de email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
+
 const API_URL = "http://localhost:8080/api/auth/login";
+//URL para autenticación con Firebase
+const FIREBASE_LOGIN_URL = "http://localhost:8080/api/auth/firebase-login";
 
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
-//componente 
-const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
 
-    //Estado para manejar los errores de validación
+
+const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const { login } = useUser();
     const [errors, setErrors] = useState<Errors>({});
     const [showPassword, setShowPassword] = useState(false);
     const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
-    const [formData, setFormData] = useState<userAuthentication>(new userAuthentication());//estado para almacenar datos del formulario
-    const navigate = useNavigate();//hook para redirigir despues del login
+    const [formData, setFormData] = useState<userAuthentication>(new userAuthentication());
+    const navigate = useNavigate();
+    // Estado de carga
+    const [isLoading, setIsLoading] = useState(false);
 
-    //limpiar
+
+    // Limpiar formulario al cerrar
     useEffect(() => {
       if (!isOpen) {
         setFormData(new userAuthentication());
         setErrors({});
+        setIsLoading(false); // ✅ AGREGADO
       }
     }, [isOpen]);
+
+
 
     // Maneja el cambio en los campos del formulario
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-
-
 
 
     // Función para validar los campos del formulario
@@ -65,10 +72,9 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       return Object.keys(newErrors).length === 0;
     };
 
+    
 
-
-
-    // Manejo de inicio de sesión
+    // Manejo de inicio de sesión tradicional (email/password)
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
       console.log("Formulario enviado");
@@ -80,6 +86,8 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       }
       
       console.log("Validación exitosa, enviando petición...");
+      setIsLoading(true); 
+      setErrors({}); // Limpiar errores previos
       
       try {
         const response = await axios.post(API_URL, {
@@ -90,11 +98,11 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         console.log("Respuesta del servidor:", response.data);
 
         if (response.data.jwt) {
-          login(response.data.jwt); // Actualizar el contexto de usuario
-          localStorage.setItem('token', response.data.jwt); // Almacenar el token
+          login(response.data.jwt);
+          localStorage.setItem('token', response.data.jwt);
           console.log("Token almacenado, cerrando modal y navegando...");
           onClose();
-          navigate('/catalogo'); // Redirigir a la página de catálogo
+          navigate('/catalogo');
         } else {
           console.error("No se recibió token en la respuesta");
           setErrors({ general: "No se recibió token de autenticación" });
@@ -105,43 +113,146 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         if (axios.isAxiosError(err)) {
           console.error("Error de Axios:", err.response?.data);
           setErrors({ general: "Datos incorrectos" });
-
         } else {
           setErrors({ general: "Error desconocido en el inicio de sesión." });
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
 
 
-    
-
-    //Inicio con Google y Facebook
+    // Inicio con Google usando Firebase
     const handleGoogleLogin = async () => {
       const provider = new GoogleAuthProvider();
+      setIsLoading(true);
+      setErrors({});
+
       try {
+        // 1. Autenticar con Firebase
         const result = await signInWithPopup(auth, provider);
-        console.log("Usuario con Google:", result.user);
-        // Aquí se podría enviar el usuario al backend
-      } catch (error) {
+        console.log("✅ Usuario autenticado con Google:", result.user);
+
+        // 2. Obtener el token de Firebase
+        const firebaseToken = await result.user.getIdToken();
+        console.log("✅ Token de Firebase obtenido");
+
+        // 3. Enviar el token al backend
+        const response = await axios.post(
+          FIREBASE_LOGIN_URL,
+          {},
+          {
+            headers: {
+              "Firebase-Token": firebaseToken,
+            },
+            
+          }
+        );
+
+        console.log(" Respuesta del backend:", response.data);
+
+        
+        // 4. Guardar el JWT en localStorage y contexto
+        if (response.data.jwt) {
+          localStorage.setItem('token', response.data.jwt);
+          console.log("Token guardado en localStorage:", localStorage.getItem('token'));
+          login(response.data.jwt); // Actualizar el contexto
+          console.log("Token almacenado, cerrando modal y navegando...");
+          
+          // 5. Cerrar modal y redirigir
+          onClose();
+          navigate('/catalogo');
+        } else {
+          setErrors({ general: "No se recibió token de autenticación" });
+        }
+
+      } catch (error: any) {
         console.error("Error al iniciar sesión con Google:", error);
+        
+        // Manejo de errores específicos
+        let errorMessage = "Error al autenticar con Google. Intenta nuevamente.";
+        
+        if (error.code === 'auth/popup-blocked') {
+          errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = "Cerraste el popup de autenticación.";
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        }
+        
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsLoading(false);
       }
     };
 
+
+
+
+    // Inicio con Facebook usando Firebase
     const handleFacebookLogin = async () => {
       const provider = new FacebookAuthProvider();
+      setIsLoading(true);
+      setErrors({});
+
       try {
+        // 1. Autenticar con Firebase
         const result = await signInWithPopup(auth, provider);
-        console.log("Usuario con Facebook:", result.user);
-      } catch (error) {
-        console.error("Error al iniciar sesión con Facebook:", error);
+        console.log(" Usuario autenticado con Facebook:", result.user);
+
+        // 2. Obtener el token de Firebase
+        const firebaseToken = await result.user.getIdToken();
+        console.log(" Token de Firebase obtenido");
+
+        // 3. Enviar el token al backend
+        const response = await axios.post(
+          FIREBASE_LOGIN_URL,
+          {},
+          {
+            headers: {
+              "Firebase-Token": firebaseToken,
+            },
+          }
+        );
+
+        console.log("✅ Respuesta del backend:", response.data);
+        
+        // 4. Guardar el JWT en localStorage y contexto
+        if (response.data.jwt) {
+          login(response.data.jwt);
+          localStorage.setItem('token', response.data.jwt);
+          console.log("Token almacenado, cerrando modal y navegando...");
+          
+          // 5. Cerrar modal y redirigir
+          onClose();
+          navigate('/catalogo');
+        } else {
+          setErrors({ general: "No se recibió token de autenticación" });
+        }
+
+      } catch (error: any) {
+        console.error("❌ Error al iniciar sesión con Facebook:", error);
+        
+        let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
+        
+        if (error.code === 'auth/popup-blocked') {
+          errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = "Cerraste el popup de autenticación.";
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        }
+        
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsLoading(false);
       }
     };
 
 
 
-
-    // función para abrir el modal de recuperación de contraseña:
+    // Función para abrir el modal de recuperación de contraseña
     const handleOpenRecuperar = () => {
       setIsRecuperarOpen(true);
     };
@@ -153,7 +264,6 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     if (!isOpen) return null;
 
 
-    
 
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -162,6 +272,7 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           <button
             type="button"
             onClick={onClose}
+            disabled={isLoading} 
             className="absolute top-9 right-8 text-gray-500 hover:text-gray-700 font-lato"
           >
             X
@@ -169,8 +280,11 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
           <h2 className="text-2xl font-bold mb-7 font-lato text-center">Iniciar Sesión</h2>
 
+          
           {errors.general && (
-            <div className="text-red-600 font-lato mb-2 text-center">{errors.general}</div>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 font-lato text-sm">
+              {errors.general}
+            </div>
           )}
 
           <form onSubmit={handleLogin}>
@@ -181,6 +295,7 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                disabled={isLoading} 
                 className="w-full p-2 border border-gray-300 rounded font-lato"
                 required
               />
@@ -197,12 +312,14 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  disabled={isLoading} 
                   className="w-full p-2 pr-10 border border-gray-300 rounded font-lato"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading} 
                   className="absolute right-2 top-1/2 transform -translate-y-1/2"
                 >
                   <img
@@ -217,18 +334,32 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               )}
             </div>
 
+            
             <button
               type="submit"
-              className="bg-[#0A76E1] text-white py-2 px-4 rounded-full hover:bg-[#0A5BBE] w-full mb-4 font-lato"
+              disabled={isLoading}
+              className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 ${
+                isLoading 
+                  ? 'bg-gray-400 cursor-not-allowed opacity-70' 
+                  : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
+              }`}
             >
-              Ingresar
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Ingresando...
+                </div>
+              ) : (
+                'Ingresar'
+              )}
             </button>
 
             <div className="text-center mb-4 font-lato">
               <button
                 type="button"
                 onClick={handleOpenRecuperar}
-                className="text-blue-500"
+                disabled={isLoading} 
+                className="text-blue-500 hover:text-blue-700"
               >
                 ¿Olvidó su contraseña?
               </button>
@@ -236,12 +367,29 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
             <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
 
+            
+            
             <div className="flex justify-center mb-4 space-x-10">
-              <button type="button" onClick={handleFacebookLogin}>
-                <img src="public/svg/devicon_facebook.svg" alt="" className="w-10 h-10" />
+              <button 
+                type="button" 
+                onClick={handleFacebookLogin}
+                disabled={isLoading}
+                className={`transition-opacity ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+                }`}
+              >
+                <img src="public/svg/devicon_facebook.svg" alt="Facebook" className="w-10 h-10" />
               </button>
-              <button type="button" onClick={handleGoogleLogin}>
-                <img src="public/svg/flat-color-icons_google.svg" alt="" className="w-10 h-10" />
+              
+              <button 
+                type="button" 
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className={`transition-opacity ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
+                }`}
+              >
+                <img src="public/svg/flat-color-icons_google.svg" alt="Google" className="w-10 h-10" />
               </button>
             </div>
 
