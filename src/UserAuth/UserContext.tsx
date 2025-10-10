@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut  } from "firebase/auth";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
 
 export interface UserSession {
+  id_user: number;
   role: string;
   surname: string;
   name: string;
@@ -47,11 +48,18 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
       }
     };
 
-    const logout = () => {
+    const logout = async () => {
+      try {
+        await signOut(auth); // 🔥 Cierra la sesión en Firebase también
+      } catch (error) {
+        console.error("Error al cerrar sesión en Firebase:", error);
+      }
+
       localStorage.removeItem('token');
       setUserSession(null);
       setIsAuthenticated(false);
     };
+
 
     const isTokenExpired = () => {
       if (!userSession) return true;
@@ -60,44 +68,47 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
     // Al cargar la app, verifica si hay JWT válido en localStorage
     useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const decoded = decodeJWT(token);
-        if (decoded && decoded.exp > Math.floor(Date.now() / 1000)) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = decodeJWT(token);
+      if (decoded) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        // Verificar si el token no está expirado
+        if (decoded.exp > currentTime) {
           setUserSession(decoded);
           setIsAuthenticated(true);
         } else {
+          // Si está expirado, limpiar el localStorage
           localStorage.removeItem('token');
         }
       }
-    }, []);
+    }
+  }, []);
 
     
 
     // Escucha cambios de sesión de Firebase (Google/Facebook)
     useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          try {
-            const firebaseToken = await user.getIdToken();
-            // Enviar token a backend y recibir JWT propio
-            const response = await axios.post(
-              "http://localhost:8080/api/auth/firebase-login",
-              {},
-              { headers: { "Firebase-Token": firebaseToken } }
-            );
-            if (response.data.jwt) login(response.data.jwt);
-          } catch (err) {
-            console.error("Error autenticando con backend usando Firebase:", err);
-            logout();
-          }
-        } else {
-          logout();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const firebaseToken = await user.getIdToken();
+          const response = await axios.post(
+            "http://localhost:8080/api/auth/firebase-login",
+            {},
+            { headers: { "Firebase-Token": firebaseToken } }
+          );
+          if (response.data.jwt) login(response.data.jwt);
+        } catch (err) {
+          console.error("Error autenticando con backend usando Firebase:", err);
         }
-      });
+      }
+      
+    });
 
-      return () => unsubscribe();
-    }, []);
+    return () => unsubscribe();
+  }, []);
+
 
 
 
