@@ -3,11 +3,12 @@ import axios from 'axios';
 import AgregarDireccion from './AgregarDireccion';
 import EliminarDireccion from './EliminarDireccion';
 import EditDireccion from './EditDireccion';
-import { Direccion, host } from '../../ts/Clases';
-import { useUser } from '../UserAuth/UserContext';
+import { Direccion, host } from '../../ts/Clases'; 
+
+
 
 export default function DireccionesUser() {
-  const { userSession, isAuthenticated } = useUser(); 
+  
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [isAgregarDireccionOpen, setAgregarDireccionOpen] = useState(false);
@@ -15,22 +16,18 @@ export default function DireccionesUser() {
   const [direccionAEliminar, setDireccionAEliminar] = useState<number | null | undefined>(null);
   const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
   const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
+      
 
-  // Construir URL dinámicamente
-  const apiUrl = userSession ? `${host}/api/usuarios/direcciones/${userSession.sub}` : null;
+  // Simula ID de usuario actual (debería venir de contexto o props)
+  const idUsuario = 2;
+  const apiUrl = host+`/api/usuarios/direcciones/${idUsuario}`; // Cambia esta URL a la de tu backend
 
-  // 🔄 Cargar direcciones del usuario logeado
+
   useEffect(() => {
+  
     const fetchDirecciones = async () => {
-      if (!apiUrl || !isAuthenticated) return;
-
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(apiUrl);
         setDirecciones(response.data);
       } catch (error) {
         console.error('Error al cargar las direcciones:', error);
@@ -39,34 +36,38 @@ export default function DireccionesUser() {
       }
     };
 
+  
     fetchDirecciones();
-  }, [apiUrl, isAuthenticated]);
+  }, []);
 
-  // 🗑 Eliminar dirección
+
+  //funcion para eliminar una direccion
   const eliminarDireccion = async () => {
-    if (direccionAEliminar === null || !apiUrl) return;
+  if (direccionAEliminar === null) return;
 
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${apiUrl}/${direccionAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
-    } catch (error) {
-      console.error('Error al eliminar la dirección:', error);
-    } finally {
-      setEliminarDireccionOpen(false);
-      setDireccionAEliminar(null);
+  try {
+    await axios.delete(`${apiUrl}/${direccionAEliminar}`);
+    setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
+  } catch (error) {
+    console.error('Error al eliminar la dirección:', error);
+  } finally {
+    setEliminarDireccionOpen(false);
+    setDireccionAEliminar(null);
+  }
+};
+
+   //modales de agregar direccion (Apertura y cierre)
+    const abrirAgregarDireccion = () => {
+        setAgregarDireccionOpen(true) 
     }
-  };
+    const cerrarAgregarDireccion = () => {
+        setAgregarDireccionOpen(false) 
+    }
+  
 
-  // 📌 Funciones para abrir/cerrar modales
-  const abrirAgregarDireccion = () => setAgregarDireccionOpen(true);
-  const cerrarAgregarDireccion = () => setAgregarDireccionOpen(false);
 
-  return (
+
+   return (
     <div className="min-h-screen text-white p-4 bg-[#333333] font-lato">
       <div className="bg-[#444444] rounded-xl max-w-4xl mx-auto overflow-hidden">
         <div className="bg-[#333333]/40 px-4 py-3">
@@ -78,11 +79,8 @@ export default function DireccionesUser() {
             <p>Cargando...</p>
           ) : direcciones.length === 0 ? (
             <div className="text-center p-6 rounded-xl bg-[#444444]">
-              <p className="mb-4">Aún no has agregado ninguna dirección</p>
-              <button
-                onClick={abrirAgregarDireccion}
-                className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded"
-              >
+              <p className="mb-4">Aun no has agregado ninguna dirección</p>
+              <button onClick={abrirAgregarDireccion} className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded">
                 Agregar dirección
               </button>
             </div>
@@ -96,9 +94,7 @@ export default function DireccionesUser() {
                   <div>
                     <p className="font-bold">{dir.alias}</p>
                     <p className="text-sm">
-                      {dir.nombreCalle} {dir.numeracion}, {dir.ciudad?.nombre},{" "}
-                      {dir.ciudad?.provincia?.nombre},{" "}
-                      {dir.ciudad?.provincia?.pais?.nombre}
+                      {dir.nombreCalle} {dir.numeracion}, {dir.ciudad?.nombre}, {dir.ciudad?.provincia?.nombre}, {dir.ciudad?.provincia?.pais?.nombre}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -158,16 +154,7 @@ export default function DireccionesUser() {
             setDireccionAEditar(null);
           }}
           onDireccionActualizada={() => {
-            // 👇 en vez de recargar la página, recargamos solo las direcciones
-            setCargando(true);
-            if (apiUrl) {
-              axios
-                .get(apiUrl, {
-                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                })
-                .then((res) => setDirecciones(res.data))
-                .finally(() => setCargando(false));
-            }
+            window.location.reload(); // Provisorio
           }}
         />
       )}
