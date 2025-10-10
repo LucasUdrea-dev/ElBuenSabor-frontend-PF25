@@ -10,6 +10,13 @@ interface Props {
   onCorreoActualizado: (nuevoCorreo: string) => void;
 }
 
+const axiosConfig = {
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json'
+  }
+};
+
 // Esquema de validación con Zod
 const correoSchema = z
   .object({
@@ -70,10 +77,11 @@ const EditCorreoUser: React.FC<Props> = ({
 
     try {
       // Validar correo actual con el servidor
-      const validacion = await axios.post("http://localhost:8080/api/usuarios/validarCorreo", {
-        id: usuarioId,
-        correo: correoActual,
-      });
+      const validacion = await axios.post(
+        "http://localhost:8080/api/usuarios/validarCorreo",
+        { id: usuarioId, correo: correoActual },
+        axiosConfig
+      );
 
       if (!validacion.data.validado) {
         setError("El correo actual no coincide.");
@@ -81,11 +89,12 @@ const EditCorreoUser: React.FC<Props> = ({
       }
 
       // Actualizar correo
-      const respuesta = await axios.put("http://localhost:8080/api/usuarios/actualizarCorreo", {
-        id: usuarioId,
-        nuevoCorreo,
-      });
-
+      const respuesta = await axios.put(
+        "http://localhost:8080/api/usuarios/actualizarCorreo",
+        { id: usuarioId, nuevoCorreo },
+        axiosConfig
+      );
+      
       if (respuesta.status === 200) {
         onCorreoActualizado(nuevoCorreo);
         onClose();

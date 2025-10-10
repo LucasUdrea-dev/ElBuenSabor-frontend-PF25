@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import EditCorreoUser from '../../EditCorreoUser';
-import EditContrasenaUser from '../../EditContrasenaUser';
+import EditCorreoUser from '../../Editar Usuario/EditCorreoUser';
+import EditContrasenaUser from '../../Editar Usuario/EditContrasenaUser';
 import { userAuthentication, Usuario } from '../../../ts/Clases';
 
 

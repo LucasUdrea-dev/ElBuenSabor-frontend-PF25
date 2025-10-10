@@ -4,6 +4,7 @@ import AgregarDireccion from './AgregarDireccion';
 import EliminarDireccion from './EliminarDireccion';
 import EditDireccion from './EditDireccion';
 import { Direccion, host } from '../../ts/Clases'; 
+import { useUser } from "../UserAuth/UserContext";
 
 
 
@@ -16,29 +17,33 @@ export default function DireccionesUser() {
   const [direccionAEliminar, setDireccionAEliminar] = useState<number | null | undefined>(null);
   const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
   const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
+  const { userSession } = useUser();
       
 
-  // Simula ID de usuario actual (debería venir de contexto o props)
-  const idUsuario = 2;
-  const apiUrl = host+`/api/usuarios/direcciones/${idUsuario}`; // Cambia esta URL a la de tu backend
-
+  const apiUrl = userSession
+    ? `${host}/api/Direccion/full/${userSession.id_user}`
+    : null;
 
   useEffect(() => {
-  
+    if (!apiUrl) return;
+
     const fetchDirecciones = async () => {
       try {
-        const response = await axios.get(apiUrl);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(apiUrl, {
+          headers: { Authorization: `Bearer ${token}` }, // 🔑 importante
+        });
         setDirecciones(response.data);
       } catch (error) {
-        console.error('Error al cargar las direcciones:', error);
+        console.error("Error al cargar las direcciones:", error);
       } finally {
         setCargando(false);
       }
     };
 
-  
     fetchDirecciones();
-  }, []);
+  }, [apiUrl]);
+
 
 
   //funcion para eliminar una direccion
