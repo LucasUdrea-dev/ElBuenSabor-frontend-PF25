@@ -10,13 +10,13 @@ export default function Footer() {
             <div className="text-white">
                 <div className="bg-[#D93F21] h-15 w-full font-lato ">
                     {location.pathname === "/inicio" ? (
-                        <div className="h-full w-2/5 m-auto flex items-center justify-between">
+                        <div className="h-full w-2/5 max-md:w-4/5 m-auto flex items-center justify-between">
                             <a href="#comoFunciona">Como Funciona</a>
                             <a href="#sobreNosotros">Sobre Nosotros</a>
                             <a href="#contacto">Contacto</a>
                         </div>
                     ) : (
-                        <div className="h-full w-2/5 m-auto flex items-center justify-between">
+                        <div className="h-full w-2/5 max-md:w-4/5 m-auto flex items-center justify-between">
                             <Link to="/inicio">Como Funciona</Link>
                             <Link to="/inicio">Sobre Nosotros</Link>
                             <Link to="/inicio">Contacto</Link>
