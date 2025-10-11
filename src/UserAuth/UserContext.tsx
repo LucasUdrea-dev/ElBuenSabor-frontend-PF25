@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, signOut  } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
 
@@ -24,73 +24,141 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-  //decodifica el JWT (solo la parte del payload)
-  const decodeJWT = (token: string): UserSession | null => {
-    try {
-      const payload = token.split('.')[1];
-      return JSON.parse(atob(payload)) as UserSession;
-    } catch {
-      return null;
-    }
-  };
-
-  
-  export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [userSession, setUserSession] = useState<UserSession | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    const login = (token: string) => {
-      const decoded = decodeJWT(token);
-      if (decoded) {
-        localStorage.setItem('token', token);
-        setUserSession(decoded);
-        setIsAuthenticated(true);
-      }
-    };
-
-    const logout = async () => {
-      try {
-        await signOut(auth); // 🔥 Cierra la sesión en Firebase también
-      } catch (error) {
-        console.error("Error al cerrar sesión en Firebase:", error);
-      }
-
-      localStorage.removeItem('token');
-      setUserSession(null);
-      setIsAuthenticated(false);
-    };
+// Decodifica el JWT (solo la parte del payload)
+const decodeJWT = (token: string): UserSession | null => {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload)) as UserSession;
+  } catch {
+    return null;
+  }
+};
 
 
-    const isTokenExpired = () => {
-      if (!userSession) return true;
-      return userSession.exp < Math.floor(Date.now() / 1000);
-    };
+// Verifica si el usuario es CUSTOMER (único rol permitido)
+const isCustomerRole = (role: string): boolean => {
+  return role === 'CUSTOMER';
+};
 
-    // Al cargar la app, verifica si hay JWT válido en localStorage
-    useEffect(() => {
+
+export const UserProvider = ({ children }: { children: ReactNode }) => {
+  // Inicialización: cargar sesión desde localStorage si existe y es válida
+  const [userSession, setUserSession] = useState<UserSession | null>(() => {
     const token = localStorage.getItem('token');
+    
     if (token) {
       const decoded = decodeJWT(token);
+      
       if (decoded) {
         const currentTime = Math.floor(Date.now() / 1000);
-        // Verificar si el token no está expirado
-        if (decoded.exp > currentTime) {
-          setUserSession(decoded);
-          setIsAuthenticated(true);
+        
+        // Solo cargar si es CUSTOMER y NO está expirado
+        if (decoded.exp > currentTime && isCustomerRole(decoded.role)) {
+          return decoded;
+        } else if (!isCustomerRole(decoded.role)) {
+          // Si no es CUSTOMER, no borrar el token (puede ser de EmpleadoContext)
+          return null;
         } else {
-          // Si está expirado, limpiar el localStorage
+          // Token expirado, limpiar
           localStorage.removeItem('token');
         }
       }
     }
+    
+    return null;
+  });
+  
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return userSession !== null;
+  });
+  
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Login: valida que el usuario sea CUSTOMER
+  const login = (token: string) => {
+    const decoded = decodeJWT(token);
+
+    if (!decoded) {
+      throw new Error('Token inválido');
+    }
+
+    // Verificar que el usuario NO sea empleado
+    if (!isCustomerRole(decoded.role)) {
+      throw new Error('Los empleados deben usar el panel de administración');
+    }
+
+    // Guardar token y establecer sesión
+    localStorage.setItem('token', token);
+    setUserSession(decoded);
+    setIsAuthenticated(true);
+    
+    // Notificar cambio en localStorage
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  // Logout: cierra sesión de Firebase y limpia el estado
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error al cerrar sesión en Firebase:", error);
+    }
+    
+    // Solo borrar el token si hay una sesión de CUSTOMER activa
+    if (userSession && isCustomerRole(userSession.role)) {
+      localStorage.removeItem('token');
+    }
+    
+    setUserSession(null);
+    setIsAuthenticated(false);
+  };
+
+  // Verifica si el token JWT está expirado
+  const isTokenExpired = () => {
+    if (!userSession) return true;
+    return userSession.exp < Math.floor(Date.now() / 1000);
+  };
+
+  // Marcar como inicializado después del primer render
+  useEffect(() => {
+    setIsInitialized(true);
   }, []);
 
-    
+  // Escuchar cambios en localStorage (login desde otros componentes/pestañas)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('token');
+      
+      if (token && !isAuthenticated) {
+        const decoded = decodeJWT(token);
+        
+        if (decoded && isCustomerRole(decoded.role)) {
+          const currentTime = Math.floor(Date.now() / 1000);
+          
+          if (decoded.exp > currentTime) {
+            setUserSession(decoded);
+            setIsAuthenticated(true);
+          }
+        }
+      }
+    };
 
-    // Escucha cambios de sesión de Firebase (Google/Facebook)
-    useEffect(() => {
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [isAuthenticated]);
+
+  // Listener de Firebase Auth: solo procesa usuarios de Google/Facebook
+  useEffect(() => {
+    if (!isInitialized) return;
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      const existingToken = localStorage.getItem('token');
+      
+      // Usuario de Firebase SIN token tradicional: autenticar con backend
+      if (user && !existingToken) {
         try {
           const firebaseToken = await user.getIdToken();
           const response = await axios.post(
@@ -98,46 +166,58 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
             {},
             { headers: { "Firebase-Token": firebaseToken } }
           );
-          if (response.data.jwt) login(response.data.jwt);
+          
+          if (response.data.jwt) {
+            login(response.data.jwt);
+          }
         } catch (err) {
-          console.error("Error autenticando con backend usando Firebase:", err);
+          console.error("Error autenticando con Firebase:", err);
         }
+      } 
+      // No hay usuario Firebase PERO hay token tradicional: validar que siga siendo válido
+      else if (!user && existingToken) {
+        const decoded = decodeJWT(existingToken);
+        
+        if (decoded && isCustomerRole(decoded.role)) {
+          const currentTime = Math.floor(Date.now() / 1000);
+          
+          // Si el token tradicional sigue válido, mantener sesión
+          if (decoded.exp > currentTime) {
+            return;
+          }
+        }
+        
+        // Token inválido o expirado
+        logout();
       }
-      
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isInitialized]);
 
+  // Verificar periódicamente si el token expiró (cada minuto)
+  useEffect(() => {
+    if (isAuthenticated) {
+      const interval = setInterval(() => {
+        if (isTokenExpired()) logout();
+      }, 60000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, userSession]);
 
+  return (
+    <UserContext.Provider value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
 
-
-    // Revisa periódicamente expiración del JWT
-    useEffect(() => {
-      if (isAuthenticated) {
-        const interval = setInterval(() => {
-          if (isTokenExpired()) logout();
-        }, 60000);
-        return () => clearInterval(interval);
-      }
-    }, [isAuthenticated, userSession]);
-
-    return (
-      <UserContext.Provider value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}>
-        {children}
-      </UserContext.Provider>
-    );
-  };
-
-  export const useUser = () => {
-    const context = useContext(UserContext);
-    if (!context) throw new Error("useUser debe ser usado dentro de UserProvider");
-    return context;
-  };
-
-
-
-
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) throw new Error("useUser debe ser usado dentro de UserProvider");
+  return context;
+};
 
 /*import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
