@@ -101,7 +101,7 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
           } catch (loginError) {
             console.error("Error en login:", loginError);
             
-            // MODIFICACIÓN 3: Verifica el tipo de error y muestra el mensaje apropiado
+            //  Verifica el tipo de error y muestra el mensaje apropiado
             // Si es un Error con mensaje, lo muestra; sino muestra un mensaje genérico
             if (loginError instanceof Error) {
               setErrors({ general: loginError.message });

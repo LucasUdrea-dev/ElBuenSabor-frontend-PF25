@@ -8,6 +8,7 @@ import { useUser } from "../UserAuth/UserContext";
 
 
 
+
 export default function DireccionesUser() {
   
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
@@ -17,22 +18,31 @@ export default function DireccionesUser() {
   const [direccionAEliminar, setDireccionAEliminar] = useState<number | null | undefined>(null);
   const [direccionAEditar, setDireccionAEditar] = useState<Direccion | null>(null);
   const [isEditarDireccionOpen, setEditarDireccionOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { userSession } = useUser();
       
 
+  //Si el usuario no está logueado userSession es null
   const apiUrl = userSession
-    ? `${host}/api/Direccion/full/${userSession.id_user}`
-    : null;
+    ? `${host}/api/Direccion/usuario/${userSession.id_user}` : null;
+
+
+
 
   useEffect(() => {
     if (!apiUrl) return;
 
     const fetchDirecciones = async () => {
+      setCargando(true); 
       try {
+
+        //Llama al backend
         const token = localStorage.getItem("token");
         const response = await axios.get(apiUrl, {
-          headers: { Authorization: `Bearer ${token}` }, // 🔑 importante
+          headers: { Authorization: `Bearer ${token}` },
         });
+
+        //Guarda la lista de direcciones
         setDirecciones(response.data);
       } catch (error) {
         console.error("Error al cargar las direcciones:", error);
@@ -42,37 +52,53 @@ export default function DireccionesUser() {
     };
 
     fetchDirecciones();
-  }, [apiUrl]);
+  }, [apiUrl, refreshKey]); 
 
 
 
-  //funcion para eliminar una direccion
+
+
+  // Función para eliminar una dirección
   const eliminarDireccion = async () => {
-  if (direccionAEliminar === null) return;
 
-  try {
-    await axios.delete(`${apiUrl}/${direccionAEliminar}`);
-    setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
-  } catch (error) {
-    console.error('Error al eliminar la dirección:', error);
-  } finally {
-    setEliminarDireccionOpen(false);
-    setDireccionAEliminar(null);
-  }
-};
+    if (direccionAEliminar === null) return;
 
-   //modales de agregar direccion (Apertura y cierre)
-    const abrirAgregarDireccion = () => {
-        setAgregarDireccionOpen(true) 
+    try {
+      
+      //petición DELETE al backend 
+      const token = localStorage.getItem("token");
+      await axios.delete(`${host}/api/Direccion/full/drop/${direccionAEliminar}`, { 
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      //actualiza el estado local direcciones
+      setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
+    } catch (error) {
+      console.error("Error al eliminar la dirección:", error);
+
+    } finally {
+      
+      setEliminarDireccionOpen(false);
+      setDireccionAEliminar(null);
     }
-    const cerrarAgregarDireccion = () => {
-        setAgregarDireccionOpen(false) 
-    }
+  };
+
+
+
+  // Modales de agregar dirección (Apertura y cierre)
+  const abrirAgregarDireccion = () => {
+    setAgregarDireccionOpen(true);
+  };
   
+  const cerrarAgregarDireccion = () => {
+    setAgregarDireccionOpen(false);
+    setRefreshKey(prev => prev + 1); 
+  };
 
 
 
-   return (
+
+  return (
     <div className="min-h-screen text-white p-4 bg-[#333333] font-lato">
       <div className="bg-[#444444] rounded-xl max-w-4xl mx-auto overflow-hidden">
         <div className="bg-[#333333]/40 px-4 py-3">
@@ -84,7 +110,7 @@ export default function DireccionesUser() {
             <p>Cargando...</p>
           ) : direcciones.length === 0 ? (
             <div className="text-center p-6 rounded-xl bg-[#444444]">
-              <p className="mb-4">Aun no has agregado ninguna dirección</p>
+              <p className="mb-4">Aún no has agregado ninguna dirección</p>
               <button onClick={abrirAgregarDireccion} className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded">
                 Agregar dirección
               </button>
@@ -139,7 +165,10 @@ export default function DireccionesUser() {
         </div>
       </div>
 
-      <AgregarDireccion isOpen={isAgregarDireccionOpen} onClose={cerrarAgregarDireccion} />
+      <AgregarDireccion 
+        isOpen={isAgregarDireccionOpen} 
+        onClose={cerrarAgregarDireccion} 
+      />
 
       <EliminarDireccion
         isOpen={isEliminarDireccionOpen}
@@ -157,9 +186,7 @@ export default function DireccionesUser() {
           onClose={() => {
             setEditarDireccionOpen(false);
             setDireccionAEditar(null);
-          }}
-          onDireccionActualizada={() => {
-            window.location.reload(); // Provisorio
+            setRefreshKey(prev => prev + 1); 
           }}
         />
       )}

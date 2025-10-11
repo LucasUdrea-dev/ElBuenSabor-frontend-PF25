@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-
-
 // Interfaz para los datos del usuario decodificados del JWT
 export interface EmpleadoSesion {
+  id_user: number;
   role: string;
   surname: string;
   name: string;
@@ -22,8 +21,6 @@ interface UserContextType {
   isTokenExpired: () => boolean;
 }
 
-
-
 // Crear el contexto
 const EmpleadoContext = createContext<UserContextType | undefined>(undefined);
 
@@ -39,18 +36,36 @@ const decodeJWT = (token: string): EmpleadoSesion | null => {
   }
 };
 
-
 // Función para verificar el rol
 const isCustomerRole = (role: string): boolean => {
   return role === 'CUSTOMER';
 };
 
-
-
 // Provider del contexto
 export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
-  const [empleadoSesion, setEmpleadoSesion] = useState<EmpleadoSesion | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [empleadoSesion, setEmpleadoSesion] = useState<EmpleadoSesion | null>(() => {
+    // 🔥 Leer solo del token general, NO borrarlo si es CUSTOMER
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      const decoded = decodeJWT(token);
+      
+      if (decoded) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        // Solo cargar si NO es CUSTOMER y NO está expirado
+        if (decoded.exp > currentTime && !isCustomerRole(decoded.role)) {
+          return decoded;
+        }
+      }
+    }
+    
+    return null;
+  });
+  
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return empleadoSesion !== null;
+  });
 
   // Verificar si el token está expirado
   const isTokenExpired = (): boolean => {
@@ -59,13 +74,12 @@ export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
     return empleadoSesion.exp < currentTime;
   };
 
-
   // Función de login con validación de rol
   const login = (token: string) => {
     const decoded = decodeJWT(token);
 
     if (!decoded) {
-       throw new Error('Token inválido');
+      throw new Error('Token inválido');
     }
 
     // Verificar si el usuario tiene rol CUSTOMER
@@ -73,50 +87,21 @@ export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Los clientes no tienen acceso al panel de administración');
     }
 
-      // Si todo está bien, proceder con el login
-      localStorage.setItem('token', token);
-      setEmpleadoSesion(decoded);
-      setIsAuthenticated(true);
+    // Si todo está bien, proceder con el login
+    localStorage.setItem('token', token);
+    setEmpleadoSesion(decoded);
+    setIsAuthenticated(true);
   };
-
 
   // Función de logout
   const logout = () => {
-    localStorage.removeItem('token');
+    // Solo borrar el token si hay una sesión de empleado activa
+    if (empleadoSesion && !isCustomerRole(empleadoSesion.role)) {
+      localStorage.removeItem('token');
+    }
     setEmpleadoSesion(null);
     setIsAuthenticated(false);
   };
-
-
-  // Verificar si hay un token almacenado al cargar la aplicación
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded = decodeJWT(token);
-      if (decoded) {
-        const currentTime = Math.floor(Date.now() / 1000);
-
-        // Verificar si el token no está expirado
-        if (decoded.exp > currentTime) {
-          
-          // Verificar que no sea CUSTOMER
-          if (!isCustomerRole(decoded.role)) {
-            setEmpleadoSesion(decoded);
-            setIsAuthenticated(true);
-
-          } else {
-            // Si es CUSTOMER, limpiar el localStorage
-            localStorage.removeItem('token');
-           }
-
-        } else {
-          // Si está expirado, limpiar el localStorage
-          localStorage.removeItem('token');
-        }
-      }
-    }
-  }, []);
-
 
 
   // Verificar periódicamente si el token expiró
@@ -139,14 +124,11 @@ export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-
 // Hook personalizado para usar el contexto
-export const useEmpleado  = () => {
+export const useEmpleado = () => {
   const context = useContext(EmpleadoContext);
   if (context === undefined) {
-    throw new Error('useEmpleado debe ser usado dentro de un UserProvider');
+    throw new Error('useEmpleado debe ser usado dentro de un EmpleadoProvider');
   }
   return context;
 };
-
-
