@@ -11,7 +11,7 @@ const EliminarDireccion: React.FC<EliminarDireccionProps> = ({ isOpen, onClose, 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white p-8 rounded-lg max-md:w-xs max-md:p-5 shadow-lg w-full max-w-md">
         <h2 className="text-black text-2xl font-lato mb-10 text-center-left">Confirmar</h2>
 
         <p className="text-black text-center mb-2 font-lato text-lg">¿Estás seguro?</p>

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
-import NavbarAdmin from "./NavbarYDashboard/NavbarAdmin";
+import NavbarAdmin from "./Navbar_Desplegable_Dashboard/NavbarAdmin";
 import InicioSesionUser from "./LoginEmpleados/LoginEmpleados";
 
 export default function App() {

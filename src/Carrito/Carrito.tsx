@@ -51,7 +51,7 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
             transition-all
             ease-in-out
             duration-500
-            ${mostrarCarrito ? "" : "translate-x-full"} z-50`
+            ${mostrarCarrito ? "w-80 max-md:w-screen" : "w-0"} z-50`
             }>
         
             <button className="hidden max-md:block w-1/10 rotate-180 bg-gray-300 h-full"

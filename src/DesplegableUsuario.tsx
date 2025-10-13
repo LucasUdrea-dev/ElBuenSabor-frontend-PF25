@@ -25,7 +25,7 @@ export default function DesplegableUsuario({ alCerrarSesion, cambiarDesplegableU
 
   return (
     <div
-      className={`bg-[#444444] text-white text-lg rounded-b-2xl font-lato shadow-lg transform transition-all duration-300 ease-out 
+      className={`bg-[#444444] text-white text-lg rounded-b-2xl max-md:*:py-8 font-lato shadow-lg transform transition-all duration-300 ease-in-out 
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"} z-50`}
     >
       <button

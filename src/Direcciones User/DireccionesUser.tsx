@@ -127,7 +127,7 @@ export default function DireccionesUser() {
               {direcciones.map((dir) => (
                 <div
                   key={dir.id}
-                  className="flex items-center justify-between bg-[#FAF8F5] text-[#262626] px-4 py-3 rounded-xl"
+                  className="flex max-md:gap-5 items-center justify-between bg-[#FAF8F5] text-[#262626] px-4 py-3 rounded-xl"
                 >
                   <div>
                     <p className="font-bold">{dir.alias}</p>
@@ -135,7 +135,7 @@ export default function DireccionesUser() {
                       {dir.nombreCalle} {dir.numeracion}, {dir.ciudad?.nombre}, {dir.ciudad?.provincia?.nombre}, {dir.ciudad?.provincia?.pais?.nombre}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex max-md:flex-col-reverse gap-2">
                     <button
                       onClick={() => {
                         setDireccionAEditar(dir);
