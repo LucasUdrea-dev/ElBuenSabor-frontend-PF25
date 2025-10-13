@@ -156,17 +156,17 @@ export default function Catalogo() {
     return(
         <>
         
-        <div className="bg-[#333333] h-full w-1/1 text-white font-[Lato]">
+        <div className="bg-[#333333] h-full w-full text-white font-[Lato]">
 
             {/**Primera seccion */}
             <div className="p-[3%] flex flex-col gap-5">
 
-                <h1 className="text-6xl">Los platillos mas ricos de<br/>Argentina</h1>
+                <h1 className="text-6xl max-md:text-4xl">Los platillos mas ricos de<br className="max-md:hidden"/> Argentina</h1>
 
-                <h3 className="text-3xl">Lista de los mejores platos, postres, desayunos, bebidas...</h3>
+                <h3 className="text-3xl max-md:text-2xl">Lista de los mejores platos, postres, desayunos, bebidas...</h3>
 
                 <div className="flex gap-5">
-                    <input defaultValue={buscador} onChange={(event)=>{setBuscador(event.target.value)}} className="bg-[#D9D9D98C] w-1/2 rounded-2xl px-5 py-1 text-2xl" placeholder="Por ejemplo, pizza, hamburguesa..." type="text"/>
+                    <input defaultValue={buscador} onChange={(event)=>{setBuscador(event.target.value)}} className="bg-[#D9D9D98C] w-1/2 max-md:w-4/5 rounded-2xl px-5 py-1 text-2xl" placeholder="Por ejemplo, pizza, hamburguesa..." type="text"/>
                 </div>
             </div>
 
@@ -192,13 +192,13 @@ export default function Catalogo() {
                 </div>
 
                 {/**Se muestran las categorias existentes + Todos */}
-                <div className="mt-10 flex gap-3">
+                <div className="mt-10 w-full flex max-md:flex-wrap gap-3">
                     <button onClick={()=>{
                         setCategoriaSeleccionada("")
                         setSubcategoriaSeleccionada("")
                         }} 
                         className={`${ categoriaSeleccionada === "" && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
-                        <img className="rounded-[20rem] object-cover h-25 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontro la imagen" />
+                        <img className="rounded-full object-cover h-25 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontro la imagen" />
                         <h3 className="m-auto">Todos</h3>
                     </button>
                     {categorias.map((categoria, index)=>(
@@ -207,7 +207,7 @@ export default function Catalogo() {
                             setSubcategoriaSeleccionada("")
                             }} 
                             className={`${ String(index) === categoriaSeleccionada && "bg-[#D93F21]"} px-1 pt-1 pb-5 text-center rounded-[20rem] flex flex-col gap-1`}>
-                            <img className="rounded-[20rem] h-25 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontro la imagen" />
+                            <img className="rounded-full h-25 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontro la imagen" />
                             <h3 className="m-auto">{categoria.denominacion}</h3>
                         </button>
                     ))}
@@ -226,9 +226,9 @@ export default function Catalogo() {
             </div>
             
             {/**Productos */}            
-            <div className="px-[1%] pb-5">
+            <div className="px-[1%] pb-5 max-lg:px-5">
                 {/**Se muestran los productos segun los filtros */}
-                <div className={`mt-10 grid ${articulosFiltrados.length > 0 ? ("grid-cols-3") : ""} gap-x-10 gap-y-5`}>
+                <div className={`mt-10 grid ${articulosFiltrados.length > 0 ? ("grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-1") : ""} gap-x-10 gap-y-5`}>
                     {articulosFiltrados.length > 0 ? articulosFiltrados.map((articulo, index)=>{
                         //La posicion del articulo debe ser menor a la cantidad
                         //que falta por mostrar 

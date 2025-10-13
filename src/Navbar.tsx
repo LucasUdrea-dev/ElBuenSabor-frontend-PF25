@@ -80,7 +80,7 @@ export default function Navbar() {
                             transition-all
                             ease-in-out
                             duration-500
-                            ${mostrarCarrito && "mr-80"}`}>
+                            ${mostrarCarrito && "mr-80 max-md:mr-auto"}`}>
 
                             {/**Opciones de usuario */}
                             <div className="relative">
@@ -120,15 +120,15 @@ export default function Navbar() {
 
                 ) : (
 
-                    <div>
+                    <div className="p-5 flex gap-2 *:max-md:px-1">
                             
-                        <button onClick={abrirInicioSesionUs} className="text-white font-lato p-1" type="button">
+                        <button onClick={abrirInicioSesionUs} className="text-white font-lato p-1 max-md:p-0" type="button">
                             Iniciar Sesion
                         </button>
                         
 
                         
-                        <button onClick={abrirRegistroModal} className=" bg-white rounded font-lato m-5 p-1" type="button">
+                        <button onClick={abrirRegistroModal} className=" bg-white rounded font-lato p-1 max-md:p-0" type="button">
                             Registrarse
                         </button>
                     </div>
