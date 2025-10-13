@@ -80,7 +80,7 @@ export default function Navbar() {
                             transition-all
                             ease-in-out
                             duration-500
-                            ${mostrarCarrito && "mr-80"}`}>
+                            ${mostrarCarrito && "mr-80 max-md:mr-auto"}`}>
 
                             {/**Opciones de usuario */}
                             <div className="relative">

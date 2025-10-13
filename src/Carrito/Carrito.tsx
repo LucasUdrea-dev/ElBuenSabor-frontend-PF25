@@ -45,18 +45,23 @@ export default function Carrito({mostrarCarrito, cerrarCarrito}: Props) {
     return(
         <>
         
-        <div className={`text-black bg-white mt-0 rounded-bl-2xl shadow-black shadow-2xl
+        <div className={`text-black bg-white mt-0 md:rounded-bl-2xl shadow-black shadow-2xl
             absolute top-0 right-0
             overflow-hidden
             transition-all
             ease-in-out
             duration-500
-            ${mostrarCarrito ? "w-80" : "w-0"} z-50`
+            ${mostrarCarrito ? "" : "translate-x-full"} z-50`
             }>
         
-            <div className={`w-80 flex flex-col h-full`}>
-                <div className="text-center text-2xl mt-2">
-                    <h1>MI ORDEN</h1>
+            <button className="hidden max-md:block w-1/10 rotate-180 bg-gray-300 h-full"
+            onClick={cerrarCarrito}>
+                <img className="m-auto" src="/svg/AnteriorPagina.svg" alt="" />
+            </button>
+
+            <div className={`w-80 max-md:w-screen flex flex-col h-full`}>
+                <div className="text-center text-2xl flex">
+                    <h1 className="m-auto mt-2">MI ORDEN</h1>
                 </div>
                 <div className="py-5 px-2">
                     {(pedido.detallePedidoList?.length < 1 && pedido.detallePromocionList.length < 1) ? (
