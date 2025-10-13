@@ -113,7 +113,7 @@ import { z } from "zod";
 
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md font-lato">
+        <div className="bg-white p-10 rounded-2xl max-md:w-xs max-md:p-5 shadow-lg w-full max-w-md font-lato">
           <h2 className="text-2xl font-bold mb-6 text-center text-black">Editar contraseña</h2>
 
           <div className="mb-4">

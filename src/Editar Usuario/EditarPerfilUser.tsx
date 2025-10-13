@@ -293,8 +293,8 @@ export default function EditarPerfilUser() {
           <h2 className="font-lato text-xl font-semibold">Editar perfil</h2>
         </div>
 
-        <div className="flex flex-col md:flex-row p-6 gap-8">
-          <div className="flex flex-col items-center justify-center gap-1 md:w-1/3 mb-30">
+        <div className="flex flex-col lg:flex-row p-6 gap-8">
+          <div className="flex flex-col items-center justify-center gap-1 lg:w-1/3 lg:mb-30">
             <img
               src="../public/svg/imagenUsuario.svg"
               alt="Imagen de Usuario"
@@ -322,7 +322,7 @@ export default function EditarPerfilUser() {
             {cargando ? (
               <p>Cargando...</p>
             ) : (
-              <div className="flex flex-col space-y-4 mt-8">
+              <div className="flex flex-col space-y-4 lg:mt-8">
                 {/* Campo: Nombre */}
                 <div>
                   <label className="block text-sm font-bold mb-1">Nombre</label>
@@ -449,7 +449,7 @@ export default function EditarPerfilUser() {
                     <button
                       onClick={() => setMostrarModalCorreo(true)}
                       type="button"
-                      className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
+                      className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
                       <img src="../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
                     </button>
@@ -471,7 +471,7 @@ export default function EditarPerfilUser() {
                     <button
                       onClick={() => setMostrarModalContrasena(true)}
                       type="button"
-                      className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
+                      className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
                       <img src="../public/svg/LapizEdit.svg" alt="Editar contraseña" className="w-5 h-5" />
                     </button>
