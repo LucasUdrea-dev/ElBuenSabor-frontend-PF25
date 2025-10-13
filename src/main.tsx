@@ -12,8 +12,7 @@ import EditarPerfilUser from './EditarPerfilUser.tsx'
 import CarritoProvider from './Carrito/CarritoContext.tsx'
 import OrdenRecibida from './Carrito/OrdenRecibida.tsx'
 import MisPedidos from './PedidosUser/MisPedidos.tsx'
-
-
+import EntregaRepartidor from './Admin/Manufacturados/EntregaRepartidor.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -29,13 +28,14 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/misDirecciones' element={<DireccionesUser />} />
             <Route path='/miPeril' element={<EditarPerfilUser />} />
             <Route path="misOrdenes" element={<MisPedidos />} />
-
+           
 
             <Route path='*' element={<Inicio/>}/>
           </Route>
 
           <Route path='/admin' element={<App/>}>
             <Route path='/admin/adminCatalogo' element={<AdminCatalogo/>}/>
+            <Route path='/admin/EntregaRepartidor' element={<EntregaRepartidor/>}/>
           </Route>
         </Routes>
       </BrowserRouter>

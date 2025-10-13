@@ -511,116 +511,133 @@ export default function Catalogo() {
     }, [todosArticulos, categoriaSeleccionada, subcategoriaSeleccionada, buscador, ordenamiento])
     
     return(
-        <>
-        
-        <div className="bg-[#333333] h-full w-1/1 text-white font-[Lato]">
+         <>
+        <div className="bg-[#333333] min-h-screen text-white font-[Lato]">
+  <div className="max-w-screen-xl mx-auto">
 
-            {/**Primera seccion */}
-            <div className="p-[3%] flex flex-col gap-5">
+    {/* Primera sección */}
+    <div className="p-[3%] flex flex-col gap-5">
+      <h1 className="text-4xl md:text-5xl lg:text-6xl">
+        Los platillos más ricos de<br />Argentina
+      </h1>
 
-                <h1 className="text-6xl">Los platillos mas ricos de<br/>Argentina</h1>
+      <h3 className="text-xl md:text-2xl lg:text-3xl">
+        Lista de los mejores platos, postres, desayunos, bebidas...
+      </h3>
 
-                <h3 className="text-3xl">Lista de los mejores platos, postres, desayunos, bebidas...</h3>
+      <div className="flex gap-5">
+        <input
+          defaultValue={buscador}
+          onChange={(event) => setBuscador(event.target.value)}
+          className="bg-[#D9D9D98C] w-full md:w-1/2 rounded-2xl px-5 py-2 text-lg md:text-2xl"
+          placeholder="Por ejemplo, pizza, hamburguesa..."
+          type="text"
+        />
+      </div>
+    </div>
 
-                <div className="flex gap-5">
-                    <input defaultValue={buscador} onChange={(event)=>{setBuscador(event.target.value)}} className="bg-[#D9D9D98C] w-1/2 rounded-2xl px-5 py-1 text-2xl" placeholder="Por ejemplo, pizza, hamburguesa..." type="text"/>
-                </div>
-            </div>
+    {/* Promociones */}
+    <div className="px-[3%]">
+      <SliderPromociones promos={promos} />
+    </div>
 
-            {/**Promociones */}
-            <div className="px-[3%]">
-                <SliderPromociones promos={promos}/>
-            </div>
+    {/* Categorías */}
+    <div className="p-[3%]">
+      <div className="flex flex-col md:flex-row justify-between gap-5">
+        <h1 className="text-2xl md:text-4xl">Categorías</h1>
+        <select
+          defaultValue={""}
+          onChange={(e) => setOrdenamiento(e.target.value)}
+          className="bg-white text-black rounded-xl text-base md:text-xl"
+        >
+          <option value="" disabled>Ordenar por</option>
+          <option value="precioMenorMayor">Precio más bajo</option>
+          <option value="precioMayorMenor">Precio más alto</option>
+          <option value="nombreAZ">A - Z</option>
+          <option value="nombreZA">Z - A</option>
+          <option value="tiempoMenorMayor">Menor tiempo</option>
+          <option value="tiempoMayorMenor">Mayor tiempo</option>
+        </select>
+      </div>
 
-            {/**Categorias */}
-            <div className="p-[3%]">
-                <div className="flex justify-between">
-                    <h1 className="text-4xl">Categorias</h1>
-                    {/**Ordenar por */}
-                    <select defaultValue={""} onChange={(e)=>{setOrdenamiento(e.target.value)}} className="bg-white text-black rounded-xl text-xl">
-                        <option value="" disabled>Ordenar por</option>
-                        <option value="precioMenorMayor">Precio mas bajo</option>
-                        <option value="precioMayorMenor">Precio mas alto</option>
-                        <option value="nombreAZ">A - Z</option>
-                        <option value="nombreZA">Z - A</option>
-                        <option value="tiempoMenorMayor">Menor tiempo</option>
-                        <option value="tiempoMayorMenor">Mayor tiempo</option>
-                    </select>
-                </div>
+      {/* Botones de categorías */}
+      <div className="mt-10 flex gap-3 overflow-x-auto pb-2">
+        <button
+          onClick={() => {
+            setCategoriaSeleccionada("")
+            setSubcategoriaSeleccionada("")
+          }}
+          className={`${categoriaSeleccionada === "" && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1 min-w-[100px]`}
+        >
+          <img className="rounded-[20rem] object-cover h-20 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontró la imagen" />
+          <h3 className="m-auto text-sm md:text-base">Todos</h3>
+        </button>
 
-                {/**Se muestran las categorias existentes + Todos */}
-                <div className="mt-10 flex gap-3">
-                    <button onClick={()=>{
-                            setCategoriaSeleccionada("")
-                            setSubcategoriaSeleccionada("")
-                            }} 
-                            className={`${ categoriaSeleccionada === "" && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
-                            <img className="rounded-[20rem] object-cover h-20 m-auto" src="./img/categoriaTodos.jpg" alt="No se encontro la imagen" />
-                            <h3 className="m-auto">Todos</h3>
-                        </button>
-                    {categorias.map((categoria, index)=>(
-                        <button key={index} onClick={()=>{
-                            setCategoriaSeleccionada(String(index))
-                            setSubcategoriaSeleccionada("")
-                            }} 
-                            className={`${ String(index) === categoriaSeleccionada && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}>
-                            <img className="rounded-[20rem] h-20 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontro la imagen" />
-                            <h3 className="m-auto">{categoria.denominacion}</h3>
-                        </button>
-                    ))}
-                </div>
-                
-                {/**Se muestran las subcategorias de la categoria seleccionada + Todos*/}
-                <div className="mt-10 flex gap-5 text-xl">
-                    
-                    <button onClick={()=> setSubcategoriaSeleccionada("")} className={`${subcategoriaSeleccionada === "" ? "bg-[#D93F21]" : "bg-white text-black"} px-5 rounded-2xl uppercase`}>Todos</button>
-                    
-                    {(categorias.length > 0 && categoriaSeleccionada != "") && categorias[Number(categoriaSeleccionada)]?.subcategorias?.map((subcat, index) => (
+        {categorias.map((categoria, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              setCategoriaSeleccionada(String(index))
+              setSubcategoriaSeleccionada("")
+            }}
+            className={`${String(index) === categoriaSeleccionada && "bg-[#D93F21]"} px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1 min-w-[100px]`}
+          >
+            <img className="rounded-[20rem] h-20 object-cover m-auto" src={obtenerImagen(categoria.imagen)} alt="No se encontró la imagen" />
+            <h3 className="m-auto text-sm md:text-base">{categoria.denominacion}</h3>
+          </button>
+        ))}
+      </div>
+
+      {/* Subcategorías */}
+      <div className="mt-10 flex gap-3 overflow-x-auto whitespace-nowrap text-sm md:text-xl pb-2">
+        <button
+          onClick={() => setSubcategoriaSeleccionada("")}
+          className={`${subcategoriaSeleccionada === "" ? "bg-[#D93F21]" : "bg-white text-black"} px-5 py-1 rounded-2xl uppercase`}
+        >
+          Todos
+        </button>
+
+       {(categorias.length > 0 && categoriaSeleccionada != "") && categorias[Number(categoriaSeleccionada)]?.subcategorias?.map((subcat, index) => (
                         <button key={index} onClick={()=> setSubcategoriaSeleccionada(String(index))} className={`${String(index) === subcategoriaSeleccionada ? "bg-[#D93F21]" : "bg-white text-black"} px-5 rounded-2xl uppercase`}>{subcat.denominacion}</button>
                     ))}
-                </div>
 
-            </div>
-            
-            {/**Productos */}            
-            <div className="px-[1%] pb-5">
-                {/**Se muestran los productos segun los filtros */}
-                <div className={`mt-10 grid ${articulosFiltrados.length > 0 ? ("grid-cols-3") : ""} gap-x-10 gap-y-5`}>
-                    {articulosFiltrados.length > 0 ? articulosFiltrados.map((articulo, index)=>{
-                        //La posicion del articulo debe ser menor a la cantidad
-                        //que falta por mostrar 
-                        //Y 
-                        //Mayor o igual a la cantidad de articulos ya mostrados
-                        //en paginas anteriores
-                        if (index < articulosPorPagina*paginaSeleccionada && index >= articulosPorPagina*(paginaSeleccionada-1)) {
-                            
-                            return (
-                                <ArticuloCardCatalogo key={articulo.id} articulo={articulo}/>
-                            )
-                        }
+      </div>
+    </div>
 
-                    }
-                    ) : (
-                        <h1 className="text-2xl text-center">No se encuentran productos</h1>
-                    )}
-                </div>
+    {/* Productos */}
+    <div className="px-[3%] pb-5">
+      <div className={`mt-10 grid ${articulosFiltrados.length > 0 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : ""} gap-x-5 gap-y-5`}>
+        {articulosFiltrados.length > 0 ? (
+          articulosFiltrados.map((articulo, index) => {
+            if (index < articulosPorPagina * paginaSeleccionada && index >= articulosPorPagina * (paginaSeleccionada - 1)) {
+              return <ArticuloCardCatalogo key={articulo.id} articulo={articulo} />
+            }
+          })
+        ) : (
+          <h1 className="text-2xl text-center col-span-full">No se encuentran artículos</h1>
+        )}
+      </div>
+    </div>
 
-            </div>
+    {/* Paginador */}
+    <div className="p-[3%] flex justify-center flex-wrap gap-2">
+      {articulosFiltrados.length > 0 && [...Array(Math.ceil(articulosFiltrados.length / articulosPorPagina))].map((_, index) => {
+        const numeroPagina = index + 1;
+        return (
+          <button
+            key={numeroPagina}
+            onClick={() => setPaginaSeleccionada(numeroPagina)}
+            className={`px-4 py-2 text-sm md:text-base rounded ${numeroPagina === paginaSeleccionada ? "bg-[#D93F21] text-white" : "bg-white text-black border"}`}
+          >
+            {numeroPagina}
+          </button>
+        )
+      })}
+    </div>
 
-            {/**Paginador */}
-            <div className="p-[3%] m-auto flex justify-center">
-                {articulosFiltrados.length > 0 && [...Array(Math.ceil(articulosFiltrados.length / articulosPorPagina))].map((_,index)=>{
-                    const numeroPagina = index + 1;
-                    return (
-                        <button key={numeroPagina} onClick={()=>{setPaginaSeleccionada(numeroPagina)}} className={`p-5 ${numeroPagina === paginaSeleccionada ? "bg-[#D93F21] text-white " : "bg-white text-black border-1"}`}>
-                            {numeroPagina}
-                        </button>
-                    )
-                })}
-            </div>
+  </div>
+</div>
 
-        </div>
-        
         </>
     )
 
