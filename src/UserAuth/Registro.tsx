@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import { z } from "zod";
 import { userAuthentication, Usuario } from "../../ts/Clases";
@@ -208,60 +208,6 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 
 
-  // Función COMPLETA de login con Facebook
-  const handleFacebookLogin = async () => {
-    const provider = new FacebookAuthProvider();
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      // 1. Autenticar con Firebase
-      const result = await signInWithPopup(auth, provider);
-      console.log("Usuario autenticado con Facebook:", result.user);
-
-      // 2. Obtener el token de Firebase
-      const firebaseToken = await result.user.getIdToken();
-      console.log("Token de Firebase obtenido");
-
-      // 3. Enviar el token al backend
-      const response = await axios.post(
-        FIREBASE_LOGIN_URL,
-        {},
-        {
-          headers: {
-            "Firebase-Token": firebaseToken,
-          },
-        }
-      );
-
-      console.log("Respuesta del backend:", response.data);
-      
-      login(response.data.jwt);
-
-      // 5. Cerrar el modal
-      onClose();
-
-    } catch (error: any) {
-      console.error(" Error al iniciar sesión con Facebook:", error);
-      
-      let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
-      
-      if (error.code === 'auth/popup-blocked') {
-        errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = "Cerraste el popup de autenticación.";
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      }
-      
-      setErrors({ general: errorMessage });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
-
   if (!isOpen) return null;
 
 
@@ -410,7 +356,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           <button
             type="submit"
             disabled={isLoading}
-            className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 ${
+            className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 mt-5 ${
               isLoading 
                 ? 'bg-gray-400 cursor-not-allowed opacity-70' 
                 : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
@@ -426,40 +372,31 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             )}
           </button>
 
-          <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
 
         
-          <div className="flex justify-center mb-4 space-x-10">
-            <button 
-              onClick={handleFacebookLogin} 
-              type="button"
-              disabled={isLoading}
-              className={`transition-opacity ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
-              }`}
-            >
-              <img 
-                src="public/svg/devicon_facebook.svg" 
-                alt="Facebook" 
-                className="w-10 h-10" 
-              />
-            </button>
-            
-            <button 
-              onClick={handleGoogleLogin} 
-              type="button"
-              disabled={isLoading}
-              className={`transition-opacity ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
-              }`}
-            >
-              <img 
-                src="public/svg/flat-color-icons_google.svg" 
-                alt="Google" 
-                className="w-10 h-10" 
-              />
-            </button>
-          </div>
+          {/* Bloque de inicio con redes sociales */}
+                <div className="text-center mb-4 font-lato">
+                  <div className="flex justify-center items-center gap-2 mb-4 mt-3">
+                    <p className="m-0">Ingresa con</p>
+                    <button 
+                      type="button" 
+                      onClick={handleGoogleLogin}
+                      disabled={isLoading}
+                      className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${
+                        isLoading 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-100 hover:shadow-md'
+                      }`}
+                    >
+                      <img 
+                        src="public/svg/flat-color-icons_google.svg" 
+                        alt="Google" 
+                        className="w-6 h-6"
+                      />
+                      <span>Google</span>
+                    </button>
+                  </div>
+                </div>
         </form>
       </div>
     </div>
@@ -467,3 +404,70 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 };
 
 export default RegistroModal;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*// Función COMPLETA de login con Facebook
+  const handleFacebookLogin = async () => {
+    const provider = new FacebookAuthProvider();
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      // 1. Autenticar con Firebase
+      const result = await signInWithPopup(auth, provider);
+      console.log("Usuario autenticado con Facebook:", result.user);
+
+      // 2. Obtener el token de Firebase
+      const firebaseToken = await result.user.getIdToken();
+      console.log("Token de Firebase obtenido");
+
+      // 3. Enviar el token al backend
+      const response = await axios.post(
+        FIREBASE_LOGIN_URL,
+        {},
+        {
+          headers: {
+            "Firebase-Token": firebaseToken,
+          },
+        }
+      );
+
+      console.log("Respuesta del backend:", response.data);
+      
+      login(response.data.jwt);
+
+      // 5. Cerrar el modal
+      onClose();
+
+    } catch (error: any) {
+      console.error(" Error al iniciar sesión con Facebook:", error);
+      
+      let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
+      
+      if (error.code === 'auth/popup-blocked') {
+        errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "Cerraste el popup de autenticación.";
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsLoading(false);
+    }
+  }; */

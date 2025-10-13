@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Direccion, Ciudad, Provincia, host } from "../../ts/Clases";
+import { useUser } from "../UserAuth/UserContext";
 import { z } from "zod";
 
 type Errors = {
@@ -45,6 +46,8 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
   const [errors, setErrors] = useState<Errors>({});
   const [cargando, setCargando] = useState(false);
 
+  const { userSession } = useUser();
+
   useEffect(() => {
     if (isOpen && direccion) {
       cargarProvincias();
@@ -74,7 +77,6 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
       }
     }
 
-    // Extraer piso y depto de descripcionEntrega
     if (direccion.descripcionEntrega) {
       const partes = direccion.descripcionEntrega.split(",");
       const pisoVal = partes.find((p) => p.includes("Piso"))?.split(":")[1]?.trim() || "";
@@ -96,8 +98,14 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
   const cargarCiudades = async () => {
     try {
-      const response = await axios.get(`${host}/api/Ciudad/provincia/${provincia.id}`);
-      setCiudades(response.data);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${host}/api/Ciudad/full`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const ciudadesFiltradas = response.data.filter(
+        (c: Ciudad) => c.provincia?.id === provincia.id
+      );
+      setCiudades(ciudadesFiltradas);
     } catch (error) {
       console.error("Error al cargar ciudades:", error);
       setErrors({ general: "Error al cargar las ciudades" });
@@ -136,36 +144,53 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
     if (!validarCampos()) return;
 
+    if (!userSession) {
+      setErrors({ general: "No se pudo obtener la sesión del usuario" });
+      return;
+    }
+
     setCargando(true);
 
     try {
       const token = localStorage.getItem("token");
 
-      const direccionActualizada = new Direccion();
-      direccionActualizada.id = direccion.id;
-      direccionActualizada.nombreCalle = calle;
-      direccionActualizada.numeracion = numero;
-      direccionActualizada.alias = alias;
-      direccionActualizada.latitud = parseFloat(latitud || "0");
-      direccionActualizada.longitud = parseFloat(longitud || "0");
-      direccionActualizada.descripcionEntrega = `Piso: ${piso}, Depto: ${depto}`;
-      direccionActualizada.ciudad = ciudad;
+      // Crear el DTO según lo que espera el backend
+      const direccionDTO = {
+        nombreCalle: calle,
+        numeracion: numero,
+        alias: alias,
+        latitud: parseFloat(latitud || "0"),
+        longitud: parseFloat(longitud || "0"),
+        descripcionEntrega: `Piso: ${piso}, Depto: ${depto}`,
+        ciudad: {
+          id: ciudad.id
+        }
+      };
 
+      console.log("📤 Actualizando dirección:", direccionDTO);
+
+      // Usar el endpoint correcto según el controller
       await axios.put(
-        `${host}/api/Direccion/full/update/${direccion.id}`,
-        direccionActualizada,
+        `${host}/api/Direccion/usuario/${userSession.id_user}/${direccion.id}`,
+        direccionDTO,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
         }
       );
 
       onClose();
-      // El padre se encargará de recargar con el useEffect
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al editar la dirección:", error);
-      setErrors({
-        general: "Error al actualizar la dirección. Por favor, intente nuevamente.",
-      });
+      console.error("📥 Respuesta del servidor:", error.response?.data);
+      
+      const mensajeError = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          "Error al actualizar la dirección. Por favor, intente nuevamente.";
+      
+      setErrors({ general: mensajeError });
     } finally {
       setCargando(false);
     }
@@ -267,7 +292,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   } else {
                     setProvincia(new Provincia());
                   }
-                  setCiudad(new Ciudad()); // Reset ciudad cuando cambia provincia
+                  setCiudad(new Ciudad());
                 }}
                 className={`text-black w-full p-2 border rounded ${
                   errors.provincia ? "border-red-500" : "border-gray-300"

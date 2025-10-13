@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Direccion, Ciudad, Provincia, host } from "../../ts/Clases";
+import { Ciudad, Provincia, host } from "../../ts/Clases";
 import { useUser } from "../UserAuth/UserContext";
 import { z } from "zod";
 
@@ -78,7 +78,6 @@ const AgregarDireccion: React.FC<Props> = ({ isOpen, onClose }) => {
       const response = await axios.get(`${host}/api/Ciudad/full`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Filtrar ciudades por provincia en el frontend
       const ciudadesFiltradas = response.data.filter(
         (c: Ciudad) => c.provincia?.id === provincia.id
       );
@@ -130,47 +129,44 @@ const AgregarDireccion: React.FC<Props> = ({ isOpen, onClose }) => {
 
     try {
       const token = localStorage.getItem("token");
-      
-      if (!userSession) {
-        setErrors({ general: "No se pudo obtener la sesión del usuario" });
-        return;
-      }
 
-      const nuevaDireccion = new Direccion();
-      nuevaDireccion.nombreCalle = calle;
-      nuevaDireccion.numeracion = numero;
-      nuevaDireccion.latitud = parseFloat(latitud || "0");
-      nuevaDireccion.longitud = parseFloat(longitud || "0");
-      nuevaDireccion.alias = alias;
-      nuevaDireccion.descripcionEntrega = `Piso: ${piso}, Depto: ${depto}`;
-      
-      // Solo enviar el ID de la ciudad para evitar problemas de serialización
-      nuevaDireccion.ciudad = { id: ciudad.id } as Ciudad;
-
-      console.log("📤 Enviando dirección:", nuevaDireccion); 
-
-      // Enviar como parte del usuario o incluir el ID del usuario
-      const payload = {
-        ...nuevaDireccion,
-        usuario: { id: userSession.id_user }
+      // Crear el DTO según lo que espera el backend
+      const direccionDTO = {
+        nombreCalle: calle,
+        numeracion: numero,
+        latitud: parseFloat(latitud || "0"),
+        longitud: parseFloat(longitud || "0"),
+        alias: alias,
+        descripcionEntrega: `Piso: ${piso}, Depto: ${depto}`,
+        ciudad: {
+          id: ciudad.id
+        }
       };
 
-      console.log("📤 Payload completo:", payload); 
+      console.log("📤 Enviando dirección:", direccionDTO);
 
-      await axios.post(`${host}/api/Direccion/usuario/${userSession.id_user}`, nuevaDireccion, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await axios.post(
+        `${host}/api/Direccion/usuario/${userSession.id_user}`, 
+        direccionDTO,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
 
       limpiarFormulario();
       onClose();
-      // El padre se encargará de recargar con el useEffect
     } catch (error: any) {
       console.error("Error al agregar dirección:", error);
-      console.error("📥 Respuesta del servidor:", error.response?.data); 
-      setErrors({
-        general: error.response?.data?.error || error.response?.data?.message || "Error al agregar la dirección. Por favor, intente nuevamente.",
-      });
+      console.error("📥 Respuesta del servidor:", error.response?.data);
+      
+      const mensajeError = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          "Error al agregar la dirección. Por favor, intente nuevamente.";
+      
+      setErrors({ general: mensajeError });
     } finally {
       setCargando(false);
     }

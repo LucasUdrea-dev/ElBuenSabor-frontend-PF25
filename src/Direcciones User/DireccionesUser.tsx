@@ -60,28 +60,35 @@ export default function DireccionesUser() {
 
   // Función para eliminar una dirección
   const eliminarDireccion = async () => {
-
-    if (direccionAEliminar === null) return;
+    if (direccionAEliminar === null || !userSession) return;
 
     try {
-      
-      //petición DELETE al backend 
       const token = localStorage.getItem("token");
-      await axios.delete(`${host}/api/Direccion/full/drop/${direccionAEliminar}`, { 
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      //actualiza el estado local direcciones
-      setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
-    } catch (error) {
-      console.error("Error al eliminar la dirección:", error);
-
-    } finally {
       
+      // Usar el endpoint correcto según el controller
+      await axios.delete(
+        `${host}/api/Direccion/usuario/${userSession.id_user}/${direccionAEliminar}`, 
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Actualiza el estado local
+      setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
+      
+      console.log("✅ Dirección eliminada exitosamente");
+    } catch (error: any) {
+      console.error("Error al eliminar la dirección:", error);
+      console.error("📥 Respuesta del servidor:", error.response?.data);
+      
+      // Puedes mostrar un mensaje de error al usuario aquí si lo deseas
+      alert(error.response?.data?.error || "Error al eliminar la dirección");
+    } finally {
       setEliminarDireccionOpen(false);
       setDireccionAEliminar(null);
     }
   };
+
 
 
 

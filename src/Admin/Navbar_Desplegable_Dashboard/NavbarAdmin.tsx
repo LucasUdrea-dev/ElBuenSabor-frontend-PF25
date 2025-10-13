@@ -79,7 +79,7 @@ export default function NavbarAdmin() {
                         </button>
                     )}
 
-                    <Link className="h-15 flex items-center text-2xl text-white" key={"administracion"} to={"/admin/administracion"}>
+                    <Link className="h-15 flex items-center text-2xl text-white" key={"administracion"} to={"/admin"}>
                         <svg className="h-12 p-0 ml-4" width="50" viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <mask id="mask0_10_65" maskUnits="userSpaceOnUse" x="0" y="27" width="70" height="72">
                                 <path d="M0 27.6633H70V98.4738H0V27.6633Z" fill="white"/>

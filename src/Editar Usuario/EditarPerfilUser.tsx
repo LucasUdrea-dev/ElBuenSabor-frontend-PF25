@@ -4,8 +4,10 @@ import { z } from 'zod';
 import axios from 'axios';
 import EditCorreoUser from './EditCorreoUser';
 import EditContrasenaUser from './EditContrasenaUser';
-import { Usuario } from '../../ts/Clases';
+import { Usuario, Telefono } from '../../ts/Clases';
 import { useUser } from '../UserAuth/UserContext';
+
+
 
 // Esquema de validación
 const usuarioSchema = z.object({
@@ -13,7 +15,6 @@ const usuarioSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
   apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
   email: z.string().email('Correo inválido'),
-  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9]+$/, "Solo números"),
   imagenUsuario: z.string().optional(),
 });
 
@@ -26,6 +27,12 @@ export default function EditarPerfilUser() {
   const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
   const [mostrarModalContrasena, setMostrarModalContrasena] = useState(false);
   const { userSession } = useUser();
+  
+  // Estados para manejo de teléfonos
+  const [telefonos, setTelefonos] = useState<Telefono[]>([]);
+  const [editandoTelefonoId, setEditandoTelefonoId] = useState<number | null>(null);
+  const [telefonoEditado, setTelefonoEditado] = useState<string>('');
+  const [errorTelefono, setErrorTelefono] = useState<string>('');
 
   // Obtener token del localStorage
   const getToken = () => localStorage.getItem('token');
@@ -47,7 +54,7 @@ export default function EditarPerfilUser() {
           return;
         }
 
-        // ⬅️ Obtener datos del usuario desde el backend
+        // Obtener datos del usuario desde el backend
         const response = await axios.get(
           `http://localhost:8080/api/usuarios/${userSession.id_user}`,
           axiosConfig
@@ -66,6 +73,7 @@ export default function EditarPerfilUser() {
 
         setUsuario(user);
         setFormData(user);
+        setTelefonos(userData.telefonoList || []);
 
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
@@ -82,40 +90,15 @@ export default function EditarPerfilUser() {
 
 
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    
-    if (name === 'telefono') {
-      setFormData((prev) => {
-        const newFormData = new Usuario();
-        Object.assign(newFormData, prev);
-        
-        // Si ya existe un teléfono, solo actualiza su número manteniendo el ID
-        if (newFormData.telefonoList && newFormData.telefonoList.length > 0) {
-          newFormData.telefonoList = [{
-            id: newFormData.telefonoList[0].id, // Mantiene el ID existente
-            numero: parseInt(value) || 0
-          }];
-        } else {
-          // Si no existe, crea uno nuevo (el backend asignará el ID)
-          newFormData.telefonoList = [{ 
-            id: null, // El backend asignará el ID
-            numero: parseInt(value) || 0 
-          }];
-        }
-        
-        return newFormData;
-      });
-    } else {
-      setFormData((prev) => {
-        const newFormData = new Usuario();
-        Object.assign(newFormData, prev);
-        (newFormData as any)[name] = value;
-        return newFormData;
-      });
-    }
+    setFormData((prev) => {
+      const newFormData = new Usuario();
+      Object.assign(newFormData, prev);
+      (newFormData as any)[name] = value;
+      return newFormData;
+    });
 
     // Limpia el error del campo cuando el usuario empieza a escribir
     if (errores[name as keyof Usuario]) {
@@ -126,6 +109,122 @@ export default function EditarPerfilUser() {
     }
   };
 
+  const iniciarEdicionTelefono = (telefono: Telefono) => {
+    setEditandoTelefonoId(telefono.id);
+    setTelefonoEditado(telefono.numero.toString());
+    setErrorTelefono('');
+  };
+
+  const cancelarEdicionTelefono = () => {
+    setEditandoTelefonoId(null);
+    setTelefonoEditado('');
+    setErrorTelefono('');
+  };
+
+  const guardarTelefono = async (telefono: Telefono) => {
+    try {
+      // Validación
+      if (!telefonoEditado.trim()) {
+        setErrorTelefono('El teléfono es obligatorio');
+        return;
+      }
+      if (!/^[0-9]+$/.test(telefonoEditado)) {
+        setErrorTelefono('Solo se permiten números');
+        return;
+      }
+
+      const telefonoDTO = {
+        id: telefono.id,
+        numero: parseInt(telefonoEditado)
+      };
+
+      // Actualizar en el backend
+      await axios.put(
+        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
+        telefonoDTO,
+        axiosConfig
+      );
+
+      // Actualizar estado local
+      setTelefonos(prev => prev.map(t => 
+        t.id === telefono.id ? { ...t, numero: parseInt(telefonoEditado) } : t
+      ));
+
+      setEditandoTelefonoId(null);
+      setTelefonoEditado('');
+      setErrorTelefono('');
+      
+      alert('Teléfono actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        setErrorTelefono('Error al actualizar el teléfono');
+      }
+    }
+  };
+
+  const eliminarTelefono = async (telefono: Telefono) => {
+    if (!confirm('¿Estás seguro de eliminar este teléfono?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
+        axiosConfig
+      );
+
+      // Actualizar estado local
+      setTelefonos(prev => prev.filter(t => t.id !== telefono.id));
+      
+      alert('Teléfono eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        alert('Error al eliminar el teléfono');
+      }
+    }
+  };
+
+  const agregarTelefono = async () => {
+    const nuevoNumero = prompt('Ingrese el nuevo número de teléfono:');
+    
+    if (!nuevoNumero) return;
+    
+    if (!/^[0-9]+$/.test(nuevoNumero)) {
+      alert('Solo se permiten números');
+      return;
+    }
+
+    try {
+      const telefonoDTO = {
+        numero: parseInt(nuevoNumero)
+      };
+
+      const response = await axios.post(
+        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}`,
+        telefonoDTO,
+        axiosConfig
+      );
+
+      // Agregar al estado local
+      setTelefonos(prev => [...prev, response.data]);
+      
+      alert('Teléfono agregado correctamente');
+    } catch (error) {
+      console.error('Error al agregar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        alert('Error al agregar el teléfono');
+      }
+    }
+  };
+
   const guardarCambios = async () => {
     try {
       const usuarioPlano = {
@@ -133,18 +232,12 @@ export default function EditarPerfilUser() {
         nombre: formData.nombre,
         apellido: formData.apellido,
         email: formData.email,
-        telefonoList: formData.telefonoList, 
         imagenUsuario: formData.imagenUsuario,
         existe: formData.existe,
       };
 
       // Validar los datos con Zod
-      usuarioSchema.parse({
-        ...usuarioPlano,
-        telefono: formData.telefonoList && formData.telefonoList.length > 0 
-          ? formData.telefonoList[0].numero.toString() 
-          : ''
-      });
+      usuarioSchema.parse(usuarioPlano);
 
       setErrores({});
 
@@ -184,20 +277,14 @@ export default function EditarPerfilUser() {
     }
   };
 
-
-
   const cancelar = () => {
     if (usuario) setFormData(usuario);
     navigate('/catalogo');
   };
 
-
-
   const irADirecciones = () => {
     navigate('/misDirecciones');
   };
-
-
 
   return (
     <div className="min-h-screen text-white p-6 bg-[#333333] font-lato">
@@ -262,23 +349,91 @@ export default function EditarPerfilUser() {
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.apellido ?? '\u00A0'}</p>
                 </div>
 
-                {/* Campo: Teléfono */}
-                  
-
-
+                {/* Lista de Teléfonos */}
                 <div>
-                    <label className="block text-sm font-bold mb-1">Teléfono</label>
-                    <input
-                      type="text"
-                      name="telefono"
-                      value={formData.telefonoList && formData.telefonoList.length > 0 ? formData.telefonoList[0].numero : ''}
-                      onChange={handleChange}
-                      className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
-                    />
-                    <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.telefonoList ?? '\u00A0'}</p>
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className="text-sm font-bold">Teléfonos</label>
+                    <button
+                      onClick={agregarTelefono}
+                      className="text-sm px-3 py-1 rounded bg-[#D93F21] hover:bg-[#D93F21]/80 text-white"
+                    >
+                      + Agregar teléfono
+                    </button>
                   </div>
-                  
 
+                  
+                  {telefonos.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No hay teléfonos registrados</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {telefonos.map((telefono) => (
+                        <div key={telefono.id} className="flex items-center gap-2">
+                          {editandoTelefonoId === telefono.id ? (
+                            <>
+                              <input
+                                type="text"
+                                value={telefonoEditado}
+                                onChange={(e) => setTelefonoEditado(e.target.value)}
+                                className="flex-1 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => guardarTelefono(telefono)}
+                                className="p-2 hover:bg-green-600/20 rounded transition"
+                                title="Guardar"
+                              >
+                                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={cancelarEdicionTelefono}
+                                className="p-2 hover:bg-red-600/20 rounded transition"
+                                title="Cancelar"
+                              >
+                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <input
+                                type="text"
+                                value={telefono.numero}
+                                readOnly
+                                className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                              />
+
+                              <div className="flex gap-0">
+                              <button
+                                onClick={() => iniciarEdicionTelefono(telefono)}
+                                className="p-2 hover:scale-110 transition"
+                                title="Editar"
+                              >
+                                <img src="../public/svg/LapizEdit.svg" alt="Editar" className="w-5 h-5" />
+                              </button>
+
+
+                              <button
+                                onClick={() => eliminarTelefono(telefono)}
+                                className="p-2 hover:bg-red-600/20 rounded transition"
+                                title="Eliminar"
+                              >
+                                <img src="../../public/svg/LogoBorrar.svg" alt="Borrar" className="w-7 h-7"  />
+                              </button>
+                              </div>
+                            </>
+                            
+                          )}
+                        </div>
+                      ))}
+                      {errorTelefono && (
+                        <p className="text-red-400 text-sm mt-1">{errorTelefono}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Campo: Email */}
                 <div>
@@ -349,7 +504,6 @@ export default function EditarPerfilUser() {
         onClose={() => setMostrarModalContrasena(false)}
         usuarioId={formData.id!}
         onContrasenaActualizada={() => {
-          // Solo cierra el modal, la contraseña se actualiza en el backend
           setMostrarModalContrasena(false);
         }}
       />
@@ -370,3 +524,10 @@ export default function EditarPerfilUser() {
     </div>
   );
 }
+
+
+
+
+
+
+

@@ -4,8 +4,9 @@ import { z } from 'zod';
 import axios from 'axios';
 import EditCorreoUser from '../../Editar Usuario/EditCorreoUser';
 import EditContrasenaUser from '../../Editar Usuario/EditContrasenaUser';
-import { Usuario } from '../../../ts/Clases';
+import { Usuario, Telefono } from '../../../ts/Clases';
 import { useEmpleado } from '../LoginEmpleados/EmpleadoContext';
+
 
 // Esquema de validación
 const empleadoSchema = z.object({
@@ -13,7 +14,6 @@ const empleadoSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
   apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
   email: z.string().email('Correo inválido'),
-  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9]+$/, "Solo números"),
   imagenUsuario: z.string().optional(),
 });
 
@@ -27,15 +27,24 @@ export default function PerfilEmpleado() {
   const [mostrarModalContrasena, setMostrarModalContrasena] = useState(false);
   const { empleadoSesion } = useEmpleado();
 
-  const getToken = () => localStorage.getItem('token');
-  const axiosConfig = {
-    headers: {
-      'Authorization': `Bearer ${getToken()}`,
-      'Content-Type': 'application/json'
-    }
-  };
+  // Estados para manejo de teléfonos
+    const [telefonos, setTelefonos] = useState<Telefono[]>([]);
+    const [editandoTelefonoId, setEditandoTelefonoId] = useState<number | null>(null);
+    const [telefonoEditado, setTelefonoEditado] = useState<string>('');
+    const [errorTelefono, setErrorTelefono] = useState<string>('');
+  
 
-  useEffect(() => {
+
+      // Obtener token del localStorage
+    const getToken = () => localStorage.getItem('token');
+    const axiosConfig = {
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      }
+    };
+
+    useEffect(() => {
     const fetchEmpleado = async () => {
       try {
         if (!empleadoSesion) {
@@ -45,7 +54,7 @@ export default function PerfilEmpleado() {
         }
 
         const response = await axios.get(
-          `http://localhost:8080/api/usuarios/${empleadoSesion.id_user}`, // Ajusta según backend
+          `http://localhost:8080/api/usuarios/${empleadoSesion.id_user}`,
           axiosConfig
         );
 
@@ -61,6 +70,8 @@ export default function PerfilEmpleado() {
 
         setEmpleado(emp);
         setFormData(emp);
+        setTelefonos(data.telefonoList || []); // ✅ AGREGA ESTA LÍNEA
+
       } catch (error) {
         console.error('Error al cargar empleado:', error);
         if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -74,35 +85,149 @@ export default function PerfilEmpleado() {
     fetchEmpleado();
   }, [empleadoSesion, navigate]);
 
+
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    setFormData((prev) => {
+      const newFormData = new Usuario();
+      Object.assign(newFormData, prev);
+      (newFormData as any)[name] = value;
+      return newFormData;
+    });
 
-    if (name === 'telefono') {
-      setFormData(prev => {
-        const newFormData = new Usuario();
-        Object.assign(newFormData, prev);
-
-        if (newFormData.telefonoList && newFormData.telefonoList.length > 0) {
-          newFormData.telefonoList = [{ id: newFormData.telefonoList[0].id, numero: parseInt(value) || 0 }];
-        } else {
-          newFormData.telefonoList = [{ id: null, numero: parseInt(value) || 0 }];
-        }
-
-        return newFormData;
-      });
-    } else {
-      setFormData(prev => {
-        const newFormData = new Usuario();
-        Object.assign(newFormData, prev);
-        (newFormData as any)[name] = value;
-        return newFormData;
-      });
-    }
-
+    // Limpia el error del campo cuando el usuario empieza a escribir
     if (errores[name as keyof Usuario]) {
-      setErrores(prev => ({ ...prev, [name]: undefined }));
+      setErrores(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
     }
   };
+
+
+  const iniciarEdicionTelefono = (telefono: Telefono) => {
+    setEditandoTelefonoId(telefono.id);
+    setTelefonoEditado(telefono.numero.toString());
+    setErrorTelefono('');
+  };
+
+  const cancelarEdicionTelefono = () => {
+    setEditandoTelefonoId(null);
+    setTelefonoEditado('');
+    setErrorTelefono('');
+  };
+
+
+
+  const guardarTelefono = async (telefono: Telefono) => {
+    try {
+      // Validación
+      if (!telefonoEditado.trim()) {
+        setErrorTelefono('El teléfono es obligatorio');
+        return;
+      }
+      if (!/^[0-9]+$/.test(telefonoEditado)) {
+        setErrorTelefono('Solo se permiten números');
+        return;
+      }
+
+      const telefonoDTO = {
+        id: telefono.id,
+        numero: parseInt(telefonoEditado)
+      };
+
+      // Actualizar en el backend
+      await axios.put(
+        `http://localhost:8080/api/telefonos/usuario/${empleadoSesion?.id_user}/${telefono.id}`,
+        telefonoDTO,
+        axiosConfig
+      );
+
+      // Actualizar estado local
+      setTelefonos(prev => prev.map(t => 
+        t.id === telefono.id ? { ...t, numero: parseInt(telefonoEditado) } : t
+      ));
+
+      setEditandoTelefonoId(null);
+      setTelefonoEditado('');
+      setErrorTelefono('');
+      
+      alert('Teléfono actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        setErrorTelefono('Error al actualizar el teléfono');
+      }
+    }
+  };
+
+  const eliminarTelefono = async (telefono: Telefono) => {
+    if (!confirm('¿Estás seguro de eliminar este teléfono?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/telefonos/usuario/${empleadoSesion?.id_user}/${telefono.id}`,
+        axiosConfig
+      );
+
+      // Actualizar estado local
+      setTelefonos(prev => prev.filter(t => t.id !== telefono.id));
+      
+      alert('Teléfono eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        alert('Error al eliminar el teléfono');
+      }
+    }
+  };
+
+  const agregarTelefono = async () => {
+    const nuevoNumero = prompt('Ingrese el nuevo número de teléfono:');
+    
+    if (!nuevoNumero) return;
+    
+    if (!/^[0-9]+$/.test(nuevoNumero)) {
+      alert('Solo se permiten números');
+      return;
+    }
+
+    try {
+      const telefonoDTO = {
+        numero: parseInt(nuevoNumero)
+      };
+
+      const response = await axios.post(
+        `http://localhost:8080/api/telefonos/usuario/${empleadoSesion?.id_user}`,
+        telefonoDTO,
+        axiosConfig
+      );
+
+      // Agregar al estado local
+      setTelefonos(prev => [...prev, response.data]);
+      
+      alert('Teléfono agregado correctamente');
+    } catch (error) {
+      console.error('Error al agregar teléfono:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        alert('Error al agregar el teléfono');
+      }
+    }
+  };
+
+
+
 
   const guardarCambios = async () => {
     try {
@@ -111,20 +236,17 @@ export default function PerfilEmpleado() {
         nombre: formData.nombre,
         apellido: formData.apellido,
         email: formData.email,
-        telefonoList: formData.telefonoList,
         imagenUsuario: formData.imagenUsuario,
         existe: formData.existe,
       };
 
-      empleadoSchema.parse({
-        ...empleadoPlano,
-        telefono: formData.telefonoList && formData.telefonoList.length > 0
-          ? formData.telefonoList[0].numero.toString()
-          : ''
-      });
+      // Validar los datos con Zod
+      empleadoSchema.parse(empleadoPlano);
 
       setErrores({});
 
+
+      // Enviar PUT al backend
       await axios.put(
         `http://localhost:8080/api/usuarios/${formData.id}`,
         empleadoPlano,
@@ -136,14 +258,17 @@ export default function PerfilEmpleado() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<Record<keyof Usuario, string>> = {};
+
         error.errors.forEach(err => {
           const field = err.path[0] as string;
           newErrors[field as keyof Usuario] = err.message;
         });
+
         setErrores(newErrors);
       } else if (axios.isAxiosError(error)) {
         console.error('Error al actualizar empleado:', error.response?.data);
         alert('Error al actualizar el perfil.');
+       
         if (error.response?.status === 401) navigate('/login');
       } else {
         console.error('Error inesperado:', error);
@@ -154,26 +279,27 @@ export default function PerfilEmpleado() {
 
   const cancelar = () => {
     if (empleado) setFormData(empleado);
-    navigate('/dashboard'); // Ajusta la ruta del panel de empleado
-  };
+    navigate('/admin'); }
 
   return (
     <div className="min-h-screen text-white p-6 bg-[#333333] font-lato">
       <div className="bg-[#444444] rounded-xl max-w-6xl mx-auto overflow-hidden shadow-lg">
         <div className="bg-[#333333]/40 px-6 py-4 border-b border-white/10">
-          <h2 className="font-lato text-xl font-semibold">Perfil del Empleado</h2>
+          <h2 className="font-lato text-xl font-semibold">Editar perfil</h2>
         </div>
 
         <div className="flex flex-col md:flex-row p-6 gap-8">
           <div className="flex flex-col items-center justify-center gap-1 md:w-1/3 mb-30">
             <img
               src="../../public/svg/imagenUsuario.svg"
-              alt="Imagen del Empleado"
+              alt="Imagen de Usuario"
               className="w-82 h-82"
             />
             <div className="flex flex-row gap-4 mt-4">
               <button
-                onClick={() => console.log("Cambiar imagen")}
+                onClick={() => {
+                  console.log("Abrir selector de imagen o lógica de actualización");
+                }}
                 className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300"
               >
                 Cambiar imagen
@@ -186,6 +312,7 @@ export default function PerfilEmpleado() {
               <p>Cargando...</p>
             ) : (
               <div className="flex flex-col space-y-4 mt-8">
+                {/* Campo: Nombre */}
                 <div>
                   <label className="block text-sm font-bold mb-1">Nombre</label>
                   <input
@@ -198,6 +325,7 @@ export default function PerfilEmpleado() {
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.nombre ?? '\u00A0'}</p>
                 </div>
 
+                {/* Campo: Apellido */}
                 <div>
                   <label className="block text-sm font-bold mb-1">Apellido</label>
                   <input
@@ -210,18 +338,93 @@ export default function PerfilEmpleado() {
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.apellido ?? '\u00A0'}</p>
                 </div>
 
+                {/* Lista de Teléfonos */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">Teléfono</label>
-                  <input
-                    type="text"
-                    name="telefono"
-                    value={formData.telefonoList && formData.telefonoList.length > 0 ? formData.telefonoList[0].numero : ''}
-                    onChange={handleChange}
-                    className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
-                  />
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.telefonoList ?? '\u00A0'}</p>
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className="text-sm font-bold">Teléfonos</label>
+                    <button
+                      onClick={agregarTelefono}
+                      className="text-sm px-3 py-1 rounded bg-[#D93F21] hover:bg-[#D93F21]/80 text-white"
+                    >
+                      + Agregar teléfono
+                    </button>
+                  </div>
+
+                  
+                  {telefonos.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No hay teléfonos registrados</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {telefonos.map((telefono) => (
+                        <div key={telefono.id} className="flex items-center gap-2">
+                          {editandoTelefonoId === telefono.id ? (
+                            <>
+                              <input
+                                type="text"
+                                value={telefonoEditado}
+                                onChange={(e) => setTelefonoEditado(e.target.value)}
+                                className="flex-1 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => guardarTelefono(telefono)}
+                                className="p-2 hover:bg-green-600/20 rounded transition"
+                                title="Guardar"
+                              >
+                                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={cancelarEdicionTelefono}
+                                className="p-2 hover:bg-red-600/20 rounded transition"
+                                title="Cancelar"
+                              >
+                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <input
+                                type="text"
+                                value={telefono.numero}
+                                readOnly
+                                className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                              />
+
+                              <div className="flex gap-0">
+                              <button
+                                onClick={() => iniciarEdicionTelefono(telefono)}
+                                className="p-2 hover:scale-110 transition"
+                                title="Editar"
+                              >
+                                <img src="../../public/svg/LapizEdit.svg" alt="Editar" className="w-5 h-5" />
+                              </button>
+
+
+                              <button
+                                onClick={() => eliminarTelefono(telefono)}
+                                className="p-2 hover:bg-red-600/20 rounded transition"
+                                title="Eliminar"
+                              >
+                                <img src="../../public/svg/LogoBorrar.svg" alt="Borrar" className="w-7 h-7"  />
+                              </button>
+                              </div>
+                            </>
+                            
+                          )}
+                        </div>
+                      ))}
+                      {errorTelefono && (
+                        <p className="text-red-400 text-sm mt-1">{errorTelefono}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
+                {/* Campo: Email */}
                 <div>
                   <label className="block text-sm font-bold mb-1">Email</label>
                   <div className="relative flex items-center">
@@ -243,6 +446,7 @@ export default function PerfilEmpleado() {
                   <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.email ?? '\u00A0'}</p>
                 </div>
 
+                {/* Campo: Contraseña */}
                 <div>
                   <label className="block text-sm font-bold mb-1">Contraseña</label>
                   <div className="relative flex items-center">
@@ -284,11 +488,14 @@ export default function PerfilEmpleado() {
         </div>
       </div>
 
+      
       <EditContrasenaUser
         isOpen={mostrarModalContrasena}
         onClose={() => setMostrarModalContrasena(false)}
         usuarioId={formData.id!}
-        onContrasenaActualizada={() => setMostrarModalContrasena(false)}
+        onContrasenaActualizada={() => {
+          setMostrarModalContrasena(false);
+        }}
       />
 
       <EditCorreoUser
@@ -307,3 +514,4 @@ export default function PerfilEmpleado() {
     </div>
   );
 }
+
