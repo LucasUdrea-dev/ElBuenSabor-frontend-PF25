@@ -243,19 +243,31 @@ function DashboardAdmin() {
   });
 
   useEffect(() => {
-    const handleStockUpdate = (data) => {
-      if (data.type === 'stockUpdate' && data.data.productId === productId) {
-        setStock(data.data.stock);
-      }
+    const handlePedido = (data) => {
+      console.log('📊 Admin - Pedido actualizado:', data);
+      setPedidos(prev => {
+        const index = prev.findIndex(p => p.id === data.pedidoId);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = { ...updated[index], estado: data.estadoNombre };
+          return updated;
+        }
+        return [...prev, { id: data.pedidoId, estado: data.estadoNombre }];
+      });
     };
 
-    on('stockUpdate', handleStockUpdate);
-    return () => off('stockUpdate', handleStockUpdate);
-  }, [productId, on, off]);
+    subscribe('/topic/pedidos/admin', handlePedido);
+    return () => unsubscribe('/topic/pedidos/admin', handlePedido);
+  }, [subscribe, unsubscribe]);
 
   return (
     <div>
-      <p>Stock disponible: {stock}</p>
+      <h2>Todos los Pedidos</h2>
+      {pedidos.map(pedido => (
+        <div key={pedido.id}>
+          Pedido #{pedido.id} - {pedido.estado}
+        </div>
+      ))}
     </div>
   );
 }
@@ -349,9 +361,10 @@ useEffect(() => {
 
 ## 📚 Recursos Adicionales
 
-- **Documentación completa:** `src/services/WebSocket.README.md`
-- **Ejemplo funcional:** `src/services/WebSocketExample.tsx`
+- **Servicio STOMP:** `src/services/StompWebSocketService.ts`
+- **Hook de React:** `src/hooks/useStompWebSocket.ts`
 - **Tipos TypeScript:** `src/types/websocket.types.ts`
+- **Componente de prueba:** `src/components/WebSocketTest.tsx`
 
 ## 🎓 Mejores Prácticas
 
@@ -361,6 +374,9 @@ useEffect(() => {
 4. **Maneja errores** con los eventos `error` y `maxReconnectAttemptsReached`
 5. **Usa tipos TypeScript** para mayor seguridad
 
-## 📞 Soporte
+## 📡 Soporte
 
-Para dudas o problemas, revisa la documentación completa en `src/services/WebSocket.README.md`
+Para dudas o problemas, revisa:
+- [Guía de Suscripciones](GUIA_WEBSOCKET_SUSCRIPCIONES.md) - Ejemplos por tipo de usuario
+- [Cómo Verificar](COMO_VERIFICAR_WEBSOCKET.md) - Troubleshooting y verificación
+- [Setup Rápido](WEBSOCKET_SETUP.md) - Instalación rápida

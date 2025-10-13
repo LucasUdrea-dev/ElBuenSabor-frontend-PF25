@@ -136,3 +136,73 @@ export interface UseWebSocketReturn {
 export interface WebSocketContextValue extends UseWebSocketReturn {
   readyState: number | null;
 }
+
+// ========================================
+// Tipos específicos para STOMP (El Buen Sabor)
+// ========================================
+
+/**
+ * Estados de pedido en El Buen Sabor
+ */
+export enum EstadoPedido {
+  PENDIENTE = 1,
+  EN_PREPARACION = 2,
+  LISTO = 3,
+  EN_CAMINO = 4,
+  ENTREGADO = 5,
+  CANCELADO = 6
+}
+
+/**
+ * Notificación de pedido recibida por STOMP
+ */
+export interface PedidoNotificacion {
+  pedidoId: number;
+  estadoId: number;
+  estadoNombre: 'PENDIENTE' | 'EN_PREPARACION' | 'LISTO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO';
+  tiempoEstimado: string;
+  fecha: string;
+  usuarioId: number;
+  usuarioNombre: string;
+  sucursalId: number;
+  mensaje: string | null;
+  timestamp: string;
+}
+
+/**
+ * Mensaje para cambiar estado de pedido
+ */
+export interface CambiarEstadoPedidoRequest {
+  pedidoId: number;
+  nuevoEstadoId: number;
+  tiempoEstimado?: string;
+}
+
+/**
+ * Configuración del servicio STOMP
+ */
+export interface StompConfig {
+  url: string;
+  debug?: boolean;
+  reconnectDelay?: number;
+}
+
+/**
+ * Opciones para el hook useStompWebSocket
+ */
+export interface UseStompWebSocketOptions extends StompConfig {
+  autoConnect?: boolean;
+}
+
+/**
+ * Retorno del hook useStompWebSocket
+ */
+export interface UseStompWebSocketReturn {
+  isConnected: boolean;
+  subscribe: (topic: string, callback: (data: any) => void) => void;
+  unsubscribe: (topic: string, callback?: (data: any) => void) => void;
+  send: (destination: string, body: any) => void;
+  cambiarEstadoPedido: (pedidoId: number, nuevoEstadoId: number, tiempoEstimado?: string) => void;
+  connect: () => void;
+  disconnect: () => void;
+}

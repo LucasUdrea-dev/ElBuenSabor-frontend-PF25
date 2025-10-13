@@ -150,8 +150,10 @@ npm run dev
 > 🌐 *La aplicación estará disponible en:* http://localhost:5173
 
 ---
-```
+
 ## 📁 Estructura del Proyecto
+
+```
 
 
 src/
@@ -185,7 +187,7 @@ src/
 
 ## 🌐 Funcionalidades Destacadas
 
-### 🔀 Sistema de Rutas Avanzado [1](#4-0) 
+### 🔀 Sistema de Rutas Avanzado
 
 Navegación fluida mediante React Router con rutas protegidas:
 
@@ -199,12 +201,26 @@ Navegación fluida mediante React Router con rutas protegidas:
 
 Optimizado para todos los dispositivos con *Tailwind CSS* y componentes adaptativos.
 
-### 🔐 Autenticación Robusta [2](#4-1) 
+### 🔐 Autenticación Robusta
 
 Sistema completo de autenticación con Firebase:
 - 📧 *Email/Password*
 - 🌐 *Google OAuth*
 - 📱 *Facebook Login*
+
+### 🔌 WebSocket en Tiempo Real
+
+Integración STOMP para notificaciones en tiempo real:
+- 📦 *Actualizaciones de pedidos* - Seguimiento en vivo
+- 🔔 *Notificaciones instantáneas* - Para clientes y administradores
+- 🍳 *Dashboard de cocina* - Gestión de pedidos por sucursal
+- 🚚 *Sistema de delivery* - Coordinación de entregas
+
+**Documentación WebSocket:**
+- [Guía de Integración](WEBSOCKET_INTEGRATION.md)
+- [Setup Rápido](WEBSOCKET_SETUP.md)
+- [Guía de Suscripciones](GUIA_WEBSOCKET_SUSCRIPCIONES.md)
+- [Cómo Verificar](COMO_VERIFICAR_WEBSOCKET.md)
 
 ---
 
@@ -242,7 +258,7 @@ Sistema completo de autenticación con Firebase:
 
 ---
 
-## 🔧 Configuración del Servidor [3](#4-2) 
+## 🔧 Configuración del Servidor
 
 El servidor de desarrollo está optimizado para:
 
