@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+button:hover{
+    cursor: pointer;
+}
+
+.font-lato {
+    font-family: 'Lato', sans-serif;
+}
+
+body{
+    font-family: Lato;
+}
