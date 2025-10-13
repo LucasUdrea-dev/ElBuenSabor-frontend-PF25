@@ -34,13 +34,6 @@ const decodeJWT = (token: string): UserSession | null => {
   }
 };
 
-
-// Verifica si el usuario es CUSTOMER (único rol permitido)
-const isCustomerRole = (role: string): boolean => {
-  return role === 'CUSTOMER';
-};
-
-
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Inicialización: cargar sesión desde localStorage si existe y es válida
   const [userSession, setUserSession] = useState<UserSession | null>(() => {
@@ -52,12 +45,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (decoded) {
         const currentTime = Math.floor(Date.now() / 1000);
         
-        // Solo cargar si es CUSTOMER y NO está expirado
-        if (decoded.exp > currentTime && isCustomerRole(decoded.role)) {
+        // Cargar si NO está expirado
+        if (decoded.exp > currentTime) {
           return decoded;
-        } else if (!isCustomerRole(decoded.role)) {
-          // Si no es CUSTOMER, no borrar el token (puede ser de EmpleadoContext)
-          return null;
         } else {
           // Token expirado, limpiar
           localStorage.removeItem('token');
@@ -74,17 +64,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Login: valida que el usuario sea CUSTOMER
+  // Login: guarda el token y establece la sesión
   const login = (token: string) => {
     const decoded = decodeJWT(token);
 
     if (!decoded) {
       throw new Error('Token inválido');
-    }
-
-    // Verificar que el usuario NO sea empleado
-    if (!isCustomerRole(decoded.role)) {
-      throw new Error('Los empleados deben usar el panel de administración');
     }
 
     // Guardar token y establecer sesión
@@ -104,11 +89,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error al cerrar sesión en Firebase:", error);
     }
     
-    // Solo borrar el token si hay una sesión de CUSTOMER activa
-    if (userSession && isCustomerRole(userSession.role)) {
-      localStorage.removeItem('token');
-    }
-    
+    localStorage.removeItem('token');
     setUserSession(null);
     setIsAuthenticated(false);
   };
@@ -132,7 +113,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (token && !isAuthenticated) {
         const decoded = decodeJWT(token);
         
-        if (decoded && isCustomerRole(decoded.role)) {
+        if (decoded) {
           const currentTime = Math.floor(Date.now() / 1000);
           
           if (decoded.exp > currentTime) {
@@ -178,7 +159,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       else if (!user && existingToken) {
         const decoded = decodeJWT(existingToken);
         
-        if (decoded && isCustomerRole(decoded.role)) {
+        if (decoded) {
           const currentTime = Math.floor(Date.now() / 1000);
           
           // Si el token tradicional sigue válido, mantener sesión

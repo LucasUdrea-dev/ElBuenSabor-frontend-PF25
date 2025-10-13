@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
-import { GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import RecuperarContrasena from "./RecuperarContrasena";
 import { z } from "zod";
@@ -39,7 +39,7 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       if (!isOpen) {
         setFormData(new userAuthentication());
         setErrors({});
-        setIsLoading(false); // ✅ AGREGADO
+        setIsLoading(false); 
       }
     }, [isOpen]);
 
@@ -190,68 +190,6 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
 
 
-    // Inicio con Facebook usando Firebase
-    const handleFacebookLogin = async () => {
-      const provider = new FacebookAuthProvider();
-      setIsLoading(true);
-      setErrors({});
-
-      try {
-        // 1. Autenticar con Firebase
-        const result = await signInWithPopup(auth, provider);
-        console.log(" Usuario autenticado con Facebook:", result.user);
-
-        // 2. Obtener el token de Firebase
-        const firebaseToken = await result.user.getIdToken();
-        console.log(" Token de Firebase obtenido");
-
-        // 3. Enviar el token al backend
-        const response = await axios.post(
-          FIREBASE_LOGIN_URL,
-          {},
-          {
-            headers: {
-              "Firebase-Token": firebaseToken,
-            },
-          }
-        );
-
-        console.log("✅ Respuesta del backend:", response.data);
-        
-        // 4. Guardar el JWT en localStorage y contexto
-        if (response.data.jwt) {
-          login(response.data.jwt);
-          localStorage.setItem('token', response.data.jwt);
-          console.log("Token almacenado, cerrando modal y navegando...");
-          
-          // 5. Cerrar modal y redirigir
-          onClose();
-          navigate('/catalogo');
-        } else {
-          setErrors({ general: "No se recibió token de autenticación" });
-        }
-
-      } catch (error: any) {
-        console.error("❌ Error al iniciar sesión con Facebook:", error);
-        
-        let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
-        
-        if (error.code === 'auth/popup-blocked') {
-          errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
-        } else if (error.code === 'auth/popup-closed-by-user') {
-          errorMessage = "Cerraste el popup de autenticación.";
-        } else if (error.response?.data?.error) {
-          errorMessage = error.response.data.error;
-        }
-        
-        setErrors({ general: errorMessage });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-
-
     // Función para abrir el modal de recuperación de contraseña
     const handleOpenRecuperar = () => {
       setIsRecuperarOpen(true);
@@ -365,33 +303,31 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               </button>
             </div>
 
-            <div className="text-center mb-4 font-lato">---- o ingresa con ----</div>
-
             
             
-            <div className="flex justify-center mb-4 space-x-10">
-              <button 
-                type="button" 
-                onClick={handleFacebookLogin}
-                disabled={isLoading}
-                className={`transition-opacity ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
-                }`}
-              >
-                <img src="public/svg/devicon_facebook.svg" alt="Facebook" className="w-10 h-10" />
-              </button>
-              
-              <button 
-                type="button" 
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
-                className={`transition-opacity ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'
-                }`}
-              >
-                <img src="public/svg/flat-color-icons_google.svg" alt="Google" className="w-10 h-10" />
-              </button>
-            </div>
+            {/* Bloque de inicio con redes sociales */}
+                <div className="text-center mb-4 font-lato">
+                  <div className="flex justify-center items-center gap-2 mb-4">
+                    <p className="m-0">Ingresa con</p>
+                    <button 
+                      type="button" 
+                      onClick={handleGoogleLogin}
+                      disabled={isLoading}
+                      className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${
+                        isLoading 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-100 hover:shadow-md'
+                      }`}
+                    >
+                      <img 
+                        src="public/svg/flat-color-icons_google.svg" 
+                        alt="Google" 
+                        className="w-6 h-6"
+                      />
+                      <span>Google</span>
+                    </button>
+                  </div>
+                </div>
 
           </form>
         </div>
@@ -403,3 +339,73 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 };
 
 export default InicioSesionUser;
+
+
+
+
+
+
+
+
+
+
+
+/*// Inicio con Facebook usando Firebase
+    const handleFacebookLogin = async () => {
+      const provider = new FacebookAuthProvider();
+      setIsLoading(true);
+      setErrors({});
+
+      try {
+        // 1. Autenticar con Firebase
+        const result = await signInWithPopup(auth, provider);
+        console.log(" Usuario autenticado con Facebook:", result.user);
+
+        // 2. Obtener el token de Firebase
+        const firebaseToken = await result.user.getIdToken();
+        console.log(" Token de Firebase obtenido");
+
+        // 3. Enviar el token al backend
+        const response = await axios.post(
+          FIREBASE_LOGIN_URL,
+          {},
+          {
+            headers: {
+              "Firebase-Token": firebaseToken,
+            },
+          }
+        );
+
+        console.log("✅ Respuesta del backend:", response.data);
+        
+        // 4. Guardar el JWT en localStorage y contexto
+        if (response.data.jwt) {
+          login(response.data.jwt);
+          localStorage.setItem('token', response.data.jwt);
+          console.log("Token almacenado, cerrando modal y navegando...");
+          
+          // 5. Cerrar modal y redirigir
+          onClose();
+          navigate('/catalogo');
+        } else {
+          setErrors({ general: "No se recibió token de autenticación" });
+        }
+
+      } catch (error: any) {
+        console.error("❌ Error al iniciar sesión con Facebook:", error);
+        
+        let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
+        
+        if (error.code === 'auth/popup-blocked') {
+          errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage = "Cerraste el popup de autenticación.";
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        }
+        
+        setErrors({ general: errorMessage });
+      } finally {
+        setIsLoading(false);
+      }
+    }; */
