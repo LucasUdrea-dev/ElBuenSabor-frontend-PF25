@@ -33,7 +33,7 @@ export default function EditarPerfilUser() {
   // Usamos el hook de Cloudinary
   const { image, loading: subiendoImagen, uploadImage, setImage } = useCloudinary();
   
-  // Ref para el input file (para poder hacer click programáticamente)
+  // Ref para el input file para abrir el selector de archivos sin que el usuario vea el input por fedecto
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Estados para manejo de teléfonos
@@ -104,7 +104,7 @@ export default function EditarPerfilUser() {
 
 
 
-  // Manejador para cuando se sube una nueva imagen
+  // Manejar la subida de imagen
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const imageUrl = await uploadImage(e);
     
@@ -244,7 +244,7 @@ export default function EditarPerfilUser() {
     }
   };
 
-  
+
 
   const agregarTelefono = async () => {
     const nuevoNumero = prompt('Ingrese el nuevo número de teléfono:');
@@ -368,6 +368,7 @@ export default function EditarPerfilUser() {
                 </div>
               ) : (
                 <img
+                  //image de Cloudinary o default
                   src={image || "../public/svg/imagenUsuario.svg"}
                   alt="Imagen de Usuario"
                   className="w-82 h-82 rounded-full object-cover"
@@ -383,8 +384,8 @@ export default function EditarPerfilUser() {
                 Mis direcciones
               </button>
               <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={subiendoImagen}
+                onClick={() => fileInputRef.current?.click()}// Activa el input file
+                disabled={subiendoImagen}// Deshabilitado mientras sube
                 className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {subiendoImagen ? 'Subiendo...' : 'Cambiar imagen'}
