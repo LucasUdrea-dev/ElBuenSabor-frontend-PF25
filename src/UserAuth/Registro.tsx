@@ -3,40 +3,56 @@ import axios from "axios";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import { z } from "zod";
-import { userAuthentication, Usuario } from "../../ts/Clases";
+import { userAuthentication, Usuario, host } from "../../ts/Clases";
 import { useUser } from "../UserAuth/UserContext";
 import { useNavigate } from "react-router-dom";
 
-
-
-
 // Esquema de validación con Zod
-const schema = z.object({
-  nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9]+$/, "Solo números"),
-  email: z.string().email("Formato de email inválido"),
-  contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  repetirContrasena: z.string(),
-}).refine((data) => data.contrasena === data.repetirContrasena, {
-  path: ["repetirContrasena"],
-  message: "Las contraseñas no coinciden",
-});
-
+const schema = z
+  .object({
+    nombre: z
+      .string()
+      .min(1, "El nombre es obligatorio")
+      .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+    apellido: z
+      .string()
+      .min(1, "El apellido es obligatorio")
+      .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+    telefono: z
+      .string()
+      .min(1, "El teléfono es obligatorio")
+      .regex(/^[0-9]+$/, "Solo números"),
+    email: z.string().email("Formato de email inválido"),
+    contrasena: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    repetirContrasena: z.string(),
+  })
+  .refine((data) => data.contrasena === data.repetirContrasena, {
+    path: ["repetirContrasena"],
+    message: "Las contraseñas no coinciden",
+  });
 
 // URL ejemplo
-const API_URL = "http://localhost:8080/api/auth/crear";
+const API_URL = `${host}/api/auth/crear`;
 // URL para login con Firebase
-const FIREBASE_LOGIN_URL = "http://localhost:8080/api/auth/firebase-login";
-
+const FIREBASE_LOGIN_URL = `${host}/api/auth/firebase-login`;
 
 // Tipo para manejar los errores de validación
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
+  general?: string;
+};
 
-const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const RegistroModal = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const [formData, setFormData] = useState({
     nombre: "",
-    apellido:"",
+    apellido: "",
     telefono: "",
     email: "",
     contrasena: "",
@@ -49,36 +65,38 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useUser();
   const navigate = useNavigate();
-  
 
   // Limpiar formulario al cerrar
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ nombre: "", apellido:"", telefono: "", email: "", contrasena: "", repetirContrasena: "" });
+      setFormData({
+        nombre: "",
+        apellido: "",
+        telefono: "",
+        email: "",
+        contrasena: "",
+        repetirContrasena: "",
+      });
       setErrors({});
       setIsLoading(false);
     }
   }, [isOpen]);
-
-
 
   // Maneja el cambio en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
-
   // Función para validar los campos del formulario
   const validarCampos = (): boolean => {
     const result = schema.safeParse(formData);
-    
-    const newErrors = result.success 
-        ? {} 
-        : result.error.issues.reduce((acc, issue) => {
-            acc[issue.path[0] as keyof typeof acc] = issue.message;
-            return acc;
-          }, {} as Errors);
+
+    const newErrors = result.success
+      ? {}
+      : result.error.issues.reduce((acc, issue) => {
+          acc[issue.path[0] as keyof typeof acc] = issue.message;
+          return acc;
+        }, {} as Errors);
 
     if (formData.contrasena !== formData.repetirContrasena) {
       newErrors.repetirContrasena = "Las contraseñas no coinciden.";
@@ -87,8 +105,6 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-
 
   // Registro tradicional (con email y contraseña)
   const handleRegistro = async (e: React.FormEvent) => {
@@ -106,9 +122,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     usuario.email = formData.email;
     usuario.existe = true;
     usuario.imagenUsuario = "";
-    usuario.telefonoList = [
-      { id: null, numero: parseInt(formData.telefono) }
-    ];
+    usuario.telefonoList = [{ id: null, numero: parseInt(formData.telefono) }];
 
     // Instanciamos userAuthentication
     const authData = new userAuthentication();
@@ -118,17 +132,19 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     // Armamos el objeto final que espera el backend
     const datosRegistro = {
       ...usuario,
-      userAuth: authData
+      userAuth: authData,
     };
 
     try {
-      console.log("Enviando al backend:", JSON.stringify(datosRegistro, null, 2));
+      console.log(
+        "Enviando al backend:",
+        JSON.stringify(datosRegistro, null, 2)
+      );
       const response = await axios.post(API_URL, datosRegistro);
       console.log("Usuario registrado:", response.data);
-      
-      
+
       onClose();
-      setTimeout(() => navigate('/catalogo'), 0);
+      setTimeout(() => navigate("/catalogo"), 0);
     } catch (err: any) {
       console.error("Error al registrar usuario:", err);
       const errorMessage =
@@ -141,10 +157,6 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       setIsLoading(false);
     }
   };
-
-
-
-
 
   // Función COMPLETA de login con Google
   const handleGoogleLogin = async () => {
@@ -173,8 +185,7 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       );
 
       console.log(" Respuesta del backend:", response.data);
-      
-      
+
       console.log("JWT recibido:", response.data.jwt);
       console.log("Usuario:", response.data);
 
@@ -182,35 +193,29 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
       // 5. Cerrar el modal
       onClose();
-      setTimeout(() => navigate('/catalogo'), 0);
-      
-
+      setTimeout(() => navigate("/catalogo"), 0);
     } catch (error: any) {
       console.error(" Error al iniciar sesión con Google:", error);
-      
+
       // Manejo de errores específicos
       let errorMessage = "Error al autenticar con Google. Intenta nuevamente.";
-      
-      if (error.code === 'auth/popup-blocked') {
-        errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
-      } else if (error.code === 'auth/popup-closed-by-user') {
+
+      if (error.code === "auth/popup-blocked") {
+        errorMessage =
+          "El popup fue bloqueado. Permite los popups para este sitio.";
+      } else if (error.code === "auth/popup-closed-by-user") {
         errorMessage = "Cerraste el popup de autenticación.";
       } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       }
-      
+
       setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
-
   if (!isOpen) return null;
-
-
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -224,7 +229,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           X
         </button>
 
-        <h2 className="text-2xl font-bold mb-7 font-lato text-center">Registrate</h2> 
+        <h2 className="text-2xl font-bold mb-7 font-lato text-center">
+          Registrate
+        </h2>
 
         {errors.general && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 font-lato text-sm">
@@ -245,7 +252,11 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 errors.nombre ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.nombre && <p className="text-red-500 text-sm mt-1 font-lato">{errors.nombre}</p>}
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.nombre}
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -260,7 +271,11 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 errors.apellido ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.apellido && <p className="text-red-500 text-sm mt-1 font-lato">{errors.apellido}</p>}
+            {errors.apellido && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.apellido}
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -275,7 +290,11 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 errors.telefono ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.telefono && <p className="text-red-500 text-sm mt-1 font-lato">{errors.telefono}</p>}
+            {errors.telefono && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.telefono}
+              </p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -290,7 +309,11 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1 font-lato">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div className="mb-4 relative">
@@ -313,13 +336,19 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             >
               <img
                 src={`public/svg/${
-                  showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
+                  showPassword
+                    ? "ic_baseline-visibility-off.svg"
+                    : "ic_baseline-visibility.svg"
                 }`}
                 alt="Visibilidad"
                 className="w-6 h-6"
               />
             </button>
-            {errors.contrasena && <p className="text-red-500 text-sm mt-1 font-lato">{errors.contrasena}</p>}
+            {errors.contrasena && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.contrasena}
+              </p>
+            )}
           </div>
 
           <div className="mb-4 relative">
@@ -342,14 +371,18 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             >
               <img
                 src={`public/svg/${
-                  showRepeatPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
+                  showRepeatPassword
+                    ? "ic_baseline-visibility-off.svg"
+                    : "ic_baseline-visibility.svg"
                 }`}
                 alt="Visibilidad"
                 className="w-6 h-6"
               />
             </button>
             {errors.repetirContrasena && (
-              <p className="text-red-500 text-sm mt-1 font-lato">{errors.repetirContrasena}</p>
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.repetirContrasena}
+              </p>
             )}
           </div>
 
@@ -357,9 +390,9 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             type="submit"
             disabled={isLoading}
             className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 mt-5 ${
-              isLoading 
-                ? 'bg-gray-400 cursor-not-allowed opacity-70' 
-                : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed opacity-70"
+                : "bg-[#0A76E1] hover:bg-[#0A5BBE] text-white"
             }`}
           >
             {isLoading ? (
@@ -368,35 +401,33 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 Registrando...
               </div>
             ) : (
-              'Registrate'
+              "Registrate"
             )}
           </button>
 
-
-        
           {/* Bloque de inicio con redes sociales */}
-                <div className="text-center mb-4 font-lato">
-                  <div className="flex justify-center items-center gap-2 mb-4 mt-3">
-                    <p className="m-0">Ingresa con</p>
-                    <button 
-                      type="button" 
-                      onClick={handleGoogleLogin}
-                      disabled={isLoading}
-                      className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${
-                        isLoading 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-gray-100 hover:shadow-md'
-                      }`}
-                    >
-                      <img 
-                        src="public/svg/flat-color-icons_google.svg" 
-                        alt="Google" 
-                        className="w-6 h-6"
-                      />
-                      <span>Google</span>
-                    </button>
-                  </div>
-                </div>
+          <div className="text-center mb-4 font-lato">
+            <div className="flex justify-center items-center gap-2 mb-4 mt-3">
+              <p className="m-0">Ingresa con</p>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${
+                  isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-100 hover:shadow-md"
+                }`}
+              >
+                <img
+                  src="public/svg/flat-color-icons_google.svg"
+                  alt="Google"
+                  className="w-6 h-6"
+                />
+                <span>Google</span>
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -404,21 +435,6 @@ const RegistroModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 };
 
 export default RegistroModal;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*// Función COMPLETA de login con Facebook
   const handleFacebookLogin = async () => {

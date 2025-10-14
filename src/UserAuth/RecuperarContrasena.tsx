@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { auth } from './firebaseConfig';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import axios from 'axios';
+import React, { useState } from "react";
+import { auth } from "./firebaseConfig";
+import { sendPasswordResetEmail } from "firebase/auth";
+import axios from "axios";
+import { host } from "../../ts/Clases";
 
 //url ejemplo
-const API_URL = "http://localhost:8080/api/auth";
+const API_URL = `${host}/api/auth`;
 
-const RecuperarContrasena = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const RecuperarContrasena = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -36,14 +43,19 @@ const RecuperarContrasena = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm font-lato">
-        <h2 className="text-2xl font-bold mb-6 text-center">Recuperar Contraseña</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Recuperar Contraseña
+        </h2>
 
         <p className="mb-6 text-center text-gray-700 font-lato">
-          Introduce tu dirección de correo electrónico para recibir un enlace de recuperación
+          Introduce tu dirección de correo electrónico para recibir un enlace de
+          recuperación
         </p>
 
         {error && <div className="mb-4 text-red-500 font-lato">{error}</div>}
-        {message && <div className="mb-4 text-green-500 font-lato">{message}</div>}
+        {message && (
+          <div className="mb-4 text-green-500 font-lato">{message}</div>
+        )}
 
         <form onSubmit={handlePasswordReset}>
           <div className="mb-4">

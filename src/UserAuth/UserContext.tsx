@@ -1,7 +1,14 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
+import { host } from "../../ts/Clases";
 
 export interface UserSession {
   id_user: number;
@@ -27,7 +34,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Decodifica el JWT (solo la parte del payload)
 const decodeJWT = (token: string): UserSession | null => {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     return JSON.parse(atob(payload)) as UserSession;
   } catch {
     return null;
@@ -37,31 +44,31 @@ const decodeJWT = (token: string): UserSession | null => {
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Inicialización: cargar sesión desde localStorage si existe y es válida
   const [userSession, setUserSession] = useState<UserSession | null>(() => {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     if (token) {
       const decoded = decodeJWT(token);
-      
+
       if (decoded) {
         const currentTime = Math.floor(Date.now() / 1000);
-        
+
         // Cargar si NO está expirado
         if (decoded.exp > currentTime) {
           return decoded;
         } else {
           // Token expirado, limpiar
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
         }
       }
     }
-    
+
     return null;
   });
-  
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return userSession !== null;
   });
-  
+
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Login: guarda el token y establece la sesión
@@ -69,16 +76,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const decoded = decodeJWT(token);
 
     if (!decoded) {
-      throw new Error('Token inválido');
+      throw new Error("Token inválido");
     }
 
     // Guardar token y establecer sesión
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     setUserSession(decoded);
     setIsAuthenticated(true);
-    
+
     // Notificar cambio en localStorage
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
   };
 
   // Logout: cierra sesión de Firebase y limpia el estado
@@ -88,8 +95,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error al cerrar sesión en Firebase:", error);
     }
-    
-    localStorage.removeItem('token');
+
+    localStorage.removeItem("token");
     setUserSession(null);
     setIsAuthenticated(false);
   };
@@ -108,14 +115,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Escuchar cambios en localStorage (login desde otros componentes/pestañas)
   useEffect(() => {
     const handleStorageChange = () => {
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem("token");
+
       if (token && !isAuthenticated) {
         const decoded = decodeJWT(token);
-        
+
         if (decoded) {
           const currentTime = Math.floor(Date.now() / 1000);
-          
+
           if (decoded.exp > currentTime) {
             setUserSession(decoded);
             setIsAuthenticated(true);
@@ -124,10 +131,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [isAuthenticated]);
 
@@ -136,38 +143,38 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (!isInitialized) return;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      const existingToken = localStorage.getItem('token');
-      
+      const existingToken = localStorage.getItem("token");
+
       // Usuario de Firebase SIN token tradicional: autenticar con backend
       if (user && !existingToken) {
         try {
           const firebaseToken = await user.getIdToken();
           const response = await axios.post(
-            "http://localhost:8080/api/auth/firebase-login",
+            `${host}/api/auth/firebase-login`,
             {},
             { headers: { "Firebase-Token": firebaseToken } }
           );
-          
+
           if (response.data.jwt) {
             login(response.data.jwt);
           }
         } catch (err) {
           console.error("Error autenticando con Firebase:", err);
         }
-      } 
+      }
       // No hay usuario Firebase PERO hay token tradicional: validar que siga siendo válido
       else if (!user && existingToken) {
         const decoded = decodeJWT(existingToken);
-        
+
         if (decoded) {
           const currentTime = Math.floor(Date.now() / 1000);
-          
+
           // Si el token tradicional sigue válido, mantener sesión
           if (decoded.exp > currentTime) {
             return;
           }
         }
-        
+
         // Token inválido o expirado
         logout();
       }
@@ -182,13 +189,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const interval = setInterval(() => {
         if (isTokenExpired()) logout();
       }, 60000);
-      
+
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, userSession]);
 
   return (
-    <UserContext.Provider value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}>
+    <UserContext.Provider
+      value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -196,7 +205,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (!context) throw new Error("useUser debe ser usado dentro de UserProvider");
+  if (!context)
+    throw new Error("useUser debe ser usado dentro de UserProvider");
   return context;
 };
 
@@ -359,4 +369,4 @@ export const useUser = () => {
     throw new Error('useUser debe ser usado dentro de un UserProvider');
   }
   return context;
-};*/ 
+};*/
