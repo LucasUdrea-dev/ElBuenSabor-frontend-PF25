@@ -1,48 +1,47 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Pedido, tiposEstadoPedido } from "../../ts/Clases";
+import React, { useState } from "react";
+import axios from "axios";
+import { Pedido, tiposEstadoPedido, host } from "../../ts/Clases";
 import DetallePedido from "./DetallePedido";
 
 interface PedidoProps {
   pedido: Pedido;
-  tipo: 'pendientes' | 'pasadas';
+  tipo: "pendientes" | "pasadas";
   formatearFecha: (fecha: Date | undefined) => string;
   formatearHora: (fecha: Date | undefined) => string;
-  onPedidoActualizado?: () => void; 
+  onPedidoActualizado?: () => void;
 }
 
-const PedidoComponent: React.FC<PedidoProps> = ({ 
-  pedido, 
+const PedidoComponent: React.FC<PedidoProps> = ({
+  pedido,
   tipo,
-  onPedidoActualizado
+  onPedidoActualizado,
 }) => {
-
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
   const [cargandoRepetir, setCargandoRepetir] = useState(false);
 
-  const API_BASE_URL = 'http://localhost:8080/api';
+  const API_BASE_URL = `${host}/api`;
 
   const obtenerEstadoTexto = (estado: string): string => {
     switch (estado) {
       case tiposEstadoPedido[6].nombreEstado:
         if (pedido.tipoEnvio.tipoDelivery === "DELIVERY") {
-          return "En camino"
+          return "En camino";
         }
-        return "Para retirar"
+        return "Para retirar";
       case tiposEstadoPedido[5].nombreEstado:
-        return 'Entregado';
+        return "Entregado";
       case tiposEstadoPedido[2].nombreEstado:
-        return 'Cancelado';
+        return "Cancelado";
       case tiposEstadoPedido[3].nombreEstado:
-        return 'Rechazado';
+        return "Rechazado";
       case tiposEstadoPedido[4].nombreEstado:
-        return 'Entrante';
+        return "Entrante";
       case tiposEstadoPedido[1].nombreEstado:
-        return 'En espera';
+        return "En espera";
       case tiposEstadoPedido[0].nombreEstado:
-        return 'En preparacion';
+        return "En preparacion";
       default:
-        return 'Desconocido';
+        return "Desconocido";
     }
   };
 
@@ -50,56 +49,59 @@ const PedidoComponent: React.FC<PedidoProps> = ({
     switch (estado) {
       case tiposEstadoPedido[0].nombreEstado: // En preparacion
       case tiposEstadoPedido[6].nombreEstado: // 'En camino' o 'Para retirar'
-        return 'text-blue-600 bg-blue-100';
+        return "text-blue-600 bg-blue-100";
 
       case tiposEstadoPedido[5].nombreEstado: //Entregado
-        return 'text-green-600 bg-green-100';
+        return "text-green-600 bg-green-100";
 
       case tiposEstadoPedido[2].nombreEstado: // Cancelado
       case tiposEstadoPedido[3].nombreEstado: // Rechazado
-        return 'text-red-600 bg-red-100';
-      
+        return "text-red-600 bg-red-100";
+
       case tiposEstadoPedido[1].nombreEstado: // En espera
       case tiposEstadoPedido[4].nombreEstado: // Entrante
-        return 'text-gray-600 bg-gray-100'
+        return "text-gray-600 bg-gray-100";
 
       default:
-        return 'text-gray-600 bg-gray-100';
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const obtenerTipoEnvio = (): string => {
     if (pedido.direccionPedido) {
-      return 'Envío a domicilio';
+      return "Envío a domicilio";
     }
-    return 'Retiro en local';
+    return "Retiro en local";
   };
-
-
 
   const handleRepetirOrden = async () => {
     setCargandoRepetir(true);
     try {
-        const nuevoPedidoDTO = {
-            detallePedidoList: pedido.detallePedidoList.map(detalle => ({
-                cantidad: detalle.cantidad,
-                articulo: { id: detalle.articulo?.id }
-            })),
-            detallePromocionList: pedido.detallePromocionList.map(detalle => ({
-                cantidad: detalle.cantidad,
-                promocion: { id: detalle.promocion.id }
-            })),
-            usuario: { id: pedido.usuario.id },
-            sucursal: { id: pedido.sucursal.id },
-            direccionPedido: pedido.direccionPedido ? {
-                direccion: { id: pedido.direccionPedido.direccion.id }
-            } : null,
-            tipoEnvio: { id: pedido.tipoEnvio.id },
-            tipoPago: { id: pedido.tipoPago.id }
-        };
+      const nuevoPedidoDTO = {
+        detallePedidoList: pedido.detallePedidoList.map((detalle) => ({
+          cantidad: detalle.cantidad,
+          articulo: { id: detalle.articulo?.id },
+        })),
+        detallePromocionList: pedido.detallePromocionList.map((detalle) => ({
+          cantidad: detalle.cantidad,
+          promocion: { id: detalle.promocion.id },
+        })),
+        usuario: { id: pedido.usuario.id },
+        sucursal: { id: pedido.sucursal.id },
+        direccionPedido: pedido.direccionPedido
+          ? {
+              direccion: { id: pedido.direccionPedido.direccion.id },
+            }
+          : null,
+        tipoEnvio: { id: pedido.tipoEnvio.id },
+        tipoPago: { id: pedido.tipoPago.id },
+      };
 
-        const response = await axios.post(`${API_BASE_URL}/pedidos`, nuevoPedidoDTO);
-      
+      const response = await axios.post(
+        `${API_BASE_URL}/pedidos`,
+        nuevoPedidoDTO
+      );
+
       if (response.status === 201) {
         alert(`¡Orden repetida exitosamente! Nueva orden #${response.data.id}`);
         // Notificar al componente padre para que recargue los pedidos
@@ -108,45 +110,49 @@ const PedidoComponent: React.FC<PedidoProps> = ({
         }
       }
     } catch (error) {
-      console.error('Error al repetir orden:', error);
-      alert('Error al repetir la orden. Por favor, intenta de nuevo.');
+      console.error("Error al repetir orden:", error);
+      alert("Error al repetir la orden. Por favor, intenta de nuevo.");
     } finally {
       setCargandoRepetir(false);
     }
   };
 
-
   const obtenerHoraPedido = (fecha: Date | string | undefined): string => {
-    if (!fecha) return '';
-    
+    if (!fecha) return "";
+
     try {
       const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
-      
+
       // Verificar si la fecha es válida
       if (isNaN(fechaObj.getTime())) {
-        return '';
+        return "";
       }
-      
-      return fechaObj.toLocaleTimeString('es-AR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+
+      return fechaObj.toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
-      console.error('Error al obtener hora:', error);
-      return '';
+      console.error("Error al obtener hora:", error);
+      return "";
     }
   };
 
-
-
   const obtenerTiempoInfo = (): string => {
-    if (tipo === 'pendientes' && pedido.tiempoEstimado && pedido.tiempoEstimado !== "0 minutos") {
-      return `${new Date(new Date(pedido.fecha).getTime() + (Number(pedido.tiempoEstimado) * 60 * 1000)).toLocaleTimeString().slice(0,5)} - ${obtenerTipoEnvio()}`;
+    if (
+      tipo === "pendientes" &&
+      pedido.tiempoEstimado &&
+      pedido.tiempoEstimado !== "0 minutos"
+    ) {
+      return `${new Date(
+        new Date(pedido.fecha).getTime() +
+          Number(pedido.tiempoEstimado) * 60 * 1000
+      )
+        .toLocaleTimeString()
+        .slice(0, 5)} - ${obtenerTipoEnvio()}`;
     }
     return `${obtenerHoraPedido(pedido.fecha)} - ${obtenerTipoEnvio()}`;
   };
-
-
 
   return (
     <>
@@ -154,15 +160,17 @@ const PedidoComponent: React.FC<PedidoProps> = ({
         <div className="flex-1">
           <div className="flex justify-between items-center mb-5 bg-gray-200 px-4 py-2 rounded">
             <span className="text-base font-bold">ORDEN #{pedido.id}</span>
-            <span className={`px-2 py-1 rounded text-sm font-semibold ${obtenerColorEstado(pedido.estadoPedido?.nombreEstado)}`}>
+            <span
+              className={`px-2 py-1 rounded text-sm font-semibold ${obtenerColorEstado(
+                pedido.estadoPedido?.nombreEstado
+              )}`}
+            >
               {obtenerEstadoTexto(pedido.estadoPedido?.nombreEstado)}
             </span>
           </div>
 
           <div className="mb-3">
-            <p className="text-sm text-[#555555]">
-              {obtenerTiempoInfo()}
-            </p>
+            <p className="text-sm text-[#555555]">{obtenerTiempoInfo()}</p>
             <p className="text-xs text-[#777777]">
               {`${new Date(pedido.fecha).toLocaleDateString()}`}
             </p>
@@ -171,28 +179,37 @@ const PedidoComponent: React.FC<PedidoProps> = ({
           {/* Lista de productos */}
           <div className="mb-4">
             {(pedido.detallePedidoList || []).map((detalle, index) => (
-              <div key={`articulo-${index}`} className="text-sm text-[#333333] mb-1">
-                {detalle.cantidad} × {detalle.articulo?.nombre || 'Artículo desconocido'}
+              <div
+                key={`articulo-${index}`}
+                className="text-sm text-[#333333] mb-1"
+              >
+                {detalle.cantidad} ×{" "}
+                {detalle.articulo?.nombre || "Artículo desconocido"}
               </div>
             ))}
-            
+
             {(pedido.detallePromocionList || []).map((detallePromo, index) => (
-              <div key={`promo-${index}`} className="text-sm text-[#333333] mb-1 font-medium">
-                {detallePromo.cantidad} × {detallePromo.promocion?.denominacion || 'Promoción'} 
+              <div
+                key={`promo-${index}`}
+                className="text-sm text-[#333333] mb-1 font-medium"
+              >
+                {detallePromo.cantidad} ×{" "}
+                {detallePromo.promocion?.denominacion || "Promoción"}
                 <span className="text-xs text-[#D93F21] ml-1">(Oferta)</span>
               </div>
             ))}
 
-            {(!pedido.detallePedidoList?.length && !pedido.detallePromocionList?.length) && (
-              <div className="text-sm text-[#777777] italic">
-                No hay productos disponibles
-              </div>
-            )}
+            {!pedido.detallePedidoList?.length &&
+              !pedido.detallePromocionList?.length && (
+                <div className="text-sm text-[#777777] italic">
+                  No hay productos disponibles
+                </div>
+              )}
           </div>
         </div>
 
         <div className="flex gap-2 mt-auto">
-          {tipo === 'pasadas' && (
+          {tipo === "pasadas" && (
             <button
               onClick={() => setMostrarDetalle(true)}
               className="flex-1 bg-gray-200 hover:bg-gray-300 text-[#262626] py-2 px-3 rounded text-sm transition-colors font-lato"
@@ -204,18 +221,18 @@ const PedidoComponent: React.FC<PedidoProps> = ({
             onClick={handleRepetirOrden}
             disabled={cargandoRepetir}
             className={`flex-1 py-2 px-3 rounded text-sm transition-colors font-lato ${
-              cargandoRepetir 
-                ? 'bg-gray-400 cursor-not-allowed text-white' 
-                : 'bg-[#D93F21] hover:bg-[#b9331a] text-white'
+              cargandoRepetir
+                ? "bg-gray-400 cursor-not-allowed text-white"
+                : "bg-[#D93F21] hover:bg-[#b9331a] text-white"
             }`}
           >
-            {cargandoRepetir ? 'Procesando...' : 'Repetir Orden'}
+            {cargandoRepetir ? "Procesando..." : "Repetir Orden"}
           </button>
         </div>
       </div>
 
       {mostrarDetalle && (
-        <DetallePedido 
+        <DetallePedido
           pedido={pedido}
           onClose={() => setMostrarDetalle(false)}
         />
