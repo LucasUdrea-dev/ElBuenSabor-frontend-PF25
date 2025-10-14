@@ -34,18 +34,18 @@ export default function SliderPromociones({promos}: Props) {
     return(
         <>
         
-        <div className="bg-[#444444] rounded-4xl relative w-1/1 flex items-center">
+        <div className="bg-[#444444] rounded-4xl relative w-full flex items-center">
         
             {promos.length > 0 ? (
-                <div className="grid grid-cols-[40%_60%] w-1/1">
-                    <div className="p-10 flex flex-col gap-10">
-                        <h1 className="text-6xl">{promos[indexActual].denominacion}</h1>
-                        <h2 className="text-4xl text-center">{promos[indexActual].descripcion}</h2>
+                <div className="grid grid-cols-[40%_60%] max-lg:flex max-lg:flex-col-reverse max-lg:pb-20 w-1/1">
+                    <div className="p-10 max-lg:p-5 flex flex-col gap-10">
+                        <h1 className="text-6xl max-md:text-center max-md:text-5xl">{promos[indexActual].denominacion}</h1>
+                        <h2 className="text-4xl text-center max-md:text-3xl">{promos[indexActual].descripcion}</h2>
                     </div>
                     
                     <button onClick={()=>setDetallePromocion(promos[indexActual])}>
                         <img className="m-auto h-[400px] w-full top-1/2 
-                        object-cover rounded-r-4xl" 
+                        object-cover rounded-r-4xl max-lg:rounded-4xl" 
                         src={obtenerImagen(promos[indexActual].imagen)} 
                         alt="No se pudo recuperar la imagen" />
                     </button>
@@ -55,7 +55,7 @@ export default function SliderPromociones({promos}: Props) {
             ) : (
                 <p>Cargando imagenes...</p>
             )}
-            <div className="absolute flex justify-center gap-5 bottom-2 text-xl h-1/10 w-[40%] rounded-r-4xl">
+            <div className="absolute flex justify-center gap-5 bottom-2 max-lg:bottom-0 max-lg:w-full text-xl h-1/10 w-[40%] rounded-r-4xl">
                 {/**Se crean los botones para cambiar de promocion */}
                 {promos.length > 0 && promos.map((_, index) => (
                     <button key={index} className={`${indexActual == index ? "bg-[#D93F21] border-black" : "bg-black"} rounded-4xl w-7 h-7 border-2`} onClick={()=>{

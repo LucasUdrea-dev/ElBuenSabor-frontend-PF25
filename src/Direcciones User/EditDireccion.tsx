@@ -200,7 +200,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-md:w-xs max-md:p-5 max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl text-center mb-4 text-black font-lato">Editar Dirección</h2>
 
         {errors.general && (
@@ -278,7 +278,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
             </div>
           </div>
 
-          <div className="mb-4 flex gap-2">
+          <div className="mb-4 flex max-md:flex-col max-md:*:w-full gap-2">
             <div className="w-1/2">
               <label className="text-black block mb-2">Provincia*</label>
               <select
@@ -350,7 +350,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
             {errors.alias && <p className="text-red-500 text-sm mt-1">{errors.alias}</p>}
           </div>
 
-          <div className="flex justify-between gap-4 mt-6">
+          <div className="flex justify-between gap-4 max-md:*:py-0 mt-6">
             <button
               type="button"
               onClick={onClose}
