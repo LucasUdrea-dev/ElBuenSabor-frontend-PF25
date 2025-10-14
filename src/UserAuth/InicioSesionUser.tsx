@@ -5,7 +5,7 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import RecuperarContrasena from "./RecuperarContrasena";
 import { z } from "zod";
-import { userAuthentication } from "../../ts/Clases";
+import { host, userAuthentication } from "../../ts/Clases";
 import { useUser } from "./UserContext";
 import { host } from "../../ts/Clases.ts";
 

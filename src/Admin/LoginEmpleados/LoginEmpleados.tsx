@@ -14,6 +14,7 @@ const schema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
+
 const API_URL = `${host}/api/auth/login`;
 
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
