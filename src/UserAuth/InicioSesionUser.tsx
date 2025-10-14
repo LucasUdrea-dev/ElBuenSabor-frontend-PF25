@@ -5,7 +5,7 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import RecuperarContrasena from "./RecuperarContrasena";
 import { z } from "zod";
-import { userAuthentication } from "../../ts/Clases";
+import { host, userAuthentication } from "../../ts/Clases";
 import { useUser } from "./UserContext";
 
 
@@ -15,9 +15,9 @@ const schema = z.object({
 });
 
 
-const API_URL = "http://localhost:8080/api/auth/login";
+const API_URL = host+"/api/auth/login";
 //URL para autenticación con Firebase
-const FIREBASE_LOGIN_URL = "http://localhost:8080/api/auth/firebase-login";
+const FIREBASE_LOGIN_URL = host+"/api/auth/firebase-login";
 
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 

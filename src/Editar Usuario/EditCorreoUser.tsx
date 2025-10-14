@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { z } from "zod";
+import { host } from "../../ts/Clases";
 
 
 interface Props {
@@ -76,22 +77,22 @@ const EditCorreoUser: React.FC<Props> = ({
     }
 
     try {
-      // Validar correo actual con el servidor
-      const validacion = await axios.post(
-        "http://localhost:8080/api/usuarios/validarCorreo",
-        { id: usuarioId, correo: correoActual },
-        axiosConfig
-      );
+      // // Validar correo actual con el servidor
+      // const validacion = await axios.post(
+      //   host+"/api/usuarios/validarCorreo",
+      //   { id: usuarioId, correo: correoActual },
+      //   axiosConfig
+      // );
 
-      if (!validacion.data.validado) {
-        setError("El correo actual no coincide.");
-        return;
-      }
+      // if (!validacion.data.validado) {
+      //   setError("El correo actual no coincide.");
+      //   return;
+      // }
 
       // Actualizar correo
       const respuesta = await axios.put(
-        "http://localhost:8080/api/usuarios/actualizarCorreo",
-        { id: usuarioId, nuevoCorreo },
+        host+`/api/auth/${usuarioId}`,
+        { username: nuevoCorreo },
         axiosConfig
       );
       
