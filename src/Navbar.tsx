@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import axios from "axios"
 import DesplegableUsuario from "./DesplegableUsuario.tsx"
 import RegistroModal from "../src/UserAuth/Registro.tsx"
 import InicioSesionUs from "../src/UserAuth/InicioSesionUser.tsx"
-import { obtenerImagen } from "../ts/Imagen.ts"
 import Carrito from "./Carrito/Carrito.tsx"
 import { useUser } from "./UserAuth/UserContext" 
 
@@ -15,7 +15,41 @@ export default function Navbar() {
     const [mostrarCarrito, setMostrarCarrito] = useState(false)
     const [isRegistroModalOpen, setRegistroModalOpen] = useState(false)
     const [isInicioSesionUsOpen, setInicioSesionUsOpen] = useState(false)
+    const [imagenUsuario, setImagenUsuario] = useState<string>('')
 
+    // Obtener token del localStorage
+    const getToken = () => localStorage.getItem('token');
+
+    // Configurar axios con el token
+    const axiosConfig = {
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    // Cargar imagen del usuario cuando esté autenticado
+    useEffect(() => {
+        const fetchImagenUsuario = async () => {
+            if (isAuthenticated && userSession?.id_user) {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/usuarios/${userSession.id_user}`,
+                        axiosConfig
+                    );
+                    
+                    // Si el usuario tiene imagen, la seteamos
+                    if (response.data.imagenUsuario) {
+                        setImagenUsuario(response.data.imagenUsuario);
+                    }
+                } catch (error) {
+                    console.error('Error al cargar imagen del usuario:', error);
+                }
+            }
+        };
+
+        fetchImagenUsuario();
+    }, [isAuthenticated, userSession?.id_user]);
 
 
     const cambiarDesplegableUsuario = () => {
@@ -29,6 +63,7 @@ export default function Navbar() {
     const cerrarSesion = () => {
         logout();
         setMostrarDesplegableUsuario(false)
+        setImagenUsuario('') // Limpiar imagen al cerrar sesión
     }
 
     //modales de registro (Apertura y cierre)
@@ -39,7 +74,7 @@ export default function Navbar() {
         setRegistroModalOpen(false) 
     }
 
-    //modales de registro (Apertura y cierre)
+    //modales de inicio de sesión (Apertura y cierre)
     const abrirInicioSesionUs = () => {
         setInicioSesionUsOpen(true) 
     }
@@ -86,7 +121,11 @@ export default function Navbar() {
                             <div className="relative">
                                 <button className="m-auto" onClick={cambiarDesplegableUsuario} type="button" >
                                     <div className={`flex items-center gap-3 m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableUsuario && "border-y-1 border-y-gray-700"}`}>
-                                        <img className="w-10 h-10 rounded-full" src={obtenerImagen("/public/svg/ImagenUsuario.svg")} alt="foto usuario" />
+                                        <img 
+                                            className="w-10 h-10 rounded-full object-cover" 
+                                            src={imagenUsuario || "../public/svg/imagenUsuario.svg"} 
+                                            alt="foto usuario" 
+                                        />
                                         <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto font-lato">
                                             {userSession?.name} {userSession?.surname}
                                             <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableUsuario ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
