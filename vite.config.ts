@@ -12,5 +12,8 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     allowedHosts: ["eaa0-191-82-90-83.ngrok-free.app"]
+  },
+  define: {
+    global: 'globalThis',
   }
 })
