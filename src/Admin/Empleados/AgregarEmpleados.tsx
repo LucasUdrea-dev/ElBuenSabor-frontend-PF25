@@ -1,22 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
-import { Empleado } from "../../../ts/Clases";
+import { Empleado, host } from "../../../ts/Clases";
 
 // Esquema de validación con Zod
 const schema = z.object({
-  nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9\s\-\+]*$/, "Formato de teléfono inválido"),
+  nombre: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  apellido: z
+    .string()
+    .min(1, "El apellido es obligatorio")
+    .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  telefono: z
+    .string()
+    .min(1, "El teléfono es obligatorio")
+    .regex(/^[0-9\s\-\+]*$/, "Formato de teléfono inválido"),
   email: z.string().email("Formato de email inválido"),
-  contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  contrasena: z
+    .string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
   cargo: z.string().min(1, "El cargo es obligatorio"),
 });
 
 // URL ejemplo
-// const API_URL = "http://localhost:8080/api/empleados";
+// const API_URL = `${host}/api/empleados`;
 
 // Tipo para manejar los errores de validación
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
+  general?: string;
+};
 
 interface AgregarEmpleadoProps {
   isOpen: boolean;
@@ -24,7 +37,11 @@ interface AgregarEmpleadoProps {
   onEmpleadoAgregado: (empleado: Empleado) => void; // Callback para actualizar la lista
 }
 
-const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmpleadoProps) => {
+const AgregarEmpleado = ({
+  isOpen,
+  onClose,
+  onEmpleadoAgregado,
+}: AgregarEmpleadoProps) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -63,9 +80,9 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
   // Función para validar los campos del formulario
   const validarCampos = (): boolean => {
     const result = schema.safeParse(formData);
-    
-    const newErrors = result.success 
-      ? {} 
+
+    const newErrors = result.success
+      ? {}
       : result.error.issues.reduce((acc, issue) => {
           acc[issue.path[0] as keyof typeof acc] = issue.message;
           return acc;
@@ -93,8 +110,12 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
       existe: true,
       fechaAlta: new Date().toISOString(),
       sueldo: 0, // Se puede agregar después o tener un valor por defecto
-      idSucursal: { id: 1, nombre: ""}, // Sucursal por defecto
-      rol: { id: null, fechaAlta: new Date().toISOString(), tipoRol: { id: null, rol: 2 } }, // Rol EMPLOYEE
+      idSucursal: { id: 1, nombre: "" }, // Sucursal por defecto
+      rol: {
+        id: null,
+        fechaAlta: new Date().toISOString(),
+        tipoRol: { id: null, rol: 2 },
+      }, // Rol EMPLOYEE
       direccionList: [],
     };
 
@@ -102,20 +123,20 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
       // Implementar llamada al backend
       // const response = await axios.post(API_URL, nuevoEmpleado);
       // console.log("Empleado agregado:", response.data);
-      
+
       // Simulación de delay para mostrar loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       console.log("Empleado agregado:", nuevoEmpleado);
       onEmpleadoAgregado(nuevoEmpleado); // Callback para actualizar la lista
       onClose();
-
     } catch (err: any) {
       console.error("Error al agregar empleado:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Hubo un problema al agregar el empleado.";
-      
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Hubo un problema al agregar el empleado.";
+
       setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
@@ -136,10 +157,14 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
           ×
         </button>
 
-        <h2 className="text-2xl font-bold mb-7 font-lato text-center">Añadir Empleado</h2>
+        <h2 className="text-2xl font-bold mb-7 font-lato text-center">
+          Añadir Empleado
+        </h2>
 
         {errors.general && (
-          <div className="text-red-600 font-lato mb-2 text-center">{errors.general}</div>
+          <div className="text-red-600 font-lato mb-2 text-center">
+            {errors.general}
+          </div>
         )}
 
         <form onSubmit={handleAgregar}>
@@ -156,7 +181,11 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                 errors.nombre ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.nombre && <p className="text-red-500 text-sm mt-1 font-lato">{errors.nombre}</p>}
+            {errors.nombre && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.nombre}
+              </p>
+            )}
           </div>
 
           {/* Campo Apellido */}
@@ -172,7 +201,11 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                 errors.apellido ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.apellido && <p className="text-red-500 text-sm mt-1 font-lato">{errors.apellido}</p>}
+            {errors.apellido && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.apellido}
+              </p>
+            )}
           </div>
 
           {/* Campo Email */}
@@ -188,7 +221,11 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1 font-lato">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           {/* Campo Teléfono */}
@@ -204,7 +241,11 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                 errors.telefono ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.telefono && <p className="text-red-500 text-sm mt-1 font-lato">{errors.telefono}</p>}
+            {errors.telefono && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.telefono}
+              </p>
+            )}
           </div>
 
           {/* Campo Cargo */}
@@ -220,13 +261,17 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                 errors.cargo ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.cargo && <p className="text-red-500 text-sm mt-1 font-lato">{errors.cargo}</p>}
+            {errors.cargo && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.cargo}
+              </p>
+            )}
           </div>
 
           {/* Campo Contraseña */}
           <div className="mb-6 relative">
             <label className="block mb-2 font-lato">Contraseña</label>
-           
+
             <input
               type={showPassword ? "text" : "password"}
               name="contrasena"
@@ -245,13 +290,19 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
             >
               <img
                 src={`/svg/${
-                  showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
+                  showPassword
+                    ? "ic_baseline-visibility-off.svg"
+                    : "ic_baseline-visibility.svg"
                 }`}
                 alt="Visibilidad"
                 className="w-6 h-8"
               />
             </button>
-            {errors.contrasena && <p className="text-red-500 text-sm mt-1 font-lato">{errors.contrasena}</p>}
+            {errors.contrasena && (
+              <p className="text-red-500 text-sm mt-1 font-lato">
+                {errors.contrasena}
+              </p>
+            )}
           </div>
 
           {/* Botones */}
@@ -264,14 +315,14 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
             >
               Cancelar
             </button>
-            
+
             <button
               type="submit"
               disabled={isLoading}
               className={`py-2 px-4 rounded-full w-full font-lato transition-all duration-200 ${
-                isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed opacity-70' 
-                  : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
+                isLoading
+                  ? "bg-gray-400 cursor-not-allowed opacity-70"
+                  : "bg-[#0A76E1] hover:bg-[#0A5BBE] text-white"
               }`}
             >
               {isLoading ? (
@@ -280,7 +331,7 @@ const AgregarEmpleado = ({ isOpen, onClose, onEmpleadoAgregado }: AgregarEmplead
                   Agregando...
                 </div>
               ) : (
-                'Agregar'
+                "Agregar"
               )}
             </button>
           </div>

@@ -1,4 +1,4 @@
-export const host: string = "http://localhost:8080"
+export const host: string = "https://elbuensabor-backend-pf25.onrender.com"
 
 export class Promocion {
     id?: number | null = null;
