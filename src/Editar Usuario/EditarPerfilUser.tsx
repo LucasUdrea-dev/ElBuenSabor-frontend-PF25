@@ -4,7 +4,7 @@ import { z } from 'zod';
 import axios from 'axios';
 import EditCorreoUser from './EditCorreoUser';
 import EditContrasenaUser from './EditContrasenaUser';
-import { Usuario, Telefono } from '../../ts/Clases';
+import { Usuario, Telefono,host } from '../../ts/Clases';
 import { useUser } from '../UserAuth/UserContext';
 import { useCloudinary } from '../useCloudinary'; 
 
@@ -64,7 +64,7 @@ export default function EditarPerfilUser() {
 
         // Obtener datos del usuario desde el backend
         const response = await axios.get(
-          `http://localhost:8080/api/usuarios/${userSession.id_user}`,
+          host +`/api/usuarios/${userSession.id_user}`,
           axiosConfig
         );
 
@@ -129,7 +129,7 @@ export default function EditarPerfilUser() {
         };
 
         await axios.put(
-          `http://localhost:8080/api/usuarios/${formData.id}`,
+          host + `/api/usuarios/${formData.id}`,
           usuarioPlano,
           axiosConfig
         );
