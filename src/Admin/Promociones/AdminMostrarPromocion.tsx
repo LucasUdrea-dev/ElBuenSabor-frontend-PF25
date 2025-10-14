@@ -1,6 +1,5 @@
 
 import { Promocion } from "../../../ts/Clases";
-import { obtenerImagen } from "../../../ts/Imagen";
 
 
 interface Props{
@@ -71,7 +70,7 @@ export default function AdminMostrarManufacturado({promocion, cerrarMostrar, abr
                     <div className="flex justify-between items-center text-2xl">
                         <div className="grid grid-cols-[3fr_1fr]">
                             <div className="flex gap-5 items-center">
-                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={obtenerImagen(String(promocion.imagen))} alt="" />
+                                <img className="h-25 w-25 object-fill rounded-[20rem]" src={promocion.imagen} alt="" />
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-3xl font-bold">{promocion.denominacion}</h2>
                                     <div className="flex gap-2">

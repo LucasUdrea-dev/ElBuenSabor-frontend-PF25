@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { host, Promocion } from '../../../ts/Clases.ts'; // Adjust the path as needed
 
 import axios from "axios";
-import { obtenerImagen } from "../../../ts/Imagen.ts";
 import AdminMostrarPromocion from "./AdminMostrarPromocion.tsx";
 import AdminFormPromocion from "./AdminFormPromocion.tsx";
 
@@ -124,7 +123,7 @@ export default function AdminPromocion() {
                                     
                                     <div key={promocion.id} className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center">
                                         
-                                        <div className="bg-cover bg-no-repeat bg-center" style={{backgroundImage: `url('${obtenerImagen(promocion.imagen)}')`}}></div>
+                                        <div className="bg-cover bg-no-repeat bg-center" style={{backgroundImage: `url('${promocion.imagen}')`}}></div>
 
                                         <div>
                                             <h3>{promocion.denominacion}</h3>

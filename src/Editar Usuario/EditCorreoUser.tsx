@@ -74,7 +74,7 @@ const EditCorreoUser: React.FC<Props> = ({
     try {
       // Validar correo actual con el servidor
       const validacion = await axios.post(
-        "${host}/api/usuarios/validarCorreo",
+        `${host}/api/usuarios/validarCorreo`,
         { id: usuarioId, correo: correoActual },
         axiosConfig
       );
@@ -86,7 +86,7 @@ const EditCorreoUser: React.FC<Props> = ({
 
       // Actualizar correo
       const respuesta = await axios.put(
-        "${host}/api/usuarios/actualizarCorreo",
+        `${host}/api/usuarios/actualizarCorreo`,
         { id: usuarioId, nuevoCorreo },
         axiosConfig
       );

@@ -7,7 +7,6 @@ import {
   host,
   Promocion,
 } from "../../ts/Clases";
-import { obtenerImagen } from "../../ts/Imagen";
 import ArticuloCardCatalogo from "./ArticuloCardCatalogo";
 import axios from "axios";
 
@@ -54,7 +53,7 @@ export default function Catalogo() {
 
   //Funcion para obtener promociones
   const cargarPromos = async () => {
-    const URL = host + "/api/promociones/venta";
+    const URL = host + "/api/promociones/existente";
 
     try {
       const response = await axios.get(URL);
@@ -278,7 +277,7 @@ export default function Catalogo() {
               >
                 <img
                   className="rounded-full h-25 object-cover m-auto"
-                  src={obtenerImagen(categoria.imagen)}
+                  src={categoria.imagen}
                   alt="No se encontro la imagen"
                 />
                 <h3 className="m-auto">{categoria.denominacion}</h3>

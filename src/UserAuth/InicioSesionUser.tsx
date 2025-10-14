@@ -7,7 +7,6 @@ import RecuperarContrasena from "./RecuperarContrasena";
 import { z } from "zod";
 import { host, userAuthentication } from "../../ts/Clases";
 import { useUser } from "./UserContext";
-import { host } from "../../ts/Clases.ts";
 
 const schema = z.object({
   username: z
