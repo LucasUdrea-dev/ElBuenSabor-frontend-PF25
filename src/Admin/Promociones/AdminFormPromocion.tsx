@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   host,
   Promocion,
   PromocionArticulo,
   Sucursal,
 } from "../../../ts/Clases";
-import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
 import axios from "axios";
 import SelectorArticulo from "./SelectorArticulo";
 import SliderPromocionesForm from "./SliderPromocionesForm";
+import { useCloudinary } from "../../useCloudinary";
 
 interface Props {
   promocion: Promocion | null;
@@ -23,10 +23,26 @@ export default function AdminFormPromocion({
 }: Props) {
   const [sucursalActual, setSucursalActual] = useState<Sucursal>();
   const [form, setForm] = useState<Promocion>(new Promocion());
-  const [imagen, setImagen] = useState<File | null>(null);
-  const [previewImagen, setPreviewImagen] = useState<string | null>(null);
   const [seleccionarArticulo, setSeleccionarArticulo] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState(1);
+
+  // Usamos el hook de Cloudinary
+  const {
+    image,
+    loading: subiendoImagen,
+    uploadImage,
+    setImage,
+  } = useCloudinary();
+
+  // Ref para el input file para abrir el selector de archivos sin que el usuario vea el input por defecto
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+  };
 
   //Carga de categorias
   useEffect(() => {
@@ -37,7 +53,7 @@ export default function AdminFormPromocion({
     const URLSucursal = `${host}/api/sucursales/1`;
 
     try {
-      const response = await axios.get(URLSucursal);
+      const response = await axios.get(URLSucursal, axiosConfig);
 
       setSucursalActual(response.data);
     } catch (error) {
@@ -48,7 +64,11 @@ export default function AdminFormPromocion({
   useEffect(() => {
     if (promocion) {
       setForm(promocion);
-      setPreviewImagen(obtenerImagen(promocion.imagen));
+
+      // Seteamos la imagen existente en el hook de Cloudinary
+      if (promocion.imagen) {
+        setImage(promocion.imagen);
+      }
     }
   }, [promocion]);
 
@@ -56,8 +76,6 @@ export default function AdminFormPromocion({
     cargarAdminCatalogo();
     cerrarEditar();
     setSeccionActiva(1);
-    setImagen(null);
-    setPreviewImagen(null);
   };
 
   const calcularPrecioRegular = () => {
@@ -72,33 +90,30 @@ export default function AdminFormPromocion({
     return total;
   };
 
+  // Manejar la subida de imagen
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const imageUrl = await uploadImage(e);
+
+    if (imageUrl) {
+      // Actualizar el formData con la nueva URL
+      setForm((prev) => {
+        const newFormData = new Promocion();
+        Object.assign(newFormData, prev);
+        newFormData.imagen = imageUrl;
+        return newFormData;
+      });
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const sucursalFinal = { ...sucursalActual };
 
-      let formFinal = { ...form };
-      formFinal = { ...formFinal, sucursal: sucursalFinal };
+      let formFinal = { ...form, sucursal: sucursalFinal };
 
-      if (imagen) {
-        formFinal = { ...formFinal, imagen: imagen.name };
-
-        if (promocion?.imagen) {
-          const borradoExitoso = await borrarImagen(promocion.imagen);
-          if (!borradoExitoso) {
-            console.log("Error al borrar la imagen previa");
-            return;
-          }
-        }
-
-        let imagenNuevaSubida = await subirImagen(imagen);
-
-        if (!imagenNuevaSubida) {
-          console.error("Error al subir la nueva imagen");
-          alert("Error al subir la nueva imagen. Operacion cancelada");
-          return;
-        }
-      } else if (!imagen && promocion?.imagen) {
-        formFinal = { ...formFinal, imagen: promocion.imagen };
+      // Si la promoción ya tenía una imagen, la mantenemos
+      if (image) {
+        formFinal = { ...formFinal, imagen: image };
       }
 
       setForm(formFinal);
@@ -106,15 +121,15 @@ export default function AdminFormPromocion({
       const guardadoExitoso = await guardarPromocion(formFinal);
 
       if (guardadoExitoso) {
-        console.log("Se guardo la promocion");
+        console.log("Se guardó la promoción");
         cerrarFormulario();
       } else {
-        console.error("Error al guardar la promocion");
-        alert("Error al guardar la promocion. Operacion cancelada");
+        console.error("Error al guardar la promoción");
+        alert("Error al guardar la promoción. Operación cancelada");
       }
     } catch (error) {
-      console.error("Ocurrio un error en handleSubmit:", error);
-      alert("Ocurrio un error inesperado. Intente de nuevo.");
+      console.error("Ocurrió un error en handleSubmit:", error);
+      alert("Ocurrió un error inesperado. Intente de nuevo.");
     }
   };
 
@@ -125,12 +140,12 @@ export default function AdminFormPromocion({
 
     try {
       if (form.id) {
-        const response = await axios.put(URL, form);
+        const response = await axios.put(URL, form, axiosConfig);
 
         console.log("Se actualizo la promocion: ", response.status);
         return true;
       } else {
-        const response = await axios.post(URL, form);
+        const response = await axios.post(URL, form, axiosConfig);
 
         console.log("Se guardo la promocion", response.status);
         return true;
@@ -138,21 +153,6 @@ export default function AdminFormPromocion({
     } catch (error) {
       console.error("ERROR", error);
       return false;
-    }
-  };
-
-  const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    setImagen(file);
-
-    if (file) {
-      const lector = new FileReader();
-      lector.onloadend = () => {
-        setPreviewImagen(lector.result as string);
-      };
-      lector.readAsDataURL(file);
-    } else {
-      setPreviewImagen(obtenerImagen(String(promocion?.imagen)));
     }
   };
 
@@ -200,7 +200,7 @@ export default function AdminFormPromocion({
                     [&_select]:focus:outline-none [&_select]:border-b [&_select]:py-5 [&_select]:w-full 
                     [&_option]:text-black"
         >
-          {/**Especifica los ingredientes */}
+          {/**Especifica los articulos */}
           <div>
             {/**Titulo seccion */}
             <div className="grid grid-cols-[1fr_50fr] gap-2 items-center">
@@ -409,7 +409,13 @@ export default function AdminFormPromocion({
                   />
                   {!form.descripcion && <h4>Campo incompleto</h4>}
                 </div>
-                <div>
+                <div className="flex gap-5 *:p-2 *:rounded-4xl">
+                  <button
+                    onClick={anteriorSeccion}
+                    className="bg-white text-black"
+                  >
+                    Anterior
+                  </button>
                   <button
                     onClick={() => {
                       if (
@@ -460,10 +466,10 @@ export default function AdminFormPromocion({
               >
                 <div className="grid grid-cols-2 gap-5 items-center">
                   <div className="bg-[#D9D9D9] h-50 rounded-4xl">
-                    {(promocion?.imagen || imagen) && (
+                    {image && (
                       <img
                         className="h-full w-full object-cover rounded-4xl"
-                        src={String(previewImagen)}
+                        src={image}
                         alt=""
                       />
                     )}
@@ -471,15 +477,22 @@ export default function AdminFormPromocion({
                   <div>
                     <h3>Agregar imagen:</h3>
                     <input
-                      onChange={handleImagen}
+                      hidden
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
                       accept="image/*"
                       type="file"
                     />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={subiendoImagen}
+                      className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {subiendoImagen ? "Subiendo..." : "Seleccionar imagen"}
+                    </button>
                   </div>
                 </div>
-                {!imagen && !promocion?.imagen && (
-                  <h4>Debe cargar una imagen</h4>
-                )}
+                {!image  && <h4>Debe cargar una imagen</h4>}
                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                   <button
                     onClick={anteriorSeccion}
@@ -488,9 +501,7 @@ export default function AdminFormPromocion({
                     Anterior
                   </button>
                   <button
-                    onClick={
-                      imagen || promocion?.imagen ? siguienteSeccion : () => {}
-                    }
+                    onClick={image ? siguienteSeccion : () => {}}
                     className="bg-[#D93F21]"
                   >
                     Siguiente
@@ -529,7 +540,9 @@ export default function AdminFormPromocion({
                 {seccionActiva == 4 ? (
                   <div className="w-full border-black border-5 p-5 my-10 bg-white">
                     <SliderPromocionesForm
-                      promos={[{ ...form, imagen: String(previewImagen) }]}
+                      promos={[
+                        { ...form, imagen: image as string },
+                      ]}
                     />
                   </div>
                 ) : null}
