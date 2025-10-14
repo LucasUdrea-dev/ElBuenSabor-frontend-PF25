@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import axios from 'axios';
@@ -6,6 +6,8 @@ import EditCorreoUser from '../../Editar Usuario/EditCorreoUser';
 import EditContrasenaUser from '../../Editar Usuario/EditContrasenaUser';
 import { Usuario, Telefono } from '../../../ts/Clases';
 import { useEmpleado } from '../LoginEmpleados/EmpleadoContext';
+import { useCloudinary } from '../../useCloudinary'; 
+
 
 
 // Esquema de validación
@@ -26,6 +28,15 @@ export default function PerfilEmpleado() {
   const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
   const [mostrarModalContrasena, setMostrarModalContrasena] = useState(false);
   const { empleadoSesion } = useEmpleado();
+
+
+  // Usamos el hook de Cloudinary
+  const { image, loading: subiendoImagen, uploadImage, setImage } = useCloudinary();
+  
+  // Ref para el input file para abrir el selector de archivos sin que el usuario vea el input por fedecto
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+
 
   // Estados para manejo de teléfonos
     const [telefonos, setTelefonos] = useState<Telefono[]>([]);
@@ -70,7 +81,13 @@ export default function PerfilEmpleado() {
 
         setEmpleado(emp);
         setFormData(emp);
-        setTelefonos(data.telefonoList || []); // ✅ AGREGA ESTA LÍNEA
+        setTelefonos(data.telefonoList || []);
+
+
+        // Seteamos la imagen existente en el hook de Cloudinary
+        if (data.imagenUsuario) {
+          setImage(data.imagenUsuario);
+        }
 
       } catch (error) {
         console.error('Error al cargar empleado:', error);
@@ -84,6 +101,46 @@ export default function PerfilEmpleado() {
 
     fetchEmpleado();
   }, [empleadoSesion, navigate]);
+
+
+
+  // Manejar la subida de imagen
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const imageUrl = await uploadImage(e);
+    
+    if (imageUrl) {
+      // Actualizar el formData con la nueva URL
+      setFormData((prev) => {
+        const newFormData = new Usuario();
+        Object.assign(newFormData, prev);
+        newFormData.imagenUsuario = imageUrl;
+        return newFormData;
+      });
+
+      // Actualizar en el backend inmediatamente
+      try {
+        const usuarioPlano = {
+          id: formData.id,
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          email: formData.email,
+          imagenUsuario: imageUrl,
+          existe: formData.existe,
+        };
+
+        await axios.put(
+          `http://localhost:8080/api/usuarios/${formData.id}`,
+          usuarioPlano,
+          axiosConfig
+        );
+
+        alert('Imagen actualizada correctamente');
+      } catch (error) {
+        console.error('Error al actualizar imagen en backend:', error);
+        alert('Error al actualizar la imagen');
+      }
+    }
+  };
 
 
 
@@ -290,19 +347,39 @@ export default function PerfilEmpleado() {
 
         <div className="flex flex-col md:flex-row p-6 gap-8">
           <div className="flex flex-col items-center justify-center gap-1 md:w-1/3 mb-30">
-            <img
-              src="../../public/svg/imagenUsuario.svg"
-              alt="Imagen de Usuario"
-              className="w-82 h-82"
+            {/* Input file oculto */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={handleImageUpload}
+              className="hidden"
             />
+            
+            {/* Imagen de perfil */}
+            <div className="relative">
+              {subiendoImagen ? (
+                <div className="w-82 h-82 flex items-center justify-center bg-[#555555] rounded-full">
+                  <p className="text-white">Subiendo...</p>
+                </div>
+              ) : (
+                <img
+                  //image de Cloudinary o default
+                  src={image || "../public/svg/imagenUsuario.svg"}
+                  alt="Imagen de Usuario"
+                  className="w-82 h-82 rounded-full object-cover"
+                />
+              )}
+            </div>
+
             <div className="flex flex-row gap-4 mt-4">
+              
               <button
-                onClick={() => {
-                  console.log("Abrir selector de imagen o lógica de actualización");
-                }}
-                className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300"
+                onClick={() => fileInputRef.current?.click()}// Activa el input file
+                disabled={subiendoImagen}// Deshabilitado mientras sube
+                className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cambiar imagen
+                {subiendoImagen ? 'Subiendo...' : 'Cambiar imagen'}
               </button>
             </div>
           </div>

@@ -1,10 +1,10 @@
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { Link } from "react-router-dom"
 import DesplegableAdmin from "./DesplegableAdmin.tsx"
 import Dashboard from "./Dashboard.tsx"
-import { obtenerImagen } from "../../../ts/Imagen.ts"
 import LoginEmpleados from "../LoginEmpleados/LoginEmpleados.tsx"
 import { useEmpleado } from "../LoginEmpleados/EmpleadoContext.tsx"
+import axios from "axios"
 
 export default function NavbarAdmin() {
     
@@ -12,6 +12,43 @@ export default function NavbarAdmin() {
     const [mostrarDesplegableAdmin, setMostrarDesplegableAdmin] = useState(false)
     const [mostrarDashboard, setMostrarDashboard] = useState(false)
     const [isLoginEmpleadosOpen, setLoginEmpleadosOpen] = useState(false)
+    const [imagenEmpleado, setImagenEmpleado] = useState<string>('')
+
+
+
+    // Obtener token del localStorage
+    const getToken = () => localStorage.getItem('token');
+
+    // Configurar axios con el token
+    const axiosConfig = {
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    // Cargar imagen del usuario cuando esté autenticado
+    useEffect(() => {
+        const fetchImagenEmpleado = async () => {
+            if (isAuthenticated && empleadoSesion?.id_user) {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/usuarios/${empleadoSesion.id_user}`,
+                        axiosConfig
+                    );
+                    
+                    // Si el usuario tiene imagen, la seteamos
+                    if (response.data.imagenUsuario) {
+                        setImagenEmpleado(response.data.imagenUsuario);
+                    }
+                } catch (error) {
+                    console.error('Error al cargar imagen del usuario:', error);
+                }
+            }
+        };
+
+        fetchImagenEmpleado();
+    }, [isAuthenticated, empleadoSesion?.id_user]);
 
     const cambiarDesplegableAdmin = () => {
         setMostrarDesplegableAdmin(!mostrarDesplegableAdmin)
@@ -102,7 +139,11 @@ export default function NavbarAdmin() {
                             <div className="relative">
                                 <button className="m-auto" onClick={cambiarDesplegableAdmin} type="button">
                                     <div className={`flex items-center gap-3 m-auto px-4 border-x-white border-x-1 ${mostrarDesplegableAdmin && "border-y-1 border-y-gray-700"}`}>
-                                        <img className="w-10 h-10 rounded-full" src={obtenerImagen("miniUsuario.jpg")} alt="foto usuario" />
+                                        <img 
+                                            className="w-10 h-10 rounded-full object-cover" 
+                                            src={imagenEmpleado || "../public/svg/imagenUsuario.svg"} 
+                                            alt="foto usuario" 
+                                        />
                                         <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto font-lato">
                                             {empleadoSesion?.name} {empleadoSesion?.surname}
                                             <svg className={`ml-1 h-4 w-4 transition-transform duration-200 ${mostrarDesplegableAdmin ? 'rotate-180' : 'rotate-0'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

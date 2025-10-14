@@ -25,7 +25,21 @@ export default function App() {
           <NavbarAdmin />
         </div>
         <div>
-          <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">
+          
+          <Outlet />
+        </div>
+      </div>
+      
+      <InicioSesionUser 
+        isOpen={isLoginOpen} 
+        onClose={handleCloseLogin} 
+      />
+    </>
+  );
+}
+
+
+/*<div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">
             <div className="text-center bg-white rounded-2xl shadow-2xl p-10 md:p-12 max-w-2xl w-full">
               <div className="mb-6">
                 <div className="inline-block bg-gradient-to-br from-orange-400 to-red-500 text-white rounded-full p-4 mb-4">
@@ -55,15 +69,4 @@ export default function App() {
                 <span>Conexión segura y encriptada</span>
               </div>
             </div>
-          </div>
-          <Outlet />
-        </div>
-      </div>
-      
-      <InicioSesionUser 
-        isOpen={isLoginOpen} 
-        onClose={handleCloseLogin} 
-      />
-    </>
-  );
-}
+          </div> */
