@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   ArticuloInsumo,
   Categoria,
@@ -8,7 +8,7 @@ import {
   Sucursal,
   tiposUnidadMedida,
 } from "../../../ts/Clases";
-import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
+import { useCloudinary } from "../../useCloudinary";
 import axios from "axios";
 
 interface Props {
@@ -26,70 +26,155 @@ export default function AdminFormInsumo({
     new Sucursal()
   );
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
+  const [listaSubcategorias, setListaSubcategorias] = useState<Subcategoria[]>(
+    []
+  );
   const [form, setForm] = useState<ArticuloInsumo>(new ArticuloInsumo());
-  const [imagen, setImagen] = useState<File | null>(null);
-  const [previewImagen, setPreviewImagen] = useState<string | null>(null);
   const [indexCategoria, setIndexCategoria] = useState(1);
   const [seccionActiva, setSeccionActiva] = useState(1);
+
+  const {
+    image,
+    loading: subiendoImagen,
+    uploadImage,
+    setImage,
+  } = useCloudinary();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const guardandoRef = useRef(false);
+  const [estaGuardando, setEstaGuardando] = useState(false);
+
+  // Obtener token del localStorage
+  const getToken = () => localStorage.getItem("token");
+
+  // Configurar axios con el token usando useMemo
+  const axiosConfig = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    }),
+    []
+  );
+
+  const traerCategorias = useCallback(async () => {
+    const URLCategorias = `${host}/api/Categoria/full`;
+
+    try {
+      const response = await axios.get(URLCategorias, axiosConfig);
+
+      // Filter only categories that are "esParaElaborar" (for manufacturing/insumos)
+      const categoriasParaElaborar = response.data.filter(
+        (cat: Categoria) => cat.esParaElaborar === true
+      );
+      setListaCategorias(categoriasParaElaborar);
+    } catch (error) {
+      console.error(error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        // Opcional: redirigir al login
+        // window.location.href = "/login";
+      } else {
+        alert("Error al cargar las categorías. Por favor, intenta de nuevo.");
+      }
+    }
+  }, [axiosConfig]);
+
+  const traerSubcategorias = useCallback(
+    async (categoriaNombre: string) => {
+      const URLSubcategorias = `${host}/api/subcategoria/nombreCategoria?nombre=${encodeURIComponent(
+        categoriaNombre
+      )}`;
+
+      try {
+        const response = await axios.get(URLSubcategorias, axiosConfig);
+        setListaSubcategorias(response.data);
+      } catch (error) {
+        console.error(error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+          // Opcional: redirigir al login
+          // window.location.href = "/login";
+        } else {
+          alert(
+            "Error al cargar las subcategorías. Por favor, intenta de nuevo."
+          );
+        }
+      }
+    },
+    [axiosConfig]
+  );
+
+  const traerSucursal = useCallback(async () => {
+    const URLSucursal = `${host}/api/sucursales/1`;
+
+    try {
+      const response = await axios.get(URLSucursal, axiosConfig);
+
+      setSucursalActual(response.data);
+    } catch (error) {
+      console.error(error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        // Opcional: redirigir al login
+        // window.location.href = "/login";
+      } else {
+        alert("Error al cargar la sucursal. Por favor, intenta de nuevo.");
+      }
+    }
+  }, [axiosConfig]);
 
   //Carga de categorias
   useEffect(() => {
     traerCategorias();
     traerSucursal();
-  }, []);
+  }, [traerCategorias, traerSucursal]);
 
+  // Load subcategories when category changes
   useEffect(() => {
-    console.log(sucursalActual);
-  }, [sucursalActual]);
-
-  const traerCategorias = async () => {
-    const URLCategorias = `${host}/api/Categoria/insumos`;
-
-    try {
-      const response = await axios.get(URLCategorias);
-
-      setListaCategorias(response.data);
-    } catch (error) {
-      console.error(error);
+    if (indexCategoria && listaCategorias.length > 0) {
+      const categoriaSeleccionada = listaCategorias.find(
+        (cat) => cat.id === indexCategoria
+      );
+      if (categoriaSeleccionada?.denominacion) {
+        traerSubcategorias(categoriaSeleccionada.denominacion);
+      }
     }
-  };
-
-  const traerSucursal = async () => {
-    const URLSucursal = `${host}/api/sucursales/1`;
-
-    try {
-      const response = await axios.get(URLSucursal);
-
-      setSucursalActual(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  }, [indexCategoria, listaCategorias, traerSubcategorias]);
 
   useEffect(() => {
     if (articulo) {
       setForm(articulo);
-      setPreviewImagen(obtenerImagen(articulo.imagenArticulo));
+      if (articulo.imagenArticulo) {
+        setImage(articulo.imagenArticulo);
+      }
       //Si el articulo es para editar, se asigna la categoria del articulo al select
-      if (articulo.subcategoria.id) {
-        setIndexCategoria(Number(articulo.subcategoria.categoria?.id));
+      if (articulo.subcategoria.id && articulo.subcategoria.categoria) {
+        setIndexCategoria(Number(articulo.subcategoria.categoria.id));
+        // Load subcategories for the article's category
+        if (articulo.subcategoria.categoria.denominacion) {
+          traerSubcategorias(articulo.subcategoria.categoria.denominacion);
+        }
         //Si es un articulo nuevo, se asigna la primera categoria en la lista de categorias
-      } else {
+      } else if (listaCategorias.length > 0) {
         setIndexCategoria(Number(listaCategorias[0].id));
       }
     }
-  }, [articulo]);
+  }, [articulo, listaCategorias, setImage, traerSubcategorias]);
 
   const cerrarFormulario = () => {
     cargarAdminInsumo();
     cerrarEditar();
     setSeccionActiva(1);
-    setImagen(null);
-    setPreviewImagen(null);
+    setImage("");
     setIndexCategoria(1);
   };
 
   const handleSubmit = async () => {
+    if (guardandoRef.current) return; // evitar doble envío
+    guardandoRef.current = true;
+    setEstaGuardando(true);
     try {
       let formFinal = { ...form };
 
@@ -99,30 +184,14 @@ export default function AdminFormInsumo({
         formFinal.stockArticuloInsumo = new StockArticuloInsumo();
       }
 
+      // Set the sucursal object (backend might need it)
       formFinal.stockArticuloInsumo.sucursal = sucursalFinal;
 
+      // Clean up subcategorias to avoid circular references
       delete formFinal.subcategoria.categoria?.subcategorias;
 
-      if (imagen) {
-        formFinal = { ...formFinal, imagenArticulo: imagen.name };
-
-        if (articulo?.imagenArticulo) {
-          const borradoExitoso = await borrarImagen(articulo.imagenArticulo);
-          if (!borradoExitoso) {
-            console.log("Error al borrar la imagen previa");
-            return;
-          }
-        }
-
-        let imagenNuevaSubida = await subirImagen(imagen);
-
-        if (!imagenNuevaSubida) {
-          console.error("Error al subir la nueva imagen");
-          alert("Error al subir la nueva imagen. Operacion cancelada");
-          return;
-        }
-      } else if (!imagen && articulo?.imagenArticulo) {
-        formFinal = { ...formFinal, imagenArticulo: articulo.imagenArticulo };
+      if (image) {
+        formFinal = { ...formFinal, imagenArticulo: image };
       }
 
       setForm(formFinal);
@@ -139,44 +208,97 @@ export default function AdminFormInsumo({
     } catch (error) {
       console.error("Ocurrio un error en handleSubmit:", error);
       alert("Ocurrio un error inesperado. Intente de nuevo.");
+    } finally {
+      guardandoRef.current = false;
+      setEstaGuardando(false);
     }
   };
 
   const guardarArticuloInsumo = async (form: ArticuloInsumo) => {
-    let URL = form.id
-      ? host + `/api/insumos/${form.id}`
-      : host + `/api/insumos`;
+    const URL = form.id
+      ? `${host}/api/insumos/actualizar/${form.id}`
+      : `${host}/api/insumos/crear`;
+
+    const esCreacion = !form.id;
+    const cantidadDefault = 100; // default when creating
+    const minStockDefault = 10; // default when creating
+
+    // Transform data to match API structure
+    const dataToSend = {
+      id: form.id || null,
+      nombre: form.nombre,
+      descripcion: form.descripcion,
+      precio: form.precio,
+      existe: form.existe,
+      esParaElaborar: form.esParaElaborar,
+      imagenArticulo: form.imagenArticulo,
+      subcategoria: {
+        id: form.subcategoria.id,
+        denominacion: form.subcategoria.denominacion || "",
+        categoria: form.subcategoria.categoria
+          ? {
+              id: form.subcategoria.categoria.id,
+              denominacion: form.subcategoria.categoria.denominacion || "",
+              esParaElaborar:
+                form.subcategoria.categoria.esParaElaborar || false,
+              imagen: form.subcategoria.categoria.imagen || "",
+            }
+          : null,
+      },
+      unidadMedida: {
+        id: form.unidadMedida.id,
+        unidad: form.unidadMedida.unidad || "",
+      },
+      precioCompra: form.precioCompra,
+      stockArticuloInsumo: {
+        id: form.stockArticuloInsumo.id || null,
+        minStock: esCreacion
+          ? minStockDefault
+          : form.stockArticuloInsumo.minStock,
+        cantidad: esCreacion
+          ? cantidadDefault
+          : form.stockArticuloInsumo.cantidad,
+        sucursalId:
+          form.stockArticuloInsumo.sucursal?.id || sucursalActual.id || 1,
+      },
+    };
+
+    console.log("Datos a enviar al API:", JSON.stringify(dataToSend, null, 2));
 
     try {
       if (form.id) {
-        const response = await axios.put(URL, form);
+        const response = await axios.put(URL, dataToSend, axiosConfig);
 
         console.log("Se actualizo el articulo: ", response.status);
         return true;
       } else {
-        const response = await axios.post(URL, form);
+        const response = await axios.post(URL, dataToSend, axiosConfig);
 
         console.log("Se guardo el articulo", response.status);
         return true;
       }
     } catch (error) {
       console.error("ERROR", error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        // Opcional: redirigir al login
+        // window.location.href = "/login";
+      } else {
+        alert("Error al guardar el insumo. Por favor, intenta de nuevo.");
+      }
       return false;
     }
   };
 
-  const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    setImagen(file);
-
-    if (file) {
-      const lector = new FileReader();
-      lector.onloadend = () => {
-        setPreviewImagen(lector.result as string);
-      };
-      lector.readAsDataURL(file);
-    } else {
-      setPreviewImagen(obtenerImagen(String(articulo?.imagenArticulo)));
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const imageUrl = await uploadImage(e);
+    if (imageUrl) {
+      setForm((prev) => {
+        const newFormData = new ArticuloInsumo();
+        Object.assign(newFormData, prev);
+        newFormData.imagenArticulo = imageUrl;
+        return newFormData;
+      });
     }
   };
 
@@ -406,22 +528,22 @@ export default function AdminFormInsumo({
                   <select
                     value={""}
                     onChange={(e) => {
-                      let buscarSubcat: Subcategoria | undefined =
-                        listaCategorias
-                          .find((categoria) => categoria.id === indexCategoria)
-                          ?.subcategorias?.find(
-                            (subcat) => subcat.id === Number(e.target.value)
-                          );
+                      const buscarSubcat: Subcategoria | undefined =
+                        listaSubcategorias.find(
+                          (subcat) => subcat.id === Number(e.target.value)
+                        );
 
                       if (buscarSubcat) {
-                        if (buscarSubcat.categoria) {
-                          buscarSubcat.categoria.subcategorias = [];
-
-                          setForm((prev) => ({
-                            ...prev,
-                            subcategoria: buscarSubcat,
-                          }));
+                        // Clean up to avoid circular references
+                        const subcatLimpia = { ...buscarSubcat };
+                        if (subcatLimpia.categoria) {
+                          subcatLimpia.categoria.subcategorias = [];
                         }
+
+                        setForm((prev) => ({
+                          ...prev,
+                          subcategoria: subcatLimpia,
+                        }));
                       }
                     }}
                     name="subcategoria"
@@ -430,20 +552,17 @@ export default function AdminFormInsumo({
                       Seleccionar...
                     </option>
 
-                    {listaCategorias.length > 0 &&
-                      indexCategoria &&
-                      listaCategorias
-                        .find((categoria) => categoria.id == indexCategoria)
-                        ?.subcategorias?.map((subcategoria) => {
-                          return (
-                            <option
-                              key={subcategoria.id}
-                              value={Number(subcategoria.id)}
-                            >
-                              {subcategoria.denominacion}
-                            </option>
-                          );
-                        })}
+                    {listaSubcategorias.length > 0 &&
+                      listaSubcategorias.map((subcategoria) => {
+                        return (
+                          <option
+                            key={subcategoria.id}
+                            value={Number(subcategoria.id)}
+                          >
+                            {subcategoria.denominacion}
+                          </option>
+                        );
+                      })}
                   </select>
                 </div>
 
@@ -508,10 +627,10 @@ export default function AdminFormInsumo({
               >
                 <div className="grid grid-cols-2 gap-5 items-center">
                   <div className="bg-[#D9D9D9] h-50 rounded-4xl">
-                    {(articulo?.imagenArticulo || imagen) && (
+                    {image && (
                       <img
                         className="h-full w-full object-cover rounded-4xl"
-                        src={String(previewImagen)}
+                        src={image}
                         alt=""
                       />
                     )}
@@ -519,15 +638,22 @@ export default function AdminFormInsumo({
                   <div>
                     <h3>Agregar imagen:</h3>
                     <input
-                      onChange={handleImagen}
-                      accept="image/*"
+                      ref={fileInputRef}
                       type="file"
+                      accept="image/png, image/jpeg, image/jpg"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={subiendoImagen}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                    >
+                      {subiendoImagen ? "Subiendo..." : "Seleccionar imagen"}
+                    </button>
                   </div>
                 </div>
-                {!imagen && !articulo?.imagenArticulo && (
-                  <h4>Debe cargar una imagen</h4>
-                )}
+                {!image && <h4>Debe cargar una imagen</h4>}
                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                   <button
                     onClick={anteriorSeccion}
@@ -537,7 +663,7 @@ export default function AdminFormInsumo({
                   </button>
                   <button
                     onClick={
-                      imagen || articulo?.imagenArticulo
+                      image || articulo?.imagenArticulo
                         ? siguienteSeccion
                         : () => {}
                     }
@@ -580,11 +706,13 @@ export default function AdminFormInsumo({
                   <div className="bg-[#99999959] w-full rounded-2xl flex flex-col gap-1">
                     {/**Imagen y tiempo */}
                     <div className="relative">
-                      <img
-                        className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl"
-                        src={String(previewImagen)}
-                        alt="No se encontro la imagen"
-                      />
+                      {image && (
+                        <img
+                          className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl"
+                          src={image}
+                          alt="No se encontro la imagen"
+                        />
+                      )}
                       {form.tiempoEstimado && (
                         <div className="absolute bottom-0 left-1/12 bg-white m-auto text-center text-black p-1 rounded-bl-2xl rounded-tr-2xl ">
                           <h1 className="text-xl">
@@ -644,8 +772,19 @@ export default function AdminFormInsumo({
                     >
                       Anterior
                     </button>
-                    <button onClick={handleSubmit} className="bg-[#D93F21]">
-                      Guardar
+                    <button
+                      type="button"
+                      onClick={() =>
+                        form.nombre && form.descripcion && image
+                          ? handleSubmit()
+                          : () => {}
+                      }
+                      disabled={estaGuardando}
+                      className={`bg-[#D93F21] ${
+                        estaGuardando ? "opacity-60 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {estaGuardando ? "Guardando..." : "Guardar"}
                     </button>
                   </div>
                 </div>
