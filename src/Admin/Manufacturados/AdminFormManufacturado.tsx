@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   ArticuloManufacturado,
   ArticuloManufacturadoDetalleInsumo,
@@ -8,7 +8,7 @@ import {
   Sucursal,
   UnidadMedida,
 } from "../../../ts/Clases";
-import { borrarImagen, obtenerImagen, subirImagen } from "../../../ts/Imagen";
+import { useCloudinary } from "../../useCloudinary";
 import SelectorInsumo from "./SelectorInsumo";
 import axios from "axios";
 
@@ -24,66 +24,138 @@ export default function AdminFormManufacturado({
   cargarAdminCatalogo,
 }: Props) {
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
+  const [listaSubcategorias, setListaSubcategorias] = useState<Subcategoria[]>(
+    []
+  );
   const [sucursalActual, setSucursalActual] = useState<Sucursal>();
   const [form, setForm] = useState<ArticuloManufacturado>(
     new ArticuloManufacturado()
   );
-  const [imagen, setImagen] = useState<File | null>(null);
-  const [previewImagen, setPreviewImagen] = useState<string | null>(null);
-  const [indexCategoria, setIndexCategoria] = useState(1);
+  const [indexCategoria, setIndexCategoria] = useState<number | null>(null);
   const [seleccionarArticulo, setSeleccionarArticulo] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState(1);
+
+  const {
+    image,
+    loading: subiendoImagen,
+    uploadImage,
+    setImage,
+  } = useCloudinary();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Obtener token del localStorage
+  const getToken = () => localStorage.getItem("token");
+
+  // Configurar axios con el token usando useMemo
+  const axiosConfig = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    }),
+    []
+  );
+
+  const traerCategorias = useCallback(async () => {
+    const URLCategorias = `${host}/api/Categoria/full`;
+
+    try {
+      const response = await axios.get(URLCategorias, axiosConfig);
+      setListaCategorias(response.data);
+    } catch (error) {
+      console.error(error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      } else {
+        alert("Error al cargar las categorías. Por favor, intenta de nuevo.");
+      }
+    }
+  }, [axiosConfig]);
+
+  const traerSubcategorias = useCallback(
+    async (categoriaNombre: string) => {
+      const URLSubcategorias = `${host}/api/subcategoria/nombreCategoria?nombre=${encodeURIComponent(
+        categoriaNombre
+      )}`;
+
+      try {
+        const response = await axios.get(URLSubcategorias, axiosConfig);
+        setListaSubcategorias(response.data);
+      } catch (error) {
+        console.error(error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        } else {
+          alert(
+            "Error al cargar las subcategorías. Por favor, intenta de nuevo."
+          );
+        }
+      }
+    },
+    [axiosConfig]
+  );
+
+  const traerSucursal = useCallback(async () => {
+    const URLSucursal = `${host}/api/sucursales/1`;
+
+    try {
+      const response = await axios.get(URLSucursal, axiosConfig);
+      setSucursalActual(response.data);
+    } catch (error) {
+      console.error(error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      } else {
+        alert("Error al cargar la sucursal. Por favor, intenta de nuevo.");
+      }
+    }
+  }, [axiosConfig]);
 
   //Carga de categorias
   useEffect(() => {
     traerSucursal();
     traerCategorias();
-  }, []);
+  }, [traerSucursal, traerCategorias]);
 
-  const traerCategorias = async () => {
-    const URLCategorias = `${host}/api/Categoria/ventas`;
-
-    try {
-      const response = await axios.get(URLCategorias);
-
-      setListaCategorias(response.data);
-    } catch (error) {
-      console.error(error);
+  // Load subcategories when category changes
+  useEffect(() => {
+    if (indexCategoria && listaCategorias.length > 0) {
+      const categoriaSeleccionada = listaCategorias.find(
+        (cat) => cat.id === indexCategoria
+      );
+      if (categoriaSeleccionada?.denominacion) {
+        traerSubcategorias(categoriaSeleccionada.denominacion);
+      }
     }
-  };
-
-  const traerSucursal = async () => {
-    const URLSucursal = `${host}/api/sucursales/1`;
-
-    try {
-      const response = await axios.get(URLSucursal);
-
-      setSucursalActual(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  }, [indexCategoria, listaCategorias, traerSubcategorias]);
 
   useEffect(() => {
     if (articulo) {
       setForm(articulo);
-      setPreviewImagen(obtenerImagen(articulo.imagenArticulo));
+      if (articulo.imagenArticulo) {
+        setImage(articulo.imagenArticulo);
+      }
       //Si el articulo es para editar, se asigna la categoria del articulo al select
-      if (articulo.subcategoria.id) {
-        setIndexCategoria(Number(articulo.subcategoria.categoria?.id));
+      if (articulo.subcategoria.id && articulo.subcategoria.categoria) {
+        setIndexCategoria(Number(articulo.subcategoria.categoria.id));
+        // Load subcategories for the article's category
+        if (articulo.subcategoria.categoria.denominacion) {
+          traerSubcategorias(articulo.subcategoria.categoria.denominacion);
+        }
         //Si es un articulo nuevo, se asigna la primera categoria en la lista de categorias
       } else {
-        setIndexCategoria(Number(listaCategorias[0].id));
+        setIndexCategoria(null);
       }
     }
-  }, [articulo]);
+  }, [articulo, listaCategorias, setImage, traerSubcategorias]);
 
   const cerrarFormulario = () => {
     cargarAdminCatalogo();
     cerrarEditar();
     setSeccionActiva(1);
-    setImagen(null);
-    setPreviewImagen(null);
+    setImage("");
     setIndexCategoria(1);
   };
 
@@ -95,34 +167,14 @@ export default function AdminFormManufacturado({
         unidad: "unidad",
       };
 
-      const sucursalFinal = { ...sucursalActual };
-
       let formFinal = { ...form };
-      formFinal = { ...formFinal, sucursal: sucursalFinal };
       formFinal = { ...formFinal, unidadMedida: unidadMedidaManufacturado };
 
+      // Clean up subcategorias to avoid circular references
       delete formFinal.subcategoria.categoria?.subcategorias;
 
-      if (imagen) {
-        formFinal = { ...formFinal, imagenArticulo: imagen.name };
-
-        if (articulo?.imagenArticulo) {
-          const borradoExitoso = await borrarImagen(articulo.imagenArticulo);
-          if (!borradoExitoso) {
-            console.log("Error al borrar la imagen previa");
-            return;
-          }
-        }
-
-        let imagenNuevaSubida = await subirImagen(imagen);
-
-        if (!imagenNuevaSubida) {
-          console.error("Error al subir la nueva imagen");
-          alert("Error al subir la nueva imagen. Operacion cancelada");
-          return;
-        }
-      } else if (!imagen && articulo?.imagenArticulo) {
-        formFinal = { ...formFinal, imagenArticulo: articulo.imagenArticulo };
+      if (image) {
+        formFinal = { ...formFinal, imagenArticulo: image };
       }
 
       setForm(formFinal);
@@ -143,49 +195,82 @@ export default function AdminFormManufacturado({
   };
 
   const guardarArticuloManufacturado = async (form: ArticuloManufacturado) => {
-    let URL = form.id
-      ? host + `/api/ArticuloManufacturado/${form.id}`
-      : host + `/api/ArticuloManufacturado`;
+    const URL = form.id
+      ? `${host}/api/ArticuloManufacturado/actualizar/${form.id}`
+      : `${host}/api/ArticuloManufacturado/crear`;
+
+    // Transform data to match API structure
+    const dataToSend = {
+      id: form.id || null,
+      nombre: form.nombre,
+      descripcion: form.descripcion,
+      precio: form.precio,
+      existe: form.existe,
+      esParaElaborar: form.esParaElaborar,
+      imagenArticulo: form.imagenArticulo,
+      subcategoria: {
+        id: form.subcategoria.id,
+        categoria: form.subcategoria.categoria?.id
+          ? { id: Number(form.subcategoria.categoria.id) }
+          : undefined,
+      },
+      unidadMedida: {
+        id: form.unidadMedida.id,
+      },
+      tiempoEstimado: form.tiempoEstimado,
+      preparacion: form.preparacion,
+      sucursalId: sucursalActual?.id ?? 1,
+      insumos: form.detalleInsumos.map((detalle) => ({
+        articuloInsumo: { id: Number(detalle.articuloInsumo.id) },
+        cantidad: detalle.cantidad,
+      })),
+    };
+
+    console.log("Datos a enviar al API:", JSON.stringify(dataToSend, null, 2));
 
     try {
       if (form.id) {
-        const response = await axios.put(URL, form);
+        const response = await axios.put(URL, dataToSend, axiosConfig);
 
         console.log("Se actualizo el articulo: ", response.status);
         return true;
       } else {
-        const response = await axios.post(URL, form);
+        const response = await axios.post(URL, dataToSend, axiosConfig);
 
         console.log("Se guardo el articulo", response.status);
         return true;
       }
     } catch (error) {
       console.error("ERROR", error);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+      } else {
+        alert(
+          "Error al guardar el manufacturado. Por favor, intenta de nuevo."
+        );
+      }
       return false;
     }
   };
 
-  const handleImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    setImagen(file);
-
-    if (file) {
-      const lector = new FileReader();
-      lector.onloadend = () => {
-        setPreviewImagen(lector.result as string);
-      };
-      lector.readAsDataURL(file);
-    } else {
-      setPreviewImagen(obtenerImagen(String(articulo?.imagenArticulo)));
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const imageUrl = await uploadImage(e);
+    if (imageUrl) {
+      setForm((prev) => {
+        const newFormData = new ArticuloManufacturado();
+        Object.assign(newFormData, prev);
+        newFormData.imagenArticulo = imageUrl;
+        return newFormData;
+      });
     }
   };
 
   const siguienteSeccion = () => {
-    setSeccionActiva((prev) => prev + 1);
+    setSeccionActiva((prev) => (prev < 5 ? prev + 1 : 5));
   };
 
   const anteriorSeccion = () => {
-    setSeccionActiva((prev) => prev - 1);
+    setSeccionActiva((prev) => (prev > 1 ? prev - 1 : 1));
   };
 
   const cerrarSeleccionarArticulo = () => {
@@ -358,26 +443,33 @@ export default function AdminFormManufacturado({
               >
                 <div className="grid grid-cols-2 gap-5 items-center">
                   <div className="bg-[#D9D9D9] h-50 rounded-4xl">
-                    {(articulo?.imagenArticulo || imagen) && (
+                    {image ? (
                       <img
                         className="h-full w-full object-cover rounded-4xl"
-                        src={String(previewImagen)}
+                        src={image}
                         alt=""
                       />
-                    )}
+                    ) : null}
                   </div>
                   <div>
                     <h3>Agregar imagen:</h3>
                     <input
-                      onChange={handleImagen}
-                      accept="image/*"
+                      ref={fileInputRef}
                       type="file"
+                      accept="image/png, image/jpeg, image/jpg"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={subiendoImagen}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                    >
+                      {subiendoImagen ? "Subiendo..." : "Seleccionar imagen"}
+                    </button>
                   </div>
                 </div>
-                {!imagen && !articulo?.imagenArticulo && (
-                  <h4>Debe cargar una imagen</h4>
-                )}
+                {!image && <h4>Debe cargar una imagen</h4>}
                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                   <button
                     onClick={anteriorSeccion}
@@ -386,11 +478,7 @@ export default function AdminFormManufacturado({
                     Anterior
                   </button>
                   <button
-                    onClick={
-                      imagen || articulo?.imagenArticulo
-                        ? siguienteSeccion
-                        : () => {}
-                    }
+                    onClick={image ? siguienteSeccion : () => {}}
                     className="bg-[#D93F21]"
                   >
                     Siguiente
@@ -444,10 +532,13 @@ export default function AdminFormManufacturado({
                 <div>
                   <h3>Categoria:</h3>
                   <select
-                    value={indexCategoria}
+                    value={indexCategoria ?? ""}
                     onChange={(e) => setIndexCategoria(Number(e.target.value))}
                     name="categoria"
                   >
+                    <option value="" disabled>
+                      Seleccionar...
+                    </option>
                     {listaCategorias.length > 0 &&
                       listaCategorias.map((categoria) => (
                         <option key={categoria.id} value={Number(categoria.id)}>
@@ -465,22 +556,22 @@ export default function AdminFormManufacturado({
                   <select
                     value={""}
                     onChange={(e) => {
-                      let buscarSubcat: Subcategoria | undefined =
-                        listaCategorias
-                          .find((categoria) => categoria.id === indexCategoria)
-                          ?.subcategorias?.find(
-                            (subcat) => subcat.id === Number(e.target.value)
-                          );
+                      const buscarSubcat: Subcategoria | undefined =
+                        listaSubcategorias.find(
+                          (subcat) => subcat.id === Number(e.target.value)
+                        );
 
                       if (buscarSubcat) {
-                        if (buscarSubcat.categoria) {
-                          buscarSubcat.categoria.subcategorias = [];
-
-                          setForm((prev) => ({
-                            ...prev,
-                            subcategoria: buscarSubcat,
-                          }));
+                        // Clean up to avoid circular references
+                        const subcatLimpia = { ...buscarSubcat };
+                        if (subcatLimpia.categoria) {
+                          subcatLimpia.categoria.subcategorias = [];
                         }
+
+                        setForm((prev) => ({
+                          ...prev,
+                          subcategoria: subcatLimpia,
+                        }));
                       }
                     }}
                     name="subcategoria"
@@ -489,20 +580,17 @@ export default function AdminFormManufacturado({
                       Seleccionar...
                     </option>
 
-                    {listaCategorias.length > 0 &&
-                      indexCategoria &&
-                      listaCategorias
-                        .find((categoria) => categoria.id == indexCategoria)
-                        ?.subcategorias?.map((subcategoria) => {
-                          return (
-                            <option
-                              key={subcategoria.id}
-                              value={Number(subcategoria.id)}
-                            >
-                              {subcategoria.denominacion}
-                            </option>
-                          );
-                        })}
+                    {listaSubcategorias.length > 0 &&
+                      listaSubcategorias.map((subcategoria) => {
+                        return (
+                          <option
+                            key={subcategoria.id}
+                            value={Number(subcategoria.id)}
+                          >
+                            {subcategoria.denominacion}
+                          </option>
+                        );
+                      })}
                   </select>
                 </div>
 
@@ -574,58 +662,65 @@ export default function AdminFormManufacturado({
                    * Luego unidad de medida y boton para borrar ingrediente
                    */}
                   {form.detalleInsumos.length > 0 &&
-                    form.detalleInsumos.map((detalle) => (
-                      <div
-                        key={detalle.articuloInsumo.id}
-                        className="grid grid-cols-[2fr_2fr_1fr_1fr] items-center"
-                      >
-                        <h3>{detalle.articuloInsumo.nombre}</h3>
-                        <input
-                          value={detalle.cantidad ? detalle.cantidad : ""}
-                          onChange={(e) => {
-                            setForm((prev) => {
-                              let nuevosDetalles: ArticuloManufacturadoDetalleInsumo[] =
-                                [];
+                    form.detalleInsumos.map((detalle, index) => {
+                      const insumo = detalle?.articuloInsumo;
+                      const insumoId = insumo?.id ?? index;
+                      const nombreInsumo = insumo?.nombre ?? "";
+                      const unidadInsumo = insumo?.unidadMedida?.unidad ?? "";
 
-                              //Se crea un nuevo array de detalles
-                              //en el que se modifica la cantidad unicamente del detalle
-                              //correspondiente al input y luego se asigna el array nuevo
-                              //con la modificacion hecha, al objeto form(ArticuloManufacturado)
-                              nuevosDetalles = prev.detalleInsumos.map((det) =>
-                                det.articuloInsumo.id ==
-                                detalle.articuloInsumo.id
-                                  ? { ...det, cantidad: Number(e.target.value) }
-                                  : det
-                              );
-
-                              return {
-                                ...prev,
-                                detalleInsumos: nuevosDetalles,
-                              };
-                            });
-                          }}
-                          type="number"
-                        />
-                        <h3>{detalle.articuloInsumo.unidadMedida?.unidad}</h3>
-                        {/**Borra el detalle correspondiente del array
-                         * detallesInsumos
-                         */}
-                        <button
-                          onClick={() => {
-                            setForm((prev) => {
-                              return {
-                                ...prev,
-                                detalleInsumos: prev.detalleInsumos.filter(
-                                  (det) => det.id != detalle.id
-                                ),
-                              };
-                            });
-                          }}
+                      return (
+                        <div
+                          key={insumoId}
+                          className="grid grid-cols-[2fr_2fr_1fr_1fr] items-center"
                         >
-                          <img src="/svg/BorrarDetalle.svg" alt="" />
-                        </button>
-                      </div>
-                    ))}
+                          <h3>{nombreInsumo}</h3>
+                          <input
+                            value={detalle.cantidad ? detalle.cantidad : ""}
+                            onChange={(e) => {
+                              setForm((prev) => {
+                                const nuevosDetalles: ArticuloManufacturadoDetalleInsumo[] =
+                                  prev.detalleInsumos.map((det) => {
+                                    const detInsumoId =
+                                      det?.articuloInsumo?.id ?? -1;
+                                    return detInsumoId === (insumo?.id ?? -1)
+                                      ? {
+                                          ...det,
+                                          cantidad: Number(e.target.value),
+                                        }
+                                      : det;
+                                  });
+
+                                return {
+                                  ...prev,
+                                  detalleInsumos: nuevosDetalles,
+                                };
+                              });
+                            }}
+                            type="number"
+                          />
+                          <h3>{unidadInsumo}</h3>
+                          {/**Borra el detalle correspondiente del array
+                           * detallesInsumos
+                           */}
+                          <button
+                            onClick={() => {
+                              setForm((prev) => {
+                                return {
+                                  ...prev,
+                                  detalleInsumos: prev.detalleInsumos.filter(
+                                    (det) =>
+                                      (det?.articuloInsumo?.id ?? -1) !==
+                                      (insumo?.id ?? -2)
+                                  ),
+                                };
+                              });
+                            }}
+                          >
+                            <img src="/svg/BorrarDetalle.svg" alt="" />
+                          </button>
+                        </div>
+                      );
+                    })}
                 </div>
 
                 <div>
@@ -699,11 +794,13 @@ export default function AdminFormManufacturado({
                   <div className="bg-[#99999959] w-full rounded-2xl flex flex-col gap-1">
                     {/**Imagen y tiempo */}
                     <div className="relative">
-                      <img
-                        className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl"
-                        src={String(previewImagen)}
-                        alt="No se encontro la imagen"
-                      />
+                      {image || form.imagenArticulo ? (
+                        <img
+                          className=" w-10/12 mt-2 mb-0 m-auto rounded-2xl"
+                          src={image || String(form.imagenArticulo)}
+                          alt="No se encontro la imagen"
+                        />
+                      ) : null}
                       {form.tiempoEstimado && (
                         <div className="absolute bottom-0 left-1/12 bg-white m-auto text-center text-black p-1 rounded-bl-2xl rounded-tr-2xl ">
                           <h1 className="text-xl">
@@ -751,7 +848,14 @@ export default function AdminFormManufacturado({
                     >
                       Anterior
                     </button>
-                    <button onClick={handleSubmit} className="bg-[#D93F21]">
+                    <button
+                      onClick={() =>
+                        form.nombre && form.descripcion && image
+                          ? handleSubmit()
+                          : () => {}
+                      }
+                      className="bg-[#D93F21]"
+                    >
                       Guardar
                     </button>
                   </div>
