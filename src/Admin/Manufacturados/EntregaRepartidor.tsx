@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import CajeroRecibido from "./CajeroRecibido";
 
 export default function EntregaRepartidor() {
-  const [pedidos, setPedidos] = useState([]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
 
   const getPedidos = async () => {
@@ -20,13 +20,53 @@ export default function EntregaRepartidor() {
     getPedidos();
   }, []);
 
+  // 🔹 Función para actualizar el estado del pedido enviando todo el objeto completo
+  const actualizarEstadoPedido = async (idPedido: number, nuevoEstadoId: number) => {
+    try {
+      // 1️⃣ Traemos el pedido completo
+      const pedidoResponse = await axios.get(
+        `http://localhost:8080/api/pedidos/${idPedido}`
+      );
+      const pedidoCompleto = pedidoResponse.data;
+
+      // 2️⃣ Cambiamos solo el estado
+      pedidoCompleto.estadoPedido = { id: nuevoEstadoId };
+
+      // 3️⃣ Enviamos el pedido completo actualizado
+      const response = await axios.put(
+        `http://localhost:8080/api/pedidos/${idPedido}`,
+        pedidoCompleto,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("✅ Pedido actualizado:", response.data);
+
+      // 4️⃣ Actualizamos la lista local
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((p) =>
+          p.id === idPedido ? { ...p, estadoPedido: { id: nuevoEstadoId } } : p
+        )
+      );
+
+      alert("✅ Pedido actualizado correctamente");
+    } catch (error: any) {
+      console.error("❌ Error al actualizar el pedido:", error);
+      if (error.response) {
+        console.error("Detalle del error:", error.response.data);
+        alert(`❌ Error del servidor: ${error.response.data.error}`);
+      } else {
+        alert("❌ No se pudo actualizar el pedido");
+      }
+    }
+  };
+
   return (
     <div className="bg-[#2e2e2e] text-black rounded-2xl p-5 w-[90%] mx-auto mt-6 shadow-xl font-lato">
       {/* Encabezado */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-white tracking-wide">
-          Entregas
-        </h2>
+        <h2 className="text-xl font-semibold text-white tracking-wide">Entregas</h2>
         <input
           type="text"
           placeholder="Buscar..."
@@ -40,12 +80,8 @@ export default function EntregaRepartidor() {
           <thead className="bg-gray-100 text-gray-700 border-b border-gray-300 uppercase text-xs tracking-wide">
             <tr>
               <th className="py-3 px-5 text-left font-semibold">Orden N°</th>
-              <th className="py-3 px-5 text-left font-semibold">
-                Dirección de Entrega
-              </th>
-              <th className="py-3 px-5 text-left font-semibold">
-                Hora de Entrega
-              </th>
+              <th className="py-3 px-5 text-left font-semibold">Dirección de Entrega</th>
+              <th className="py-3 px-5 text-left font-semibold">Hora de Entrega</th>
               <th className="py-3 px-5 text-left font-semibold">Acciones</th>
             </tr>
           </thead>
@@ -60,7 +96,7 @@ export default function EntregaRepartidor() {
                 </td>
               </tr>
             ) : (
-              pedidos.map((pedido: any) => (
+              pedidos.map((pedido) => (
                 <tr
                   key={pedido.id}
                   className="border-b border-gray-200 hover:bg-gray-50 transition-colors font-lato"
@@ -74,30 +110,51 @@ export default function EntregaRepartidor() {
                       : "Sin dirección"}
                   </td>
                   <td className="py-3 px-5">
-                    {pedido.horaCierre?.substring(0, 5) || "Sin hora"}
+                    <h3>
+                      {pedido.tiempoEstimado
+                        ? pedido.tiempoEstimado.split(":").slice(0, 2).join(":") + " min"
+                        : "Sin tiempo"}
+                    </h3>
                   </td>
                   <td className="py-3 px-5 flex gap-3 items-center">
+                    {/* Estado visual */}
+                    <span
+                      className={`px-3 py-1 rounded-full text-white text-xs ${
+                        pedido.estadoPedido?.nombreEstado === "Pendiente"
+                          ? "bg-yellow-500"
+                          : pedido.estadoPedido?.nombreEstado === "En proceso"
+                          ? "bg-blue-500"
+                          : "bg-green-500"
+                      } font-lato`}
+                    >
+                      {pedido.estadoPedido?.nombreEstado || "Sin estado"}
+                    </span>
+
                     {/* Advertencia */}
                     <img
                       src="/svg/icono_cancelar_pedido.svg"
                       alt="Advertencia"
                       title="Advertencia"
                       className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform"
+                      onClick={() => actualizarEstadoPedido(pedido.id, 4)} // cambia a estado 4
                     />
-                    {/* Repartir */}
+
+                    {/* Repartidor detalle */}
                     <img
-                      src="/svg/detalle_pedido.svg"
+                      src="/svg/LogoVer.svg"
                       alt="Repartir"
                       title="Repartir"
                       className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform"
                       onClick={() => setPedidoSeleccionado(pedido)}
                     />
+
                     {/* Entregado */}
                     <img
                       src="/svg/icono_pedido_positivo.svg"
                       alt="Entregado"
                       title="Entregado"
                       className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform"
+                      onClick={() => actualizarEstadoPedido(pedido.id, 6)} // cambia a estado 6
                     />
                   </td>
                 </tr>

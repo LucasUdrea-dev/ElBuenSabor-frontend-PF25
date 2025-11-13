@@ -22,7 +22,7 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
 
         {/* Tabs */}
         <div className="flex border-b border-gray-300 px-6 bg-white font-lato">
-          {["detalles", "productos", "factura"].map((tab) => (
+          {["detalles", "productos"/*, "factura"*/].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -39,6 +39,8 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
 
         {/* Contenido */}
         <div className="p-6 text-sm font-lato">
+
+
           {activeTab === "detalles" && (
             <div className="space-y-5 font-lato">
               {/* Cliente */}
@@ -61,14 +63,15 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
                       ? `${pedido.sucursal.direccion.nombreCalle} ${pedido.sucursal.direccion.numeracion}, Mendoza`
                       : "Sin dirección"}
                   </p>
-
+                      
                   {/* Mapa simulado */}
-                  <div className="w-full h-48 bg-[#1e1e1e] rounded-lg flex items-center justify-center text-gray-300 text-xs italic font-lato">
-                    Mapa de ubicación
-                  </div>
+                  {/* <div className="w-full h-48 bg-[#1e1e1e] rounded-lg flex items-center justify-center text-gray-300 text-xs italic font-lato"> */}
+                    {/* Mapa de ubicación */}
+                  {/* </div> */}
                 </div>
               </div>
 
+              
               {/* Estado */}
               <div>
                 <h3 className="font-semibold text-base mb-2">Estado de la orden</h3>
@@ -108,6 +111,8 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
               </div>
             </div>
           )}
+
+
 
           {activeTab === "productos" && (
             <div className="space-y-4 font-lato">
@@ -154,6 +159,9 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
               </div>
             </div>
           )}
+
+{/*
+
 
           {activeTab === "factura" && (
             <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-4 font-lato">
@@ -209,6 +217,9 @@ export default function CajeroRecibido({ pedido, onClose }: any) {
               </p>
             </div>
           )}
+
+               */}
+        
         </div>
       </div>
     </div>
