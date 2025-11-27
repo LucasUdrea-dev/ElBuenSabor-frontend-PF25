@@ -26,6 +26,8 @@ import AdminPromocion from './Admin/Promociones/AdminPromocion.tsx'
 import { UserProvider } from './UserAuth/UserContext.tsx' 
 import { EmpleadoProvider } from './Admin/LoginEmpleados/EmpleadoContext.tsx'
 import PerfilEmpleado from './Admin/Empleados/PerfilEmpleado.tsx'
+import { DashboardEjemplo } from './services/websocket/ejemplos/DashboardEjemplo.tsx'
+import { NotificacionesCliente } from './services/websocket/ejemplos/NotificacionesEjemplo.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -43,6 +45,10 @@ createRoot(document.getElementById('root')!).render(
               <Route path='/misDirecciones' element={<DireccionesUser />} />
               <Route path='/miPerfil' element={<EditarPerfilUser />} />
               <Route path="/misOrdenes" element={<MisPedidos />} />
+
+              {/* Rutas de prueba WebSocket */}
+              <Route path='/test-websocket-dashboard' element={<DashboardEjemplo />} />
+              <Route path='/test-websocket-notificaciones' element={<NotificacionesCliente />} />
 
               <Route path='*' element={<Inicio/>}/>
             </Route>

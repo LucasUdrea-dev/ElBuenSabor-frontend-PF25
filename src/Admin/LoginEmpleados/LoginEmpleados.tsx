@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import RecuperarContrasena from "../../UserAuth/RecuperarContrasena";
 import { z } from "zod";
 import { userAuthentication } from "../../../ts/Clases";
@@ -9,7 +9,10 @@ import { useEmpleado } from "./EmpleadoContext";
 
 
 const schema = z.object({
-  username: z.string().min(1, "El usuario es obligatorio").email("Formato de email inválido"),
+  username: z
+    .string()
+    .min(1, "El usuario es obligatorio")
+    .email("Formato de email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 

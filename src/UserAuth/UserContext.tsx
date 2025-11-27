@@ -1,7 +1,14 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
+import { host } from "../../ts/Clases";
 
 export interface UserSession {
   id_user: number;
@@ -27,7 +34,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Decodifica el JWT (solo la parte del payload)
 const decodeJWT = (token: string): UserSession | null => {
   try {
-    const payload = token.split('.')[1];
+    const payload = token.split(".")[1];
     return JSON.parse(atob(payload)) as UserSession;
   } catch {
     return null;
@@ -53,7 +60,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           return decoded;
         } else {
           // Token expirado, limpiar
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
         }
       }
     }
@@ -76,16 +83,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const decoded = decodeJWT(token);
 
     if (!decoded) {
-      throw new Error('Token inválido');
+      throw new Error("Token inválido");
     }
 
     // Guardar token y establecer sesión
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     setUserSession(decoded);
     setIsAuthenticated(true);
 
     // Notificar cambio en localStorage
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
   };
 
   // Logout: cierra sesión de Firebase y limpia el estado
@@ -141,7 +148,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [isAuthenticated]);
 
@@ -159,7 +166,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           const firebaseToken = await user.getIdToken();
           const response = await axios.post(
-            "http://localhost:8080/api/auth/firebase-login",
+            `${host}/api/auth/firebase-login`,
             {},
             { headers: { "Firebase-Token": firebaseToken } }
           );
@@ -206,7 +213,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   // Exponemos todas las funciones y valores a través del contexto
   return (
-    <UserContext.Provider value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}>
+    <UserContext.Provider
+      value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -397,4 +406,4 @@ export const useUser = () => {
     throw new Error('useUser debe ser usado dentro de un UserProvider');
   }
   return context;
-};*/ 
+};*/

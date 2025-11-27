@@ -13,9 +13,15 @@ import { useCloudinary } from '../useCloudinary';
 // Esquema de validación
 const usuarioSchema = z.object({
   id: z.number(),
-  nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  email: z.string().email('Correo inválido'),
+  nombre: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  apellido: z
+    .string()
+    .min(1, "El apellido es obligatorio")
+    .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+  email: z.string().email("Correo inválido"),
   imagenUsuario: z.string().optional(),
 });
 
@@ -23,41 +29,50 @@ export default function EditarPerfilUser() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
   const [formData, setFormData] = useState<Usuario>(new Usuario());
-  const [errores, setErrores] = useState<Partial<Record<keyof Usuario, string>>>({});
+  const [errores, setErrores] = useState<
+    Partial<Record<keyof Usuario, string>>
+  >({});
   const navigate = useNavigate();
   const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
   const [mostrarModalContrasena, setMostrarModalContrasena] = useState(false);
   const { userSession } = useUser();
 
   // Usamos el hook de Cloudinary
-  const { image, loading: subiendoImagen, uploadImage, setImage } = useCloudinary();
-  
+  const {
+    image,
+    loading: subiendoImagen,
+    uploadImage,
+    setImage,
+  } = useCloudinary();
+
   // Ref para el input file para abrir el selector de archivos sin que el usuario vea el input por fedecto
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Estados para manejo de teléfonos
   const [telefonos, setTelefonos] = useState<Telefono[]>([]);
-  const [editandoTelefonoId, setEditandoTelefonoId] = useState<number | null>(null);
-  const [telefonoEditado, setTelefonoEditado] = useState<string>('');
-  const [errorTelefono, setErrorTelefono] = useState<string>('');
+  const [editandoTelefonoId, setEditandoTelefonoId] = useState<number | null>(
+    null
+  );
+  const [telefonoEditado, setTelefonoEditado] = useState<string>("");
+  const [errorTelefono, setErrorTelefono] = useState<string>("");
 
   // Obtener token del localStorage
-  const getToken = () => localStorage.getItem('token');
+  const getToken = () => localStorage.getItem("token");
 
   // Configurar axios con el token
   const axiosConfig = {
     headers: {
-      'Authorization': `Bearer ${getToken()}`,
-      'Content-Type': 'application/json'
-    }
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json",
+    },
   };
 
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
         if (!userSession?.id_user) {
-          console.error('No hay ID de usuario en la sesión');
-          navigate('/login');
+          console.error("No hay ID de usuario en la sesión");
+          navigate("/login");
           return;
         }
 
@@ -68,14 +83,14 @@ export default function EditarPerfilUser() {
         );
 
         const userData = response.data;
-        
+
         const user = new Usuario();
         user.id = userData.id;
         user.nombre = userData.nombre;
         user.apellido = userData.apellido;
         user.email = userData.email;
         user.telefonoList = userData.telefonoList || [];
-        user.imagenUsuario = userData.imagenUsuario || '';
+        user.imagenUsuario = userData.imagenUsuario || "";
         user.existe = userData.existe;
 
         setUsuario(user);
@@ -86,11 +101,10 @@ export default function EditarPerfilUser() {
         if (userData.imagenUsuario) {
           setImage(userData.imagenUsuario);
         }
-
       } catch (error) {
-        console.error('Error al cargar el usuario:', error);
+        console.error("Error al cargar el usuario:", error);
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          navigate('/login');
+          navigate("/login");
         }
       } finally {
         setCargando(false);
@@ -100,13 +114,10 @@ export default function EditarPerfilUser() {
     fetchUsuario();
   }, [userSession, navigate]);
 
-
-
-
   // Manejar la subida de imagen
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const imageUrl = await uploadImage(e);
-    
+
     if (imageUrl) {
       // Actualizar el formData con la nueva URL
       setFormData((prev) => {
@@ -133,19 +144,17 @@ export default function EditarPerfilUser() {
           axiosConfig
         );
 
-        alert('Imagen actualizada correctamente');
+        alert("Imagen actualizada correctamente");
       } catch (error) {
-        console.error('Error al actualizar imagen en backend:', error);
-        alert('Error al actualizar la imagen');
+        console.error("Error al actualizar imagen en backend:", error);
+        alert("Error al actualizar la imagen");
       }
     }
   };
 
-
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData((prev) => {
       const newFormData = new Usuario();
       Object.assign(newFormData, prev);
@@ -155,9 +164,9 @@ export default function EditarPerfilUser() {
 
     // Limpia el error del campo cuando el usuario empieza a escribir
     if (errores[name as keyof Usuario]) {
-      setErrores(prev => ({
+      setErrores((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -165,117 +174,117 @@ export default function EditarPerfilUser() {
   const iniciarEdicionTelefono = (telefono: Telefono) => {
     setEditandoTelefonoId(telefono.id);
     setTelefonoEditado(telefono.numero.toString());
-    setErrorTelefono('');
+    setErrorTelefono("");
   };
 
   const cancelarEdicionTelefono = () => {
     setEditandoTelefonoId(null);
-    setTelefonoEditado('');
-    setErrorTelefono('');
+    setTelefonoEditado("");
+    setErrorTelefono("");
   };
 
   const guardarTelefono = async (telefono: Telefono) => {
     try {
       // Validación
       if (!telefonoEditado.trim()) {
-        setErrorTelefono('El teléfono es obligatorio');
+        setErrorTelefono("El teléfono es obligatorio");
         return;
       }
       if (!/^[0-9]+$/.test(telefonoEditado)) {
-        setErrorTelefono('Solo se permiten números');
+        setErrorTelefono("Solo se permiten números");
         return;
       }
 
       const telefonoDTO = {
         id: telefono.id,
-        numero: parseInt(telefonoEditado)
+        numero: parseInt(telefonoEditado),
       };
 
       // Actualizar en el backend
       await axios.put(
-        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
+        `${host}/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
         telefonoDTO,
         axiosConfig
       );
 
       // Actualizar estado local
-      setTelefonos(prev => prev.map(t => 
-        t.id === telefono.id ? { ...t, numero: parseInt(telefonoEditado) } : t
-      ));
+      setTelefonos((prev) =>
+        prev.map((t) =>
+          t.id === telefono.id ? { ...t, numero: parseInt(telefonoEditado) } : t
+        )
+      );
 
       setEditandoTelefonoId(null);
-      setTelefonoEditado('');
-      setErrorTelefono('');
-      
-      alert('Teléfono actualizado correctamente');
+      setTelefonoEditado("");
+      setErrorTelefono("");
+
+      alert("Teléfono actualizado correctamente");
     } catch (error) {
-      console.error('Error al actualizar teléfono:', error);
+      console.error("Error al actualizar teléfono:", error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        navigate('/login');
+        navigate("/login");
       } else {
-        setErrorTelefono('Error al actualizar el teléfono');
+        setErrorTelefono("Error al actualizar el teléfono");
       }
     }
   };
 
   const eliminarTelefono = async (telefono: Telefono) => {
-    if (!confirm('¿Estás seguro de eliminar este teléfono?')) {
+    if (!confirm("¿Estás seguro de eliminar este teléfono?")) {
       return;
     }
 
     try {
       await axios.delete(
-        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
+        `${host}/api/telefonos/usuario/${userSession?.id_user}/${telefono.id}`,
         axiosConfig
       );
 
       // Actualizar estado local
-      setTelefonos(prev => prev.filter(t => t.id !== telefono.id));
-      
-      alert('Teléfono eliminado correctamente');
+      setTelefonos((prev) => prev.filter((t) => t.id !== telefono.id));
+
+      alert("Teléfono eliminado correctamente");
     } catch (error) {
-      console.error('Error al eliminar teléfono:', error);
+      console.error("Error al eliminar teléfono:", error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        navigate('/login');
+        navigate("/login");
       } else {
-        alert('Error al eliminar el teléfono');
+        alert("Error al eliminar el teléfono");
       }
     }
   };
 
-
-
   const agregarTelefono = async () => {
-    const nuevoNumero = prompt('Ingrese el nuevo número de teléfono:');
-    
+    const nuevoNumero = prompt("Ingrese el nuevo número de teléfono:");
+
     if (!nuevoNumero) return;
-    
+
     if (!/^[0-9]+$/.test(nuevoNumero)) {
-      alert('Solo se permiten números');
+      alert("Solo se permiten números");
       return;
     }
 
     try {
       const telefonoDTO = {
-        numero: parseInt(nuevoNumero)
+        numero: parseInt(nuevoNumero),
       };
 
       const response = await axios.post(
-        `http://localhost:8080/api/telefonos/usuario/${userSession?.id_user}`,
+        `${host}/api/telefonos/usuario/${userSession?.id_user}`,
         telefonoDTO,
         axiosConfig
       );
 
       // Agregar al estado local
-      setTelefonos(prev => [...prev, response.data]);
-      
-      alert('Teléfono agregado correctamente');
+      setTelefonos((prev) => [...prev, response.data]);
+
+      alert("Teléfono agregado correctamente");
     } catch (error) {
-      console.error('Error al agregar teléfono:', error);
+      console.error("Error al agregar teléfono:", error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        navigate('/login');
+        navigate("/login");
       } else {
-        alert('Error al agregar el teléfono');
+        alert("Error al agregar el teléfono");
       }
     }
   };
@@ -298,16 +307,15 @@ export default function EditarPerfilUser() {
 
       // Enviar PUT al backend
       const response = await axios.put(
-        `http://localhost:8080/api/usuarios/${formData.id}`,
+        `${host}/api/usuarios/${formData.id}`,
         usuarioPlano,
         axiosConfig
       );
 
-      console.log('Usuario actualizado:', response.data);
+      console.log("Usuario actualizado:", response.data);
       setUsuario(formData);
-      
-      alert('Perfil actualizado correctamente');
-      
+
+      alert("Perfil actualizado correctamente");
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<Record<keyof Usuario, string>> = {};
@@ -319,26 +327,26 @@ export default function EditarPerfilUser() {
 
         setErrores(newErrors);
       } else if (axios.isAxiosError(error)) {
-        console.error('Error al actualizar usuario:', error.response?.data);
-        alert('Error al actualizar el perfil. Por favor, intenta de nuevo.');
-        
+        console.error("Error al actualizar usuario:", error.response?.data);
+        alert("Error al actualizar el perfil. Por favor, intenta de nuevo.");
+
         if (error.response?.status === 401) {
-          navigate('/login');
+          navigate("/login");
         }
       } else {
-        console.error('Error inesperado al validar:', error);
-        alert('Error inesperado. Por favor, intenta de nuevo.');
+        console.error("Error inesperado al validar:", error);
+        alert("Error inesperado. Por favor, intenta de nuevo.");
       }
     }
   };
 
   const cancelar = () => {
     if (usuario) setFormData(usuario);
-    navigate('/catalogo');
+    navigate("/catalogo");
   };
 
   const irADirecciones = () => {
-    navigate('/misDirecciones');
+    navigate("/misDirecciones");
   };
 
   return (
@@ -358,7 +366,7 @@ export default function EditarPerfilUser() {
               onChange={handleImageUpload}
               className="hidden"
             />
-            
+
             {/* Imagen de perfil */}
             <div className="relative">
               {subiendoImagen ? (
@@ -383,11 +391,11 @@ export default function EditarPerfilUser() {
                 Mis direcciones
               </button>
               <button
-                onClick={() => fileInputRef.current?.click()}// Activa el input file
-                disabled={subiendoImagen}// Deshabilitado mientras sube
+                onClick={() => fileInputRef.current?.click()} // Activa el input file
+                disabled={subiendoImagen} // Deshabilitado mientras sube
                 className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {subiendoImagen ? 'Subiendo...' : 'Cambiar imagen'}
+                {subiendoImagen ? "Subiendo..." : "Cambiar imagen"}
               </button>
             </div>
           </div>
@@ -407,12 +415,16 @@ export default function EditarPerfilUser() {
                     onChange={handleChange}
                     className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
                   />
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.nombre ?? '\u00A0'}</p>
+                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                    {errores.nombre ?? "\u00A0"}
+                  </p>
                 </div>
 
                 {/* Campo: Apellido */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">Apellido</label>
+                  <label className="block text-sm font-bold mb-1">
+                    Apellido
+                  </label>
                   <input
                     type="text"
                     name="apellido"
@@ -420,7 +432,9 @@ export default function EditarPerfilUser() {
                     onChange={handleChange}
                     className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
                   />
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.apellido ?? '\u00A0'}</p>
+                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                    {errores.apellido ?? "\u00A0"}
+                  </p>
                 </div>
 
                 {/* Lista de Teléfonos */}
@@ -435,19 +449,25 @@ export default function EditarPerfilUser() {
                     </button>
                   </div>
 
-                  
                   {telefonos.length === 0 ? (
-                    <p className="text-gray-400 text-sm">No hay teléfonos registrados</p>
+                    <p className="text-gray-400 text-sm">
+                      No hay teléfonos registrados
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {telefonos.map((telefono) => (
-                        <div key={telefono.id} className="flex items-center gap-2">
+                        <div
+                          key={telefono.id}
+                          className="flex items-center gap-2"
+                        >
                           {editandoTelefonoId === telefono.id ? (
                             <>
                               <input
                                 type="text"
                                 value={telefonoEditado}
-                                onChange={(e) => setTelefonoEditado(e.target.value)}
+                                onChange={(e) =>
+                                  setTelefonoEditado(e.target.value)
+                                }
                                 className="flex-1 px-3 py-2 rounded bg-[#999999]/35 text-white"
                                 autoFocus
                               />
@@ -456,8 +476,18 @@ export default function EditarPerfilUser() {
                                 className="p-2 hover:bg-green-600/20 rounded transition"
                                 title="Guardar"
                               >
-                                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg
+                                  className="w-5 h-5 text-green-500"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
                                 </svg>
                               </button>
                               <button
@@ -465,8 +495,18 @@ export default function EditarPerfilUser() {
                                 className="p-2 hover:bg-red-600/20 rounded transition"
                                 title="Cancelar"
                               >
-                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                <svg
+                                  className="w-5 h-5 text-red-500"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
                                 </svg>
                               </button>
                             </>
@@ -480,30 +520,40 @@ export default function EditarPerfilUser() {
                               />
 
                               <div className="flex gap-0">
-                              <button
-                                onClick={() => iniciarEdicionTelefono(telefono)}
-                                className="p-2 hover:scale-110 transition"
-                                title="Editar"
-                              >
-                                <img src="../public/svg/LapizEdit.svg" alt="Editar" className="w-5 h-5" />
-                              </button>
+                                <button
+                                  onClick={() =>
+                                    iniciarEdicionTelefono(telefono)
+                                  }
+                                  className="p-2 hover:scale-110 transition"
+                                  title="Editar"
+                                >
+                                  <img
+                                    src="../public/svg/LapizEdit.svg"
+                                    alt="Editar"
+                                    className="w-5 h-5"
+                                  />
+                                </button>
 
-
-                              <button
-                                onClick={() => eliminarTelefono(telefono)}
-                                className="p-2 hover:bg-red-600/20 rounded transition"
-                                title="Eliminar"
-                              >
-                                <img src="../../public/svg/LogoBorrar.svg" alt="Borrar" className="w-7 h-7"  />
-                              </button>
+                                <button
+                                  onClick={() => eliminarTelefono(telefono)}
+                                  className="p-2 hover:bg-red-600/20 rounded transition"
+                                  title="Eliminar"
+                                >
+                                  <img
+                                    src="../../public/svg/LogoBorrar.svg"
+                                    alt="Borrar"
+                                    className="w-7 h-7"
+                                  />
+                                </button>
                               </div>
                             </>
-                            
                           )}
                         </div>
                       ))}
                       {errorTelefono && (
-                        <p className="text-red-400 text-sm mt-1">{errorTelefono}</p>
+                        <p className="text-red-400 text-sm mt-1">
+                          {errorTelefono}
+                        </p>
                       )}
                     </div>
                   )}
@@ -525,15 +575,23 @@ export default function EditarPerfilUser() {
                       type="button"
                       className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
-                      <img src="../public/svg/LapizEdit.svg" alt="Editar correo" className="w-5 h-5" />
+                      <img
+                        src="../public/svg/LapizEdit.svg"
+                        alt="Editar correo"
+                        className="w-5 h-5"
+                      />
                     </button>
                   </div>
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{errores.email ?? '\u00A0'}</p>
+                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                    {errores.email ?? "\u00A0"}
+                  </p>
                 </div>
 
                 {/* Campo: Contraseña */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">Contraseña</label>
+                  <label className="block text-sm font-bold mb-1">
+                    Contraseña
+                  </label>
                   <div className="relative flex items-center">
                     <input
                       type="password"
@@ -547,10 +605,16 @@ export default function EditarPerfilUser() {
                       type="button"
                       className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
-                      <img src="../public/svg/LapizEdit.svg" alt="Editar contraseña" className="w-5 h-5" />
+                      <img
+                        src="../public/svg/LapizEdit.svg"
+                        alt="Editar contraseña"
+                        className="w-5 h-5"
+                      />
                     </button>
                   </div>
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">{'\u00A0'}</p>
+                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                    {"\u00A0"}
+                  </p>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-6">
@@ -587,7 +651,7 @@ export default function EditarPerfilUser() {
         onClose={() => setMostrarModalCorreo(false)}
         usuarioId={formData.id!}
         onCorreoActualizado={(nuevoCorreo) => {
-          setFormData(prev => {
+          setFormData((prev) => {
             const newFormData = new Usuario();
             Object.assign(newFormData, prev);
             newFormData.email = nuevoCorreo;
@@ -598,8 +662,3 @@ export default function EditarPerfilUser() {
     </div>
   );
 }
-
-
-
-
-

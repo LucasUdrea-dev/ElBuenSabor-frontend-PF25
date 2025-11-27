@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArticuloInsumo, ArticuloManufacturado, host, Promocion, PromocionArticulo } from "../../../ts/Clases";
 import axios from "axios";
-import { obtenerImagen } from "../../../ts/Imagen";
 
 interface Props{
     abierto: boolean
@@ -21,12 +20,19 @@ export default function SelectorArticulo({abierto, cerrar, setForm}: Props) {
 
     },[])
 
+    const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+  };
+
     const traerArticulos = async ()=>{
         const URL = host+"/api/articulo/promos"
 
         try {
             
-            const response = await axios.get(URL)
+            const response = await axios.get(URL, axiosConfig)
             
             setListaArticulos(response.data)
         } catch (error) {
@@ -94,7 +100,7 @@ export default function SelectorArticulo({abierto, cerrar, setForm}: Props) {
                             {listaArticulosBuscador.length > 0 && listaArticulosBuscador.map((articulo)=>(
                                 <div key={articulo.id} className="text-4xl w-full grid grid-cols-4 *:border-2 *:border-gray-500 *:w-full *:py-1 *:border-collapse text-center">
 
-                                    <div className="bg-cover bg-no-repeat bg-center" style={{backgroundImage: `url('${obtenerImagen(articulo.imagenArticulo)}')`}}></div>
+                                    <div className="bg-cover bg-no-repeat bg-center" style={{backgroundImage: `url('${articulo.imagenArticulo}')`}}></div>
 
                                     <div className="flex items-center justify-center">
                                         <h5>{articulo.nombre}</h5>

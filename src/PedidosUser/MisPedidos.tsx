@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { host, Pedido, tiposEstadoPedido} from "../../ts/Clases";
 import PedidoComponent from './Pedido';
+import { useUser } from '../UserAuth/UserContext';
 
 const MisPedidos: React.FC = () => {
   const [tabActiva, setTabActiva] = useState<'pendientes' | 'pasadas'>('pendientes');
@@ -11,11 +12,15 @@ const MisPedidos: React.FC = () => {
   const [pedidosData, setPedidosData] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [sinPedidos, setSinPedidos] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { userSession } = useUser();
 
   useEffect(() => {
-    cargarPedidosDesdeBackend()
-  }, []);
+    if (userSession?.id_user) {
+      cargarPedidosDesdeBackend()
+    }
+  }, [userSession?.id_user]);
 
   useEffect(() => {
     filtrarPedidos();
@@ -24,17 +29,47 @@ const MisPedidos: React.FC = () => {
 
 
   const cargarPedidosDesdeBackend = async () => {
+    if (!userSession?.id_user) {
+      setError('No hay usuario logueado');
+      setLoading(false);
+      return;
+    }
+
     try {
-        const response = await axios.get(host+`/api/pedidos/usuario/${2}`);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(host+`/api/pedidos/usuario/${userSession.id_user}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
         const pedidosMapeados: Pedido[] = response.data.map((pedidoDTO: Pedido) => ({
             ...pedidoDTO,
             fecha: pedidoDTO.fecha ? pedidoDTO.fecha : new Date(),
             tiempoEstimado: pedidoDTO.tiempoEstimado ? pedidoDTO.tiempoEstimado : undefined
         }));
         setPedidosData(pedidosMapeados);
+        setSinPedidos(false);
         setLoading(false)
     } catch (error: any) {
-        setError('Error al cargar los pedidos. Intenta nuevamente.');
+        console.error("Error al cargar los pedidos:", error);
+        if (axios.isAxiosError(error)) {
+            if (error.response?.status === 401) {
+                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                setSinPedidos(false);
+                // Opcional: redirigir al login
+                // navigate("/login");
+            } else if (error.response?.status === 404) {
+                // 404 significa que no hay pedidos, mostrar mensaje amigable
+                setSinPedidos(true);
+                setPedidosData([]);
+                setError(null);
+            } else {
+                setError('Error al cargar los pedidos. Intenta nuevamente.');
+                setSinPedidos(false);
+            }
+        } else {
+            setError('Error al cargar los pedidos. Intenta nuevamente.');
+            setSinPedidos(false);
+        }
+        setLoading(false);
     }
   };
 
@@ -208,13 +243,22 @@ const MisPedidos: React.FC = () => {
         </div>
 
         <div className="p-4">
-          {pedidosData.length === 0 ? (
-            /* Estado vacío */
+          {sinPedidos || pedidosData.length === 0 ? (
+            /* Estado vacío - No hay pedidos */
             <div className="text-center p-6 rounded-xl bg-[#444444]">
-              <p className="mb-4 font-lato">Aun no has agregado ninguna orden</p>
+              <p className="mb-4 font-lato text-lg">
+                {sinPedidos 
+                  ? "Aún no has realizado ningún pedido" 
+                  : "Aun no has agregado ninguna orden"}
+              </p>
+              <p className="mb-6 text-gray-400 font-lato">
+                {sinPedidos 
+                  ? "¡Haz tu primer pedido y disfruta de nuestros deliciosos productos!" 
+                  : "Explora nuestro catálogo y realiza tu primer pedido"}
+              </p>
               <button 
                 onClick={irACatalogo}
-                className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded text-white font-lato inline-block transition-colors"
+                className="bg-[#D93F21] hover:bg-[#b9331a] px-6 py-3 rounded text-white font-lato inline-block transition-colors text-lg"
               >
                 Ver catálogo
               </button>

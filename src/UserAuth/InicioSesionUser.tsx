@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import RecuperarContrasena from "./RecuperarContrasena";
@@ -8,9 +8,11 @@ import { z } from "zod";
 import { host, userAuthentication } from "../../ts/Clases";
 import { useUser } from "./UserContext";
 
-
 const schema = z.object({
-  username: z.string().min(1, "El usuario es obligatorio").email("Formato de email inválido"),
+  username: z
+    .string()
+    .min(1, "El usuario es obligatorio")
+    .email("Formato de email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
@@ -45,6 +47,9 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   }, [isOpen]);
 
 
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
+  general?: string;
+};
 
   // Maneja el cambio en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +136,7 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   };
 
 
+      console.log(" Respuesta del backend:", response.data);
 
   // Inicio con Google usando Firebase
   const handleGoogleLogin = async () => {
@@ -365,73 +371,3 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 };
 
 export default InicioSesionUser;
-
-
-
-
-
-
-
-
-
-
-
-/*// Inicio con Facebook usando Firebase
-    const handleFacebookLogin = async () => {
-      const provider = new FacebookAuthProvider();
-      setIsLoading(true);
-      setErrors({});
-
-      try {
-        // 1. Autenticar con Firebase
-        const result = await signInWithPopup(auth, provider);
-        console.log(" Usuario autenticado con Facebook:", result.user);
-
-        // 2. Obtener el token de Firebase
-        const firebaseToken = await result.user.getIdToken();
-        console.log(" Token de Firebase obtenido");
-
-        // 3. Enviar el token al backend
-        const response = await axios.post(
-          FIREBASE_LOGIN_URL,
-          {},
-          {
-            headers: {
-              "Firebase-Token": firebaseToken,
-            },
-          }
-        );
-
-        console.log("✅ Respuesta del backend:", response.data);
-        
-        // 4. Guardar el JWT en localStorage y contexto
-        if (response.data.jwt) {
-          login(response.data.jwt);
-          localStorage.setItem('token', response.data.jwt);
-          console.log("Token almacenado, cerrando modal y navegando...");
-          
-          // 5. Cerrar modal y redirigir
-          onClose();
-          navigate('/catalogo');
-        } else {
-          setErrors({ general: "No se recibió token de autenticación" });
-        }
-
-      } catch (error: any) {
-        console.error("❌ Error al iniciar sesión con Facebook:", error);
-        
-        let errorMessage = "Error al autenticar con Facebook. Intenta nuevamente.";
-        
-        if (error.code === 'auth/popup-blocked') {
-          errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
-        } else if (error.code === 'auth/popup-closed-by-user') {
-          errorMessage = "Cerraste el popup de autenticación.";
-        } else if (error.response?.data?.error) {
-          errorMessage = error.response.data.error;
-        }
-        
-        setErrors({ general: errorMessage });
-      } finally {
-        setIsLoading(false);
-      }
-    }; */
