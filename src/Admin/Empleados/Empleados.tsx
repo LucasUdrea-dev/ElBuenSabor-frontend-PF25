@@ -1,438 +1,232 @@
 import { useEffect, useState } from "react";
-import { Empleado, Sucursal, host } from "../../../ts/Clases.ts";
-import AgregarEmpleado from "./AgregarEmpleados.tsx";
-import EditarEmpleado from "./EditarEmpleado.tsx";
+import axios from "axios";
+import { host } from "../../../ts/Clases";
+import AgregarEmpleados from "./AgregarEmpleados";
+import EditarEmpleado from "./EditarEmpleado";
 
 export default function Empleados() {
-  const [empleados, setEmpleados] = useState<Empleado[]>([]);
-  const [empleadosMostrados, setEmpleadosMostrados] = useState<Empleado[]>([]);
+  const [empleados, setEmpleados] = useState<any[]>([]);
+  const [empleadosMostrados, setEmpleadosMostrados] = useState<any[]>([]);
   const [buscador, setBuscador] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState<"TODOS" | "ACTIVOS" | "INACTIVOS">("TODOS");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
-  const [mostrarEmpleado] = useState<Empleado | null>(null);
-
-  // Estados para los modales
-  const [mostrarModalAgregar, setMostrarModalAgregar] = useState(false);
-  const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
-  const [empleadoAEditar, setEmpleadoAEditar] = useState<Empleado | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false);
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<any>(null);
 
   const cantidadPorPagina = 10;
+  const API_BASE_URL = `${host}/api/empleados`;
 
-  // Datos hardcodeados
-  const sucursalMendoza: Sucursal = {
-    id: 1,
-    nombre: "Sucursal Central Mendoza",
-    horaApertura: "09:00",
-    horaCierre: "18:00",
-    existe: true,
-    direccion: {
-      id: 101,
-      nombreCalle: "Av. San Martín",
-      numeracion: "1100",
-      latitud: -32.890692,
-      longitud: -68.847145,
-      alias: "Oficina Principal",
-      descripcionEntrega: "Frente a la Plaza San Martín, edificio color crema.",
-      ciudad: {
-        id: 1,
-        nombre: "Ciudad de Mendoza",
-        provincia: {
-          id: 1,
-          nombre: "Mendoza",
-          pais: {
-            id: 1,
-            nombre: "Argentina",
-            provincias: [],
-          },
-          ciudadList: [],
-        },
-      },
-    },
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
-
-  //Hardcodeo de empleados
-  const empleadosHardcodeados: Empleado[] = [
-    {
-      id: 1,
-      nombre: "Juan",
-      apellido: "Pérez",
-      email: "juan.perez@email.com",
-      existe: true,
-      imagenUsuario: "",
-      telefonoList: [
-        { id: 1, numero: 2614567890 },
-        { id: 2, numero: 2615551234 },
-      ],
-      rol: {
-        id: null,
-        fechaAlta: new Date("2020-03-10").toISOString(),
-        tipoRol: { id: null, rol: 3 },
-      },
-      direccionList: [
-        {
-          id: 201,
-          nombreCalle: "9 de Julio",
-          numeracion: "750",
-          latitud: -32.8902,
-          longitud: -68.8421,
-          alias: "Casa",
-          descripcionEntrega: "Casa color verde, portón gris.",
-          ciudad: sucursalMendoza.direccion!.ciudad,
-        },
-      ],
-      sueldo: 75000,
-      fechaAlta: "2020-03-15",
-      idSucursal: sucursalMendoza,
-    },
-    {
-      id: 2,
-      nombre: "María",
-      apellido: "Gómez",
-      email: "maria.gomez@email.com",
-      existe: true,
-      imagenUsuario: "",
-      telefonoList: [{ id: 3, numero: 2614789000 }],
-      rol: {
-        id: null,
-        fechaAlta: new Date("2021-05-01").toISOString(),
-        tipoRol: { id: null, rol: 3 },
-      },
-      direccionList: [
-        {
-          id: 202,
-          nombreCalle: "San Juan",
-          numeracion: "450",
-          latitud: -32.8921,
-          longitud: -68.8456,
-          alias: "Departamento",
-          descripcionEntrega: "Piso 3, dpto B.",
-          ciudad: sucursalMendoza.direccion!.ciudad,
-        },
-      ],
-      sueldo: 95000,
-      fechaAlta: "2021-05-10",
-      idSucursal: sucursalMendoza,
-    },
-  ];
 
   useEffect(() => {
     cargarEmpleados();
   }, []);
 
-  const borradoLogico = async (empleado: Empleado) => {
-    // const URL = `${host}/api/empleado/${empleado.id}`
-
-    empleado.existe = !empleado.existe;
+  const cargarEmpleados = async () => {
+    setCargando(true);
+    setError(null);
 
     try {
-      // const response = await axios.put(URL, empleado)
-      // console.log("Se modificó el estado del empleado: " + response.status)
+      const response = await axios.get(`${API_BASE_URL}/getEmpleados`, {
+        headers: getAuthHeaders()
+      });
 
-      // Simulación para datos hardcodeados
-      setEmpleados((prev) =>
-        prev.map((emp) =>
-          emp.id === empleado.id ? { ...emp, existe: empleado.existe } : emp
+      setEmpleados(response.data);
+    } catch (err: any) {
+      console.error("Error al cargar empleados:", err);
+      setError(err.response?.data?.error || err.message || "Error al cargar empleados");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+
+
+  const borradoLogicoEmpleado = async (empleado: any) => {
+    const accion = empleado.existe ? "desactivar" : "activar";
+    
+    if (!confirm(`¿Estás seguro de que deseas ${accion} a ${empleado.nombre} ${empleado.apellido}?`)) return;
+
+    try {
+      await axios.delete(`${API_BASE_URL}/${empleado.id}`, {
+        headers: getAuthHeaders()
+      });
+
+      setEmpleados(prevEmpleados =>
+        prevEmpleados.map(emp =>
+          emp.id === empleado.id ? { ...emp, existe: !emp.existe } : emp
         )
       );
-
-      console.log(
-        `Empleado ${empleado.existe ? "activado" : "desactivado"}: ${
-          empleado.nombre
-        } ${empleado.apellido}`
-      );
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Error:", err);
+      alert(`Error al ${accion} el empleado`);
     }
   };
 
-  const cargarEmpleados = async () => {
-    // const URL = "${host}/api/empleado"
 
-    try {
-      // const response = await axios.get(URL)
-      // setEmpleados(response.data)
 
-      // Usando datos hardcodeados por ahora
-      setEmpleados(empleadosHardcodeados);
-    } catch (error) {
-      console.error("Error al cargar empleados:", error);
-    }
-  };
-
-  // Callback para cuando se agrega un nuevo empleado
-  const handleEmpleadoAgregado = (nuevoEmpleado: Empleado) => {
-    setEmpleados((prev) => [...prev, nuevoEmpleado]);
-  };
-
-  // Callback para cuando se actualiza un empleado
-  const handleEmpleadoActualizado = (empleadoActualizado: Empleado) => {
-    setEmpleados((prev) =>
-      prev.map((emp) =>
-        emp.id === empleadoActualizado.id ? empleadoActualizado : emp
-      )
-    );
-  };
-
-  // Apertur y cierre de modales
-  const abrirModalEditar = (empleado: Empleado) => {
-    setEmpleadoAEditar(empleado);
-    setMostrarModalEditar(true);
-  };
-
-  const cerrarModalEditar = () => {
-    setMostrarModalEditar(false);
-    setEmpleadoAEditar(null);
-  };
-
-  const abrirModalAgregar = () => {
-    setMostrarModalAgregar(true);
-  };
-
-  const cerrarModalAgregar = () => {
-    setMostrarModalAgregar(false);
-  };
-
-  // Filtrado y búsqueda por nombre y apellido
   useEffect(() => {
-    let filtrado: Empleado[] = empleados;
+    let filtrado = [...empleados];
+
+    if (filtroEstado !== "TODOS") {
+      filtrado = filtrado.filter(e => (filtroEstado === "ACTIVOS" ? e.existe : !e.existe));
+    }
 
     if (buscador) {
+      const busq = buscador.toLowerCase();
       filtrado = filtrado.filter(
-        (empleado) =>
-          `${empleado.nombre} ${empleado.apellido}`
-            .toLowerCase()
-            .includes(buscador.toLowerCase()) ||
-          empleado.nombre.toLowerCase().includes(buscador.toLowerCase()) ||
-          empleado.apellido.toLowerCase().includes(buscador.toLowerCase())
+        e =>
+          e.nombre.toLowerCase().includes(busq) ||
+          e.apellido.toLowerCase().includes(busq) ||
+          e.email.toLowerCase().includes(busq)
       );
     }
 
     setPaginaSeleccionada(1);
     setEmpleadosMostrados(filtrado);
-  }, [empleados, buscador]);
+  }, [empleados, buscador, filtroEstado]);
+
+  const getEstadoTexto = (existe: boolean) => (existe ? "Activo" : "Inactivo");
+
+  const handleEmpleadoCreado = () => {
+    cargarEmpleados(); // Recargar la lista de empleados
+  };
+
+  const handleEmpleadoActualizado = () => {
+    cargarEmpleados(); // Recargar la lista de empleados
+  };
+
+  const abrirModalEditar = (empleado: any) => {
+    setEmpleadoSeleccionado(empleado);
+    setModalEditarAbierto(true);
+  };
 
   return (
-    <>
-      <div className="bg-[#333333] w-full h-full py-10 font-['Lato']">
-        {/**Tabla */}
-        <div
-          className={`bg-white w-11/12 m-auto rounded-2xl ${
-            mostrarEmpleado && "hidden"
-          }`}
-        >
-          {/**Titulo, agregar y buscador */}
-          <div className="flex justify-between p-6 h-2/12">
-            <h1 className="pl-14 pt-2 text-4xl font-lato">Empleados</h1>
+    <div className="bg-[#333333] w-full min-h-screen py-10 font-['Lato']">
+      <div className="bg-white w-11/12 m-auto rounded-2xl">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 h-2/12">
+          <h1 className="pl-11 pt-2 text-5xl font-lato text-black drop-shadow-sm">Empleados</h1>
 
-            <div className="flex gap-5 pr-[2%] text-2xl items-center">
-              {/**Botón para agregar nuevo empleado */}
+          <button
+            onClick={() => setModalAgregarAbierto(true)}
+            className="bg-[#D93F21] hover:bg-[#B8341B] text-white px-6 py-3 rounded-full font-lato text-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl mr-2"
+          >
+            + Agregar Empleado
+          </button>
+        </div>
+
+        {/* Filtros y buscador */}
+        <div className="flex justify-end gap-5 pr-[2%] text-2xl items-center pb-4 px-6">
+          <div className="flex gap-2 items-center font-lato pr-10">
+            <span className="text-black font-medium pr-5">Filtrar por:</span>
+            {["TODOS", "ACTIVOS", "INACTIVOS"].map(estado => (
               <button
-                onClick={abrirModalAgregar}
-                className="bg-[#D93F21] text-white px-5 py-2 rounded-4xl flex items-center gap-2 font-lato"
+                key={estado}
+                onClick={() => setFiltroEstado(estado as any)}
+                className={`px-4 py-2 rounded-full transition-colors ${filtroEstado === estado ? "bg-[#D93F21]" : "bg-[#878787]"} text-white`}
               >
-                <h2>Nuevo empleado</h2>
-                <img className="h-5" src="/svg/Agregar.svg" alt="" />
+                {estado}
               </button>
-
-              {/**Buscador */}
-              <div className="relative">
-                <input
-                  onChange={(e) => setBuscador(e.target.value)}
-                  className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-4xl font-lato"
-                  placeholder="Buscar por nombre..."
-                  type="text"
-                />
-
-                <img
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5"
-                  src="/svg/LupaBuscador.svg"
-                  alt="Buscar"
-                />
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/**Tabla CRUD empleados */}
-          <div className="w-full pb-10">
-            {/**Cabecera */}
-            <div className="text-4xl w-full grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr] *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center font-lato">
-              <h1>Nombre</h1>
-              <h1>Email</h1>
-              <h1>Teléfono</h1>
-              <h1>Cargo</h1>
-              <h1>Acciones</h1>
-            </div>
-
-            {/**Empleados */}
-            {empleadosMostrados.length > 0 &&
-              empleadosMostrados.map((empleado, index) => {
-                if (
-                  index < paginaSeleccionada * cantidadPorPagina &&
-                  index >= cantidadPorPagina * (paginaSeleccionada - 1)
-                ) {
-                  return (
-                    <div
-                      key={empleado.id}
-                      className={`text-3xl w-full grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr] *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center font-lato ${
-                        !empleado.existe ? "opacity-40" : ""
-                      }`}
-                    >
-                      <div>
-                        <h3 className="font-normal text-gray-800"></h3>
-                        <h3>{`${empleado.nombre} ${empleado.apellido}`}</h3>
-                      </div>
-                      <div>
-                        <h3
-                          className="truncate max-w-[350px]"
-                          title={empleado.email}
-                        >
-                          {" "}
-                          {empleado.email}{" "}
-                        </h3>
-                      </div>
-                      <div>
-                        <h3>
-                          {empleado.telefonoList
-                            .map((t) => t.numero)
-                            .join(", ")}
-                        </h3>
-                      </div>
-                      <div>
-                        <h3>
-                          {empleado.rol
-                            ? [empleado.rol.tipoRol.rol]
-                            : "Sin rol"}
-                        </h3>
-                      </div>
-                      <div className="flex justify-around">
-                        {/*<button onClick={() => setMostrarEmpleado(empleado)}>
-                                                <img className="h-11 mr-2" src="/svg/LogoVer.svg" alt="Ver detalles" />
-                                            </button>*/}
-
-                        {/* Modal de edición - Permite modificar datos del empleado */}
-                        <button onClick={() => abrirModalEditar(empleado)}>
-                          <img
-                            className="h-11 mr-2"
-                            src="/svg/LogoEditar.svg"
-                            alt="Editar"
-                          />
-                        </button>
-
-                        {/* Baja/Alta lógica */}
-                        <button
-                          onClick={() => {
-                            borradoLogico(empleado);
-                          }}
-                        >
-                          <img
-                            className="h-11 mr-2"
-                            src={`/svg/${
-                              empleado.existe
-                                ? "LogoBorrar.svg"
-                                : "LogoActivar.svg"
-                            }`}
-                            alt={empleado.existe ? "Desactivar" : "Activar"}
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-              })}
-
-            {/**Paginación */}
-            <div className="text-gray-500 flex items-center pt-10 pr-20 justify-end gap-2 text-2xl *:h-10 font-lato">
-              {/**Información empleados mostrados y totales */}
-              <div className="h-10 flex items-center">
-                <h4>
-                  {paginaSeleccionada * cantidadPorPagina -
-                    cantidadPorPagina +
-                    1}
-                  -
-                  {paginaSeleccionada * cantidadPorPagina <
-                  empleadosMostrados.length
-                    ? paginaSeleccionada * cantidadPorPagina
-                    : empleadosMostrados.length}{" "}
-                  de {empleadosMostrados.length}
-                </h4>
-              </div>
-
-              {/**Control de paginado a través de botones */}
-              <button onClick={() => setPaginaSeleccionada(1)}>
-                <img
-                  className="h-10"
-                  src="/svg/PrimeraPagina.svg"
-                  alt="Primera página"
-                />
-              </button>
-
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada((prev) => {
-                    if (paginaSeleccionada > 1) {
-                      return prev - 1;
-                    }
-                    return prev;
-                  })
-                }
-              >
-                <img
-                  className="h-10"
-                  src="/svg/AnteriorPagina.svg"
-                  alt="Página anterior"
-                />
-              </button>
-
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada((prev) => {
-                    if (
-                      paginaSeleccionada <
-                      Math.ceil(empleadosMostrados.length / cantidadPorPagina)
-                    ) {
-                      return prev + 1;
-                    }
-                    return prev;
-                  })
-                }
-              >
-                <img
-                  className="h-10"
-                  src="/svg/SiguientePagina.svg"
-                  alt="Página siguiente"
-                />
-              </button>
-
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada(
-                    Math.ceil(empleadosMostrados.length / cantidadPorPagina)
-                  )
-                }
-              >
-                <img
-                  className="h-10"
-                  src="/svg/UltimaPagina.svg"
-                  alt="Última página"
-                />
-              </button>
-            </div>
+          <div className="relative">
+            <input
+              onChange={e => setBuscador(e.target.value)}
+              value={buscador}
+              className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-full font-lato"
+              placeholder="Buscar..."
+              type="text"
+            />
+            <img className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5" src="/svg/LupaBuscador.svg" alt="Buscar" />
           </div>
         </div>
 
-        {/* Modales */}
-        <AgregarEmpleado
-          isOpen={mostrarModalAgregar}
-          onClose={cerrarModalAgregar}
-          onEmpleadoAgregado={handleEmpleadoAgregado}
-        />
+        {error && <div className="text-2xl text-center py-4 bg-red-100 text-red-600 mx-6 rounded-lg font-lato">{error}</div>}
 
-        <EditarEmpleado
-          isOpen={mostrarModalEditar}
-          empleado={empleadoAEditar}
-          onClose={cerrarModalEditar}
-          onEmpleadoActualizado={handleEmpleadoActualizado}
-        />
+        {cargando ? (
+          <div className="text-3xl text-center py-20 text-gray-500 font-lato">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D93F21]" />
+              <p>Cargando empleados...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full pb-10">
+            <div className="text-4xl w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-500 text-center font-lato mt-10">
+              <h1>Empleado</h1>
+              <h1>Email</h1>
+              <h1>Teléfono</h1>
+              <h1>Rol</h1>
+              <h1>Acciones</h1>
+            </div>
+
+            {empleadosMostrados.length > 0 ? (
+              empleadosMostrados
+                .slice((paginaSeleccionada - 1) * cantidadPorPagina, paginaSeleccionada * cantidadPorPagina)
+                .map(emp => (
+                  <div
+                    key={emp.id}
+                    className={`text-3xl grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-400 text-center font-lato py-2 mt-10 ${!emp.existe ? "opacity-40" : ""}`}
+                  >
+                    <div>{emp.nombre} {emp.apellido}</div>
+                    <div>{emp.email}</div>
+                    <div>
+                      {Array.isArray(emp.telefonoList)
+                        ? emp.telefonoList.length > 0
+                          ? emp.telefonoList.map((tel: any, idx: number) => (
+                            <span key={idx}>
+                              {tel.numero}
+                              {idx < emp.telefonoList.length - 1 ? ", " : ""}
+                            </span>
+                          ))
+                          : "Sin teléfono"
+                        : emp.telefonoList || "Sin teléfono"}
+                    </div>
+                    <div>{typeof emp.rol === "string" ? emp.rol : emp.rol?.tipoRol?.rol || "Sin rol"}</div>
+                    <div className="flex justify-center gap-3">
+                      <div className={`text-white px-3 py-2 rounded-full ${emp.existe ? "bg-green-600" : "bg-gray-500"}`}>
+                        {getEstadoTexto(emp.existe)}
+                      </div>
+                      <button onClick={() => abrirModalEditar(emp)} title="Editar empleado">
+                        <img className="h-10 w-10" src="/public/svg/LogoEditar.svg" alt="Editar" />
+                      </button>
+                      <button onClick={() => borradoLogicoEmpleado(emp)}>
+                        <img className="h-10 w-10" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <div className="text-3xl text-center py-10 text-gray-500 font-lato">
+                No se encontraron empleados
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </>
+
+      {/* Modal Agregar Empleado */}
+      <AgregarEmpleados
+        isOpen={modalAgregarAbierto}
+        onClose={() => setModalAgregarAbierto(false)}
+        onEmpleadoCreado={handleEmpleadoCreado}
+      />
+
+      {/* Modal Editar Empleado */}
+      <EditarEmpleado
+        isOpen={modalEditarAbierto}
+        onClose={() => setModalEditarAbierto(false)}
+        empleado={empleadoSeleccionado}
+        onEmpleadoActualizado={handleEmpleadoActualizado}
+      />
+    </div>
   );
 }

@@ -1,12 +1,14 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import axios from "axios";
-import EditCorreoUser from "./EditCorreoUser";
-import EditContrasenaUser from "./EditContrasenaUser";
-import { Usuario, Telefono, host } from "../../ts/Clases";
-import { useUser } from "../UserAuth/UserContext";
-import { useCloudinary } from "../useCloudinary";
+import { useEffect, useState, useRef  } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import axios from 'axios';
+import EditCorreoUser from './EditCorreoUser';
+import EditContrasenaUser from './EditContrasenaUser';
+import { Usuario, Telefono,host } from '../../ts/Clases';
+import { useUser } from '../UserAuth/UserContext';
+import { useCloudinary } from '../useCloudinary'; 
+
+
 
 // Esquema de validación
 const usuarioSchema = z.object({
@@ -74,9 +76,9 @@ export default function EditarPerfilUser() {
           return;
         }
 
-        // Obtener datos del usuario desde el backend
+        // Obtener datos del usuario desde el backend usando el id de la sesión (userSession.id_user)
         const response = await axios.get(
-          `${host}/api/usuarios/${userSession.id_user}`,
+          host +`/api/usuarios/${userSession.id_user}`,
           axiosConfig
         );
 
@@ -137,7 +139,7 @@ export default function EditarPerfilUser() {
         };
 
         await axios.put(
-          `${host}/api/usuarios/${formData.id}`,
+          host + `/api/usuarios/${formData.id}`,
           usuarioPlano,
           axiosConfig
         );

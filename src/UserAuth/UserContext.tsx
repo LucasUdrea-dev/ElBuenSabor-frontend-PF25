@@ -41,10 +41,13 @@ const decodeJWT = (token: string): UserSession | null => {
   }
 };
 
+
+
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Inicialización: cargar sesión desde localStorage si existe y es válida
   const [userSession, setUserSession] = useState<UserSession | null>(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
     if (token) {
       const decoded = decodeJWT(token);
@@ -69,7 +72,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     return userSession !== null;
   });
 
+  // Flag para saber si ya terminó la inicialización (evita que Firebase Auth se ejecute antes de tiempo)
   const [isInitialized, setIsInitialized] = useState(false);
+
+
+
 
   // Login: guarda el token y establece la sesión
   const login = (token: string) => {
@@ -96,7 +103,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error al cerrar sesión en Firebase:", error);
     }
 
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     setUserSession(null);
     setIsAuthenticated(false);
   };
@@ -107,15 +114,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     return userSession.exp < Math.floor(Date.now() / 1000);
   };
 
+
+
+
+
+
   // Marcar como inicializado después del primer render
   useEffect(() => {
     setIsInitialized(true);
   }, []);
 
+
+
   // Escuchar cambios en localStorage (login desde otros componentes/pestañas)
   useEffect(() => {
     const handleStorageChange = () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       if (token && !isAuthenticated) {
         const decoded = decodeJWT(token);
@@ -131,21 +145,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [isAuthenticated]);
 
+
+
   // Listener de Firebase Auth: solo procesa usuarios de Google/Facebook
   useEffect(() => {
     if (!isInitialized) return;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      const existingToken = localStorage.getItem("token");
+      const existingToken = localStorage.getItem('token');
 
-      // Usuario de Firebase SIN token tradicional: autenticar con backend
+      // Caso 1 Usuario de Firebase SIN token tradicional: autenticar con backend
       if (user && !existingToken) {
         try {
           const firebaseToken = await user.getIdToken();
@@ -162,7 +178,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           console.error("Error autenticando con Firebase:", err);
         }
       }
-      // No hay usuario Firebase PERO hay token tradicional: validar que siga siendo válido
+      // Caso 2 No hay usuario Firebase PERO hay token tradicional: validar que siga siendo válido
       else if (!user && existingToken) {
         const decoded = decodeJWT(existingToken);
 
@@ -194,6 +210,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, userSession]);
 
+
+  // Exponemos todas las funciones y valores a través del contexto
   return (
     <UserContext.Provider
       value={{ userSession, isAuthenticated, login, logout, isTokenExpired }}
@@ -203,12 +221,31 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+
+
+//HOOK PERSONALIZADO - Facilita el acceso al contexto
+
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (!context)
-    throw new Error("useUser debe ser usado dentro de UserProvider");
+
+  
+  if (!context) throw new Error("useUser debe ser usado dentro de UserProvider");
   return context;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
