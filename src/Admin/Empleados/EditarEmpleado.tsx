@@ -1,42 +1,51 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { z } from "zod";
-import { Empleado, Telefono } from "../../../ts/Clases";
+import { host } from "../../../ts/Clases";
 
 // Esquema de validación con Zod
 const schema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
   apellido: z.string().min(1, "El apellido es obligatorio").regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9\s\-\+]*$/, "Formato de teléfono inválido"),
+  telefono: z.string().min(1, "El teléfono es obligatorio").regex(/^[0-9]+$/, "Solo números"),
   email: z.string().email("Formato de email inválido"),
-  contrasena: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   cargo: z.string().min(1, "El cargo es obligatorio"),
 });
 
-// Tipo para errores de validación
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
-interface EditarEmpleadoProps {
+interface EditarEmpleadoModalProps {
   isOpen: boolean;
-  empleado: Empleado | null;
   onClose: () => void;
-  onEmpleadoActualizado: (empleado: Empleado) => void;
+  empleado: any;
+  onEmpleadoActualizado: () => void;
 }
 
-const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClose, onEmpleadoActualizado }) => {
+const EditarEmpleado = ({ isOpen, onClose, empleado, onEmpleadoActualizado }: EditarEmpleadoModalProps) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
     telefono: "",
     email: "",
-    contrasena: "",
-    rol: "",
+    cargo: "",
   });
 
   const [errors, setErrors] = useState<Errors>({});
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Cargar datos del empleado al abrir el modal
+  // Mapeo de roles a IDs según base de datos
+  const rolesMap: { [key: string]: number } = {
+    CAJERO: 3,
+    COCINERO: 4,
+    DELIVERY: 5,
+  };
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Cargar datos del empleado cuando se abre el modal
   useEffect(() => {
     if (isOpen && empleado) {
       setFormData({
@@ -44,49 +53,27 @@ const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClo
         apellido: empleado.apellido || "",
         telefono: empleado.telefonoList?.[0]?.numero?.toString() || "",
         email: empleado.email || "",
-        contrasena: "",
-        rol:"",
+        cargo: empleado.rol?.tipoRol?.rol || "",
       });
       setErrors({});
-      setIsLoading(false);
     }
   }, [isOpen, empleado]);
 
-  // Limpiar formulario al cerrar
-  useEffect(() => {
-    if (!isOpen) {
-      setFormData({
-        nombre: "",
-        apellido: "",
-        telefono: "",
-        email: "",
-        contrasena: "",
-        rol: "",
-      });
-      setErrors({});
-      setIsLoading(false);
-    }
-  }, [isOpen]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
 
-  // Manejador de cambios
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
-  // Validar campos
   const validarCampos = (): boolean => {
-    const dataToValidate = formData.contrasena
-      ? formData
-      : { ...formData, contrasena: "password123" }; // Contraseña temporal
-
-    const result = schema.safeParse(dataToValidate);
+    const result = schema.safeParse(formData);
 
     const newErrors = result.success
       ? {}
       : result.error.issues.reduce((acc, issue) => {
-          if (issue.path[0] === "contrasena" && !formData.contrasena) {
-            return acc;
-          }
           acc[issue.path[0] as keyof typeof acc] = issue.message;
           return acc;
         }, {} as Errors);
@@ -95,55 +82,66 @@ const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClo
     return Object.keys(newErrors).length === 0;
   };
 
-  // Enviar actualización
   const handleActualizar = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!empleado || !validarCampos()) return;
+    if (!validarCampos()) return;
 
     setIsLoading(true);
     setErrors({});
 
-    // Construir objeto actualizado
-    const empleadoActualizado: Empleado = {
-      ...empleado,
-      nombre: formData.nombre,
-      apellido: formData.apellido,
-      email: formData.email,
-      rol: { id: null, fechaAlta: new Date().toISOString(), tipoRol: { id: null, rol: 2 } }, // Rol EMPLOYEE
-      telefonoList: [
-        new Telefono(), // Genera uno nuevo
-      ],
-    };
-
-    // Actualizar número de teléfono
-    empleadoActualizado.telefonoList[0].numero = Number(formData.telefono);
-
-    // Solo actualizar contraseña si se ingresó
-    if (formData.contrasena) {
-      (empleadoActualizado as any).contrasena = formData.contrasena;
-    }
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulación de delay
-      console.log("Empleado actualizado:", empleadoActualizado);
+      const cargoNuevo = formData.cargo.toUpperCase();
+      const idRol = rolesMap[cargoNuevo];
 
-      onEmpleadoActualizado(empleadoActualizado);
+      if (!idRol) {
+        throw new Error("Cargo inválido seleccionado");
+      }
+
+      // Construir el payload según EmpleadoUpdateDTO
+      const payload = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        telefonoList: [
+          {
+            id: empleado.telefonoList?.[0]?.id || null,
+            numero: parseInt(formData.telefono)
+          }
+        ],
+        idRol: idRol,
+        userAuthentication: empleado.userAuthentication ? {
+          id: empleado.userAuthentication.id,
+          username: formData.email,
+          password: empleado.userAuthentication.password // Mantener la password existente
+        } : null
+      };
+
+      console.log("Enviando payload:", payload);
+
+      // Realizar la petición PUT al endpoint correcto
+      const response = await axios.put(
+        `${host}/api/empleados/${empleado.id}`,
+        payload,
+        { headers: getAuthHeaders() }
+      );
+
+      console.log("Empleado actualizado correctamente:", response.data);
+      onEmpleadoActualizado();
       onClose();
     } catch (err: any) {
       console.error("Error al actualizar empleado:", err);
-      setErrors({
-        general:
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Hubo un problema al actualizar el empleado.",
-      });
+      const errorMessage =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Hubo un problema al actualizar al empleado.";
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen || !empleado) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -159,60 +157,52 @@ const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClo
 
         <h2 className="text-2xl font-bold mb-7 font-lato text-center">Editar Empleado</h2>
 
-        {errors.general && <div className="text-red-600 mb-2 text-center">{errors.general}</div>}
+        {errors.general && (
+          <div className="text-red-600 font-lato mb-2 text-center">{errors.general}</div>
+        )}
 
         <form onSubmit={handleActualizar}>
-          {["nombre", "apellido", "email", "telefono", "cargo"].map((campo) => (
-            <div key={campo} className="mb-4">
+          {["nombre", "apellido", "email", "telefono"].map((campo) => (
+            <div className="mb-4" key={campo}>
               <label className="block mb-2 font-lato capitalize">{campo}</label>
               <input
-                type={campo === "email" ? "email" : campo === "telefono" ? "tel" : "text"}
+                type={campo === "email" ? "email" : "text"}
                 name={campo}
                 value={(formData as any)[campo]}
                 onChange={handleChange}
                 disabled={isLoading}
                 className={`w-full p-2 border rounded font-lato ${
-                  (errors as any)[campo] ? "border-red-500" : "border-gray-300"
+                  errors[campo as keyof typeof errors] ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {(errors as any)[campo] && (
-                <p className="text-red-500 text-sm mt-1 font-lato">{(errors as any)[campo]}</p>
+              {errors[campo as keyof typeof errors] && (
+                <p className="text-red-500 text-sm mt-1 font-lato">
+                  {errors[campo as keyof typeof errors]}
+                </p>
               )}
             </div>
           ))}
 
-          {/* Campo Contraseña */}
-          <div className="mb-6 relative">
-            <label className="block mb-2 font-lato">Nueva Contraseña</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="contrasena"
-              value={formData.contrasena}
+          <div className="mb-6">
+            <label className="block mb-2 font-lato">Cargo</label>
+            <select
+              name="cargo"
+              value={formData.cargo}
               onChange={handleChange}
               disabled={isLoading}
-              placeholder="Dejar vacío para mantener la actual"
-              className={`w-full p-2 border rounded font-lato pr-10 ${
-                errors.contrasena ? "border-red-500" : "border-gray-300"
+              className={`w-full p-2 border rounded font-lato ${
+                errors.cargo ? "border-red-500" : "border-gray-300"
               }`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              disabled={isLoading}
-              className="absolute right-2 top-9 transform"
             >
-              <img
-                src={`/svg/${
-                  showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"
-                }`}
-                alt="Visibilidad"
-                className="w-6 h-8"
-              />
-            </button>
-            {errors.contrasena && <p className="text-red-500 text-sm mt-1 font-lato">{errors.contrasena}</p>}
+              <option value="">Seleccionar cargo</option>
+              <option value="CAJERO">Cajero</option>
+              <option value="COCINERO">Cocinero</option>
+              <option value="DELIVERY">Delivery</option>
+              
+            </select>
+            {errors.cargo && <p className="text-red-500 text-sm mt-1 font-lato">{errors.cargo}</p>}
           </div>
 
-          {/* Botones */}
           <div className="flex gap-4">
             <button
               type="button"
@@ -235,10 +225,10 @@ const EditarEmpleado: React.FC<EditarEmpleadoProps> = ({ isOpen, empleado, onClo
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Actualizando...
+                  Guardando...
                 </div>
               ) : (
-                "Actualizar"
+                "Guardar Cambios"
               )}
             </button>
           </div>

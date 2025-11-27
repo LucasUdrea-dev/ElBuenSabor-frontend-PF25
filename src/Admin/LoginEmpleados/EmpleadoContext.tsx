@@ -41,10 +41,13 @@ const isCustomerRole = (role: string): boolean => {
   return role === 'CUSTOMER';
 };
 
+
+
+
 // Provider del contexto
 export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
   const [empleadoSesion, setEmpleadoSesion] = useState<EmpleadoSesion | null>(() => {
-    // 🔥 Leer solo del token general, NO borrarlo si es CUSTOMER
+    // Leer solo del token general, NO borrarlo si es CUSTOMER
     const token = localStorage.getItem('token');
     
     if (token) {
@@ -62,6 +65,8 @@ export const EmpleadoProvider = ({ children }: { children: ReactNode }) => {
     
     return null;
   });
+
+  
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return empleadoSesion !== null;

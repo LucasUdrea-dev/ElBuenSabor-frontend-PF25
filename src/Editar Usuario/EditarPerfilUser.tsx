@@ -10,7 +10,6 @@ import { useCloudinary } from '../useCloudinary';
 
 
 
-
 // Esquema de validación
 const usuarioSchema = z.object({
   id: z.number(),
@@ -62,7 +61,7 @@ export default function EditarPerfilUser() {
           return;
         }
 
-        // Obtener datos del usuario desde el backend
+        // Obtener datos del usuario desde el backend usando el id de la sesión (userSession.id_user)
         const response = await axios.get(
           host +`/api/usuarios/${userSession.id_user}`,
           axiosConfig

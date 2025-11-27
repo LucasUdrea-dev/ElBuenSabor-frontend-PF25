@@ -33,29 +33,24 @@ export default function Clientes() {
     cargarClientes();
   }, []);
 
-  const borradoLogicoCliente = async (cliente: ClienteExtendido) => {
-    if (!cliente.id) {
-      setError("El cliente no tiene un ID válido");
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
-
-    const nuevoEstado = !cliente.existe;
+  const borradoLogicoCliente = async (cliente: any) => {
+    const accion = cliente.existe ? "desactivar" : "activar";
+    
+    if (!confirm(`¿Estás seguro de que deseas ${accion} a ${cliente.nombre} ${cliente.apellido}?`)) return;
 
     try {
-      await axios.put(
-        `${API_BASE_URL}/${cliente.id}`,
-        { ...cliente, existe: nuevoEstado },
-        { headers: getAuthHeaders() }
-      );
+      await axios.delete(`${API_BASE_URL}/${cliente.id}`, {
+        headers: getAuthHeaders()
+      });
 
-      setClientes((prev) =>
-        prev.map((c) => (c.id === cliente.id ? { ...c, existe: nuevoEstado } : c))
+      setClientes(prevClientes =>
+        prevClientes.map(emp =>
+          emp.id === cliente.id ? { ...emp, existe: !emp.existe } : emp
+        )
       );
-    } catch (error) {
-      console.error("Error en borrado lógico:", error);
-      setError("Error al actualizar el estado del cliente");
-      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      console.error("Error:", err);
+      alert(`Error al ${accion} el cliente`);
     }
   };
 
@@ -194,7 +189,7 @@ export default function Clientes() {
         ) : (
           <div className="w-full pb-10">
             {/* Encabezado tabla */}
-            <div className="text-4xl w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-500 text-center font-lato mt-5">
+            <div className="text-4xl w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-500 text-center font-lato mt-10">
               <h1>Cliente</h1>
               <h1>Email</h1>
               <h1>Teléfono</h1>

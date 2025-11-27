@@ -20,11 +20,11 @@ const DetalleClienteAdmin: React.FC<Props> = ({ cliente, isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen && cliente?.id) {
-      cargarDetallesCliente(cliente.id);
-    } else {
+      // Resetear estados ANTES de cargar nuevos datos
       setTelefonos([]);
       setDirecciones([]);
       setPedidos([]);
+      cargarDetallesCliente(cliente.id);
     }
   }, [isOpen, cliente?.id]);
 
@@ -34,20 +34,18 @@ const DetalleClienteAdmin: React.FC<Props> = ({ cliente, isOpen, onClose }) => {
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
     try {
-      // 🔹 Teléfonos
-      const telRes = await axios.get(`${API_BASE_URL}/telefonos/usuario/${clienteId}`, { headers });
-      setTelefonos(Array.isArray(telRes.data) ? telRes.data : []);
+     
 
-      // 🔹 Direcciones
-      const dirRes = await axios.get(`${API_BASE_URL}/direccion/usuario/${clienteId}`, { headers });
-      console.log("📦 Direcciones recibidas:", dirRes.data);
-      setDirecciones(Array.isArray(dirRes.data) ? dirRes.data : []);
+      // 🔹 Direcciones 
+      const dirRes = await axios.get(`${API_BASE_URL}/Direccion/usuario/${clienteId}`, { headers });
+      const direccionesData = Array.isArray(dirRes.data) ? dirRes.data : [];
+      console.log("Direcciones recibidas del servidor:", dirRes.data);
+      console.log("irecciones procesadas:", direccionesData);
+      setDirecciones(direccionesData);
 
-      // 🔹 Pedidos
-      const pedidosRes = await axios.get(`${API_BASE_URL}/pedidos/usuario/${clienteId}`, { headers });
-      setPedidos(Array.isArray(pedidosRes.data) ? pedidosRes.data : []);
+
     } catch (error: any) {
-      console.error("❌ Error al cargar detalles del cliente:", error);
+      console.error("Error al cargar detalles del cliente:", error);
       if (error.response?.status === 403) {
         alert("No tienes permisos para acceder a estos datos.");
       }
@@ -60,6 +58,8 @@ const DetalleClienteAdmin: React.FC<Props> = ({ cliente, isOpen, onClose }) => {
   };
 
   if (!isOpen) return null;
+
+  console.log("🔍 Modal renderizando - Direcciones en estado:", direcciones.length);
 
   return (
     <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 font-lato">
@@ -93,14 +93,13 @@ const DetalleClienteAdmin: React.FC<Props> = ({ cliente, isOpen, onClose }) => {
                 </h3>
                 <p><strong>Email:</strong> {cliente.email}</p>
                 <p>
-                    <strong>Teléfonos:</strong>{" "}
-                    {telefonos.length > 0
-                      ? telefonos.map((t) => t.numero).join(", ")
-                      : cliente.telefonoList.length > 0
-                      ? cliente.telefonoList.map((t) => t.numero).join(", ")
-                      : "Sin teléfonos"}
-                  </p>
-
+                  <strong>Teléfonos:</strong>{" "}
+                  {telefonos.length > 0
+                    ? telefonos.map((t) => t.numero).join(", ")
+                    : cliente.telefonoList.length > 0
+                    ? cliente.telefonoList.map((t) => t.numero).join(", ")
+                    : "Sin teléfonos"}
+                </p>
                 <p>
                   <strong>Estado:</strong>{" "}
                   <span
@@ -115,26 +114,38 @@ const DetalleClienteAdmin: React.FC<Props> = ({ cliente, isOpen, onClose }) => {
 
               {/* Direcciones */}
               <div className="bg-gray-50 p-6 border border-gray-300">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
-                    <img src={LogoDetalle} alt="Direcciones" className="mr-5 w-6 h-6" />
-                    Direcciones
-                  </h3>
-                  {direcciones.length > 0 ? (
-                    <ul className="space-y-2">
-                      {direcciones.map((d) => (
-                        <li key={d.id} className="border-b pb-2">
-                          <strong>{d.alias || "Sin alias"}:</strong>{" "}
-                          {d.nombreCalle} {d.numeracion} —{" "}
-                          {d.descripcionEntrega || "Sin descripción"} —{" "}
-                          {d.ciudad?.nombre || "Sin ciudad"}, {d.ciudad?.provincia?.nombre || "Sin provincia"}, {d.ciudad?.provincia?.pais?.nombre || "Sin país"}
+                <h3 className="text-xl font-semibold mb-4 flex items-center">
+                  <img src={LogoDetalle} alt="Direcciones" className="mr-5 w-6 h-6" />
+                  Direcciones ({direcciones.length})
+                </h3>
+                {direcciones.length > 0 ? (
+                  <ul className="space-y-4">
+                    {direcciones.map((d, index) => {
+                      console.log(`🏠 Renderizando dirección ${index}:`, d);
+                      return (
+                        <li key={d.id || index} className="border-b pb-3 last:border-b-0">
+                          <p className="font-bold text-lg">{d.alias || "Sin alias"}</p>
+                          <p className="text-gray-700">
+                            {d.nombreCalle} {d.numeracion}
+                          </p>
+                          {d.descripcionEntrega && (
+                            <p className="text-gray-600 text-sm italic mt-1">
+                              {d.descripcionEntrega}
+                            </p>
+                          )}
+                          <p className="text-gray-600 text-sm mt-1">
+                            {d.ciudad?.nombre || "Sin ciudad"}
+                            {d.ciudad?.provincia?.nombre && `, ${d.ciudad.provincia.nombre}`}
+                            {d.ciudad?.provincia?.pais?.nombre && `, ${d.ciudad.provincia.pais.nombre}`}
+                          </p>
                         </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No hay direcciones registradas.</p>
-                  )}
-                </div>
-
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">No hay direcciones registradas.</p>
+                )}
+              </div>
 
               {/* Órdenes */}
               <div className="bg-gray-50 p-6 border border-gray-300">
