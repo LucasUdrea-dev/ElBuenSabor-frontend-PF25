@@ -43,7 +43,10 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
   const guardar = async () => {
     switch (modificar.operacion) {
       case "quitar":
-        if (modificar.articulo?.stockArticuloInsumo.cantidad < Number(input)) {
+        if (
+          modificar.articulo?.stockArticuloInsumo?.cantidad ||
+          0 < Number(input)
+        ) {
           alert("La cantidad quitada no puede ser mayor a la disponible");
           return;
         } else {
@@ -95,7 +98,8 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
           ? {
               id: form.subcategoria.categoria.id,
               denominacion: form.subcategoria.categoria.denominacion || "",
-              esParaElaborar: form.subcategoria.categoria.esParaElaborar || false,
+              esParaElaborar:
+                form.subcategoria.categoria.esParaElaborar || false,
               imagen: form.subcategoria.categoria.imagen || "",
             }
           : null,
@@ -164,10 +168,10 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
                 {modificar.operacion == "minimo"
                   ? "Stock minimo:"
                   : `Stock actual: ${
-                      modificar.articulo?.stockArticuloInsumo.cantidad
-                    } ${modificar.articulo.unidadMedida.unidad}${
-                      modificar.articulo.unidadMedida.unidad == "unidad" &&
-                      modificar.articulo.stockArticuloInsumo.cantidad != 1
+                      modificar.articulo?.stockArticuloInsumo?.cantidad || 0
+                    } ${modificar.articulo?.unidadMedida?.unidad}${
+                      modificar.articulo?.unidadMedida?.unidad == "unidad" &&
+                      modificar.articulo?.stockArticuloInsumo?.cantidad != 1
                         ? "es"
                         : ""
                     }`}

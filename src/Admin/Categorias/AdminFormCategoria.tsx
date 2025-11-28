@@ -82,8 +82,8 @@ export default function AdminFormCategoria({
 
   const guardarCategoria = async (form: Categoria) => {
     let URL = form.id
-      ? `${host}/api/Categoria/actualizar/${form.id}`
-      : `${host}/api/Categoria/crear`;
+      ? `${host}/api/categoria/actualizar/${form.id}`
+      : `${host}/api/categoria/crear`;
 
     try {
       if (form.id) {
