@@ -39,7 +39,7 @@ export default function Catalogo() {
 
   //Obtener categorias
   const cargarCategorias = async () => {
-    const URL = `${host}/api/Categoria/ventas`;
+    const URL = `${host}/api/categoria/ventas`;
     try {
       const response = await axios.get(URL);
 
