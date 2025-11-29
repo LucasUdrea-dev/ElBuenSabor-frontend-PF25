@@ -107,9 +107,9 @@ export default function DireccionesUser() {
 
   return (
     <div className="min-h-screen text-white p-4 bg-[#333333] font-lato">
-      <div className="bg-[#444444] rounded-xl max-w-4xl mx-auto overflow-hidden">
+      <div className="bg-[#444444] rounded-xl max-w-5xl mx-auto overflow-hidden mt-5">
         <div className="bg-[#333333]/40 px-4 py-3">
-          <h2 className="font-lato text-lg">Mis direcciones</h2>
+          <h2 className="font-lato text-2xl text-pretty">Mis direcciones</h2>
         </div>
 
         <div className="p-4">
@@ -127,11 +127,11 @@ export default function DireccionesUser() {
               {direcciones.map((dir) => (
                 <div
                   key={dir.id}
-                  className="flex max-md:gap-5 items-center justify-between bg-[#FAF8F5] text-[#262626] px-4 py-3 rounded-xl"
+                  className="flex max-md:gap-5 items-center justify-between bg-[#FAF8F5] text-[#262626] px-5 py-4 rounded-xl mt-3"
                 >
                   <div>
-                    <p className="font-bold">{dir.alias}</p>
-                    <p className="text-sm">
+                    <p className="font-bold font-lato">{dir.alias}</p>
+                    <p className="text-sm truncate max-w-lg font-lato">
                       {dir.nombreCalle} {dir.numeracion}, {dir.ciudad?.nombre}, {dir.ciudad?.provincia?.nombre}, {dir.ciudad?.provincia?.pais?.nombre}
                     </p>
                   </div>
@@ -141,9 +141,9 @@ export default function DireccionesUser() {
                         setDireccionAEditar(dir);
                         setEditarDireccionOpen(true);
                       }}
-                      className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded flex items-center gap-1"
+                      className="bg-neutral-200 hover:bg-neutral-300 text-sm px-3 py-1 rounded-md flex items-center gap-1 shadow-md"
                     >
-                      ✏️ Editar
+                      Editar
                     </button>
 
                     <button
@@ -151,9 +151,9 @@ export default function DireccionesUser() {
                         setDireccionAEliminar(dir.id);
                         setEliminarDireccionOpen(true);
                       }}
-                      className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded flex items-center gap-1"
+                      className="bg-neutral-200 hover:bg-neutral-300 text-sm px-3 py-1 rounded-md flex items-center gap-1 shadow-md"
                     >
-                      🗑 Eliminar
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function DireccionesUser() {
               <div className="text-right mt-4">
                 <button
                   onClick={abrirAgregarDireccion}
-                  className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded text-white"
+                  className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded-lg text-white shadow-md mt-4"
                 >
                   Agregar dirección
                 </button>

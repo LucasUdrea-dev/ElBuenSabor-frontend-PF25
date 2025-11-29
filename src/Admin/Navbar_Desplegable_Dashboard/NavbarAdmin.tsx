@@ -179,7 +179,7 @@ export default function NavbarAdmin() {
                   >
                     <img
                       className="w-10 h-10 rounded-full object-cover"
-                      src={imagenEmpleado || "../public/svg/imagenUsuario.svg"}
+                      src={imagenEmpleado || "../../../public/svg/ImagenUsuario.svg"}
                       alt="foto usuario"
                     />
                     <label className="flex items-center hover:cursor-pointer text-white h-15 m-auto font-lato">

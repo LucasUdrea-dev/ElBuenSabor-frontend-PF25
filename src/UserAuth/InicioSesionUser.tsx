@@ -47,9 +47,7 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   }, [isOpen]);
 
 
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
-  general?: string;
-};
+
 
   // Maneja el cambio en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,7 +134,6 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
   };
 
 
-      console.log(" Respuesta del backend:", response.data);
 
   // Inicio con Google usando Firebase
   const handleGoogleLogin = async () => {
