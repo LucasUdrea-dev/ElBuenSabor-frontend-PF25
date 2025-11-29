@@ -33,7 +33,7 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
   useEffect(() => {
     setInput(() => {
       if (modificar.operacion == "minimo") {
-        return String(modificar.articulo?.stockArticuloInsumo.minStock);
+        return String(modificar.articulo?.stockArticuloInsumo?.minStock || 0);
       } else {
         return "";
       }
@@ -41,21 +41,33 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
   }, [modificar.operacion]);
 
   const guardar = async () => {
+    if (!modificar.articulo?.stockArticuloInsumo) {
+      alert("No se puede modificar el stock: datos del artículo incompletos.");
+      return;
+    }
+
     switch (modificar.operacion) {
       case "quitar":
-        if (
-          modificar.articulo?.stockArticuloInsumo?.cantidad ||
-          0 < Number(input)
-        ) {
-          alert("La cantidad quitada no puede ser mayor a la disponible");
-          return;
-        } else {
-          modificar.articulo.stockArticuloInsumo.cantidad -= Number(input);
+        {
+          const cantidadActual =
+            modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
+          const cantidadAQuitar = Number(input);
+          if (cantidadActual < cantidadAQuitar) {
+            alert("La cantidad quitada no puede ser mayor a la disponible");
+            return;
+          }
+          modificar.articulo.stockArticuloInsumo.cantidad =
+            cantidadActual - cantidadAQuitar;
         }
         break;
 
       case "agregar":
-        modificar.articulo.stockArticuloInsumo.cantidad += Number(input);
+        {
+          const cantidadActual =
+            modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
+          modificar.articulo.stockArticuloInsumo.cantidad =
+            cantidadActual + Number(input);
+        }
         break;
 
       case "minimo":
