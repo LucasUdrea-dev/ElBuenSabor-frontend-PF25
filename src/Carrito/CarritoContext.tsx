@@ -2,6 +2,7 @@ import { createContext, PropsWithChildren, useEffect, useState } from "react";
 import {
   ArticuloInsumo,
   ArticuloManufacturado,
+  axiosConfig,
   DetallePedido,
   DetallePromocion,
   Direccion,
@@ -62,7 +63,7 @@ export default function CarritoProvider({ children }: PropsWithChildren) {
     const URL = host + `/api/sucursales/${1}`;
 
     try {
-      const response = await axios.get(URL);
+      const response = await axios.get(URL, axiosConfig);
 
       const sucursal: Sucursal = response.data;
 

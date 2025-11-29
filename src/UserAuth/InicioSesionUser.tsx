@@ -16,26 +16,32 @@ const schema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
-
 const API_URL = host + "/api/auth/login";
 
 //URL para autenticación con Firebase
 const FIREBASE_LOGIN_URL = host + "/api/auth/firebase-login";
 
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
+type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
+  general?: string;
+};
 
-
-
-const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const InicioSesionUser = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const { login } = useUser();
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isRecuperarOpen, setIsRecuperarOpen] = useState(false);
-  const [formData, setFormData] = useState<userAuthentication>(new userAuthentication());
+  const [formData, setFormData] = useState<userAuthentication>(
+    new userAuthentication()
+  );
   const navigate = useNavigate();
   // Estado de carga
   const [isLoading, setIsLoading] = useState(false);
-
 
   // Limpiar formulario al cerrar
   useEffect(() => {
@@ -46,16 +52,14 @@ const InicioSesionUser = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     }
   }, [isOpen]);
 
-
-type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
-  general?: string;
-};
+  type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
+    general?: string;
+  };
 
   // Maneja el cambio en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
 
   // Función para validar los campos del formulario
   const validarCampos = (): boolean => {
@@ -69,16 +73,14 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
     const newErrors = result.success
       ? {}
       : result.error.issues.reduce((acc, issue) => {
-        acc[issue.path[0] as keyof typeof acc] = issue.message;
-        return acc;
-      }, {} as Errors);
+          acc[issue.path[0] as keyof typeof acc] = issue.message;
+          return acc;
+        }, {} as Errors);
 
     setErrors(newErrors);
     console.log("Errores después de validación:", newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-
 
   // Manejo de inicio de sesión tradicional (email/password)
   const handleLogin = async (e: React.FormEvent) => {
@@ -94,14 +96,14 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
     try {
       const response = await axios.post(API_URL, {
         username: formData.username,
-        password: formData.password
+        password: formData.password,
       });
 
       if (response.data.jwt) {
         login(response.data.jwt);
-        localStorage.setItem('token', response.data.jwt);
+        localStorage.setItem("token", response.data.jwt);
         onClose();
-        navigate('/catalogo');
+        navigate("/catalogo");
       } else {
         setErrors({ general: "No se recibió token de autenticación" });
       }
@@ -110,9 +112,15 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
         const errorMessage = err.response?.data;
 
         // Verificar si es el error de usuario inactivo
-        if (typeof errorMessage === 'string') {
-          if (errorMessage.includes("no está activo") || errorMessage.includes("no existe")) {
-            setErrors({ general: "Tu cuenta está inactiva en este momento. Comunícate con soporte." });
+        if (typeof errorMessage === "string") {
+          if (
+            errorMessage.includes("no está activo") ||
+            errorMessage.includes("no existe")
+          ) {
+            setErrors({
+              general:
+                "Tu cuenta está inactiva en este momento. Comunícate con soporte.",
+            });
           } else {
             setErrors({ general: errorMessage });
           }
@@ -125,7 +133,9 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
         else if (err.response?.status === 401) {
           setErrors({ general: "Credenciales incorrectas" });
         } else {
-          setErrors({ general: "Error al iniciar sesión. Intenta nuevamente." });
+          setErrors({
+            general: "Error al iniciar sesión. Intenta nuevamente.",
+          });
         }
       } else {
         setErrors({ general: "Error desconocido en el inicio de sesión." });
@@ -135,16 +145,13 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
     }
   };
 
-
-      console.log(" Respuesta del backend:", response.data);
-
   // Inicio con Google usando Firebase
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
 
     // Forzar siempre a elegir una cuenta
     provider.setCustomParameters({
-      prompt: "select_account"
+      prompt: "select_account",
     });
 
     //Evitar que Firebase use sesiones anteriores
@@ -177,13 +184,13 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
 
       // Guardar el JWT en localStorage y contexto
       if (response.data.jwt) {
-        localStorage.setItem('token', response.data.jwt);
+        localStorage.setItem("token", response.data.jwt);
         login(response.data.jwt);
         console.log("Token almacenado, cerrando modal y navegando...");
 
         // Cerrar modal y redirigir
         onClose();
-        navigate('/catalogo');
+        navigate("/catalogo");
       } else {
         setErrors({ general: "No se recibió token de autenticación" });
       }
@@ -194,19 +201,24 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
       let errorMessage = "Error al autenticar con Google. Intenta nuevamente.";
 
       // Errores de Firebase
-      if (error.code === 'auth/popup-blocked') {
-        errorMessage = "El popup fue bloqueado. Permite los popups para este sitio.";
-      } else if (error.code === 'auth/popup-closed-by-user') {
+      if (error.code === "auth/popup-blocked") {
+        errorMessage =
+          "El popup fue bloqueado. Permite los popups para este sitio.";
+      } else if (error.code === "auth/popup-closed-by-user") {
         errorMessage = "Cerraste el popup de autenticación.";
       }
       // Errores del backend
       else if (axios.isAxiosError(error)) {
         const backendError = error.response?.data;
 
-        if (typeof backendError === 'string') {
+        if (typeof backendError === "string") {
           // Verificar si es el error de usuario inactivo
-          if (backendError.includes("no está activo") || backendError.includes("no existe")) {
-            errorMessage = "Tu cuenta está inactiva en este momento. Comunícate con soporte.";
+          if (
+            backendError.includes("no está activo") ||
+            backendError.includes("no existe")
+          ) {
+            errorMessage =
+              "Tu cuenta está inactiva en este momento. Comunícate con soporte.";
           } else {
             errorMessage = backendError;
           }
@@ -221,9 +233,6 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
     }
   };
 
-
-
-
   // Función para abrir el modal de recuperación de contraseña
   const handleOpenRecuperar = () => {
     setIsRecuperarOpen(true);
@@ -235,12 +244,9 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
 
   if (!isOpen) return null;
 
-
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md relative">
-
         <button
           type="button"
           onClick={onClose}
@@ -250,8 +256,9 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
           X
         </button>
 
-        <h2 className="text-2xl font-bold mb-7 font-lato text-center">Iniciar Sesión</h2>
-
+        <h2 className="text-2xl font-bold mb-7 font-lato text-center">
+          Iniciar Sesión
+        </h2>
 
         {errors.general && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 font-lato text-sm">
@@ -295,7 +302,11 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
                 className="absolute right-2 top-1/2 transform -translate-y-1/2"
               >
                 <img
-                  src={`public/svg/${showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"}`}
+                  src={`public/svg/${
+                    showPassword
+                      ? "ic_baseline-visibility-off.svg"
+                      : "ic_baseline-visibility.svg"
+                  }`}
                   alt="Visibilidad"
                   className="w-6 h-6"
                 />
@@ -306,14 +317,14 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
             )}
           </div>
 
-
           <button
             type="submit"
             disabled={isLoading}
-            className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 ${isLoading
-                ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                : 'bg-[#0A76E1] hover:bg-[#0A5BBE] text-white'
-              }`}
+            className={`py-2 px-4 rounded-full w-full mb-4 font-lato transition-all duration-200 ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed opacity-70"
+                : "bg-[#0A76E1] hover:bg-[#0A5BBE] text-white"
+            }`}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -321,7 +332,7 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
                 Ingresando...
               </div>
             ) : (
-              'Ingresar'
+              "Ingresar"
             )}
           </button>
 
@@ -336,8 +347,6 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
             </button>
           </div>
 
-
-
           {/* Bloque de inicio con redes sociales */}
           <div className="text-center mb-4 font-lato">
             <div className="flex justify-center items-center gap-2 mb-4">
@@ -346,10 +355,11 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${isLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-100 hover:shadow-md'
-                  }`}
+                className={`flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full shadow-sm transition-all duration-200 bg-white text-gray-700 font-medium ${
+                  isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-100 hover:shadow-md"
+                }`}
               >
                 <img
                   src="public/svg/flat-color-icons_google.svg"
@@ -360,12 +370,13 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
               </button>
             </div>
           </div>
-
         </form>
       </div>
 
-      <RecuperarContrasena isOpen={isRecuperarOpen} onClose={handleCloseRecuperar} />
-
+      <RecuperarContrasena
+        isOpen={isRecuperarOpen}
+        onClose={handleCloseRecuperar}
+      />
     </div>
   );
 };
