@@ -52,9 +52,8 @@ const InicioSesionUser = ({
     }
   }, [isOpen]);
 
-  type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & {
-    general?: string;
-  };
+
+
 
   // Maneja el cambio en los campos del formulario
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +143,8 @@ const InicioSesionUser = ({
       setIsLoading(false);
     }
   };
+
+
 
   // Inicio con Google usando Firebase
   const handleGoogleLogin = async () => {

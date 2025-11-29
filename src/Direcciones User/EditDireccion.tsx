@@ -1,8 +1,27 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { LatLngExpression } from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { Direccion, Ciudad, Provincia, host } from "../../ts/Clases";
 import { useUser } from "../UserAuth/UserContext";
 import { z } from "zod";
+
+// Fix para los iconos de Leaflet en React
+import L from "leaflet";
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+// icono personalizado 
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+//definir icono predeterminado
+L.Marker.prototype.options.icon = DefaultIcon;
 
 type Errors = {
   calle?: string;
@@ -31,6 +50,20 @@ type Props = {
   direccion: Direccion;
 };
 
+// Componente para manejar los clics en el mapa
+const MapClickHandler: React.FC<{
+  onLocationSelect: (lat: number, lng: number) => void;
+}> = ({ onLocationSelect }) => {
+
+  //hook que escuchar eventos del mapa
+  useMapEvents({
+    click: (e) => {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+};
+
 const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
   const [calle, setCalle] = useState("");
   const [numero, setNumero] = useState("");
@@ -45,6 +78,11 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
   const [provincias, setProvincias] = useState<Provincia[]>([]);
   const [errors, setErrors] = useState<Errors>({});
   const [cargando, setCargando] = useState(false);
+  const [mostrarMapa, setMostrarMapa] = useState(false);
+
+  // Coordenadas por defecto Mendoza
+  const defaultCenter: LatLngExpression = [-32.8895, -68.8458];
+  const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null); //posicion inicial del marcador
 
   const { userSession } = useUser();
 
@@ -63,12 +101,26 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
     }
   }, [provincia]);
 
+  // Actualizar marcador cuando cambian las coordenadas manualmente
+  useEffect(() => {
+    const lat = parseFloat(latitud);      // Convertir strings a números
+    const lng = parseFloat(longitud);
+    if (!isNaN(lat) && !isNaN(lng)) {   // Si ambas coordenadas son números válidos
+      setMarkerPosition([lat, lng]);   // Actualizar la posición del marcador
+    }
+  }, [latitud, longitud]);
+
   const inicializarFormulario = () => {
     setCalle(direccion.nombreCalle || "");
     setNumero(direccion.numeracion || "");
     setAlias(direccion.alias || "");
     setLatitud(direccion.latitud?.toString() || "");
     setLongitud(direccion.longitud?.toString() || "");
+
+    // Inicializar posición del marcador si hay coordenadas
+    if (direccion.latitud && direccion.longitud) {
+      setMarkerPosition([direccion.latitud, direccion.longitud]);
+    }
 
     if (direccion.ciudad) {
       setCiudad(direccion.ciudad);
@@ -110,6 +162,13 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
       console.error("Error al cargar ciudades:", error);
       setErrors({ general: "Error al cargar las ciudades" });
     }
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    setLatitud(lat.toFixed(6)); // SE GUARDAN las coordenadas en los estados y redondea a 6 decimales
+    setLongitud(lng.toFixed(6));
+
+    setMarkerPosition([lat, lng]);  // Actualizar la posición del marcador en el mapa
   };
 
   const validarCampos = (): boolean => {
@@ -154,7 +213,6 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
     try {
       const token = localStorage.getItem("token");
 
-      // Crear el DTO según lo que espera el backend
       const direccionDTO = {
         nombreCalle: calle,
         numeracion: numero,
@@ -167,9 +225,8 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
         }
       };
 
-      console.log("📤 Actualizando dirección:", direccionDTO);
+      console.log("Actualizando dirección:", direccionDTO);
 
-      // Usar el endpoint correcto según el controller
       await axios.put(
         `${host}/api/Direccion/usuario/${userSession.id_user}/${direccion.id}`,
         direccionDTO,
@@ -184,7 +241,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
       onClose();
     } catch (error: any) {
       console.error("Error al editar la dirección:", error);
-      console.error("📥 Respuesta del servidor:", error.response?.data);
+      console.error("Respuesta del servidor:", error.response?.data);
       
       const mensajeError = error.response?.data?.error || 
                           error.response?.data?.message || 
@@ -199,9 +256,11 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-md:w-xs max-md:p-5 max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl text-center mb-4 text-black font-lato">Editar Dirección</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-8 rounded-3xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h2 className="text-black text-3xl font-lato mb-12 text-center">
+          Editar Dirección
+        </h2>
 
         {errors.general && (
           <div className="text-red-600 font-lato mb-4 text-center bg-red-50 p-3 rounded">
@@ -210,41 +269,85 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
         )}
 
         <form onSubmit={handleEditarDireccion}>
-          <div className="mb-4">
-            <label className="text-black block mb-2">Coordenadas</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={latitud}
-                onChange={(e) => setLatitud(e.target.value)}
-                placeholder="Latitud"
-                className="text-black w-1/2 p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
-              />
-              <input
-                type="text"
-                value={longitud}
-                onChange={(e) => setLongitud(e.target.value)}
-                placeholder="Longitud"
-                className="text-black w-1/2 p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
-              />
+
+          <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-black block mb-2 font-lato">Latitud</label>
+                <input
+                  type="text"
+                  value={latitud}
+                  onChange={(e) => setLatitud(e.target.value)}
+                  placeholder="-32.889500"
+                  className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-black block mb-2 font-lato">Longitud</label>
+                <input
+                  type="text"
+                  value={longitud}
+                  onChange={(e) => setLongitud(e.target.value)}
+                  placeholder="-68.845800"
+                  className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
+                />
+              </div>
             </div>
+
+
+          {/* Sección del Mapa */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2 mt-4">
+              <button
+                type="button"
+                onClick={() => setMostrarMapa(!mostrarMapa)}
+                className="text-[#0A76E1] hover:text-[#0A5BBE] text-sm font-lato border-1 px-3 py-1 rounded-4xl"
+              >
+                {mostrarMapa ? "Ocultar mapa" : "Mostrar mapa"}
+              </button>
+            </div>
+
+            {mostrarMapa && (
+              <div className="border rounded-lg overflow-hidden mb-4">
+                <MapContainer
+                  center={markerPosition || defaultCenter}
+                  zoom={13}
+                  style={{ height: "400px", width: "100%" }}
+                  key={markerPosition ? `${(markerPosition as [number, number])[0]}-${(markerPosition as [number, number])[1]}` : 'default'}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <MapClickHandler onLocationSelect={handleMapClick} />
+                  {markerPosition && <Marker position={markerPosition} />}
+                </MapContainer>
+                <div className="bg-gray-50 p-3 text-sm text-gray-600 font-lato">
+                  💡 Haz clic en el mapa para actualizar la ubicación exacta de tu dirección
+                </div>
+              </div>
+            )}
+
+            
           </div>
 
-          <div className="mb-4">
-            <label className="text-black block mb-2 font-lato">Calle*</label>
-            <input
-              type="text"
-              value={calle}
-              onChange={(e) => setCalle(e.target.value)}
-              className={`text-black w-full p-2 border rounded font-lato ${
-                errors.calle ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.calle && <p className="text-red-500 text-sm mt-1">{errors.calle}</p>}
-          </div>
+          {/* Grid de 2 columnas para el resto de campos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Calle */}
+            <div className="md:col-span-2">
+              <label className="text-black block mb-2 font-lato">Calle*</label>
+              <input
+                type="text"
+                value={calle}
+                onChange={(e) => setCalle(e.target.value)}
+                className={`text-black w-full p-2 border rounded font-lato ${
+                  errors.calle ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.calle && <p className="text-red-500 text-sm mt-1">{errors.calle}</p>}
+            </div>
 
-          <div className="mb-4 flex gap-2">
-            <div className="w-1/3">
+            {/* Número, Piso, Depto */}
+            <div>
               <label className="text-black block mb-2">Número*</label>
               <input
                 type="text"
@@ -257,29 +360,29 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
               {errors.numero && <p className="text-red-500 text-sm mt-1">{errors.numero}</p>}
             </div>
 
-            <div className="w-1/3">
-              <label className="text-black block mb-2">Piso</label>
-              <input
-                type="text"
-                value={piso}
-                onChange={(e) => setPiso(e.target.value)}
-                className="text-black w-full p-2 border rounded border-gray-300"
-              />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-black block mb-2">Piso</label>
+                <input
+                  type="text"
+                  value={piso}
+                  onChange={(e) => setPiso(e.target.value)}
+                  className="text-black w-full p-2 border rounded border-gray-300"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-black block mb-2">Depto</label>
+                <input
+                  type="text"
+                  value={depto}
+                  onChange={(e) => setDepto(e.target.value)}
+                  className="text-black w-full p-2 border rounded border-gray-300"
+                />
+              </div>
             </div>
 
-            <div className="w-1/3">
-              <label className="text-black block mb-2">Depto</label>
-              <input
-                type="text"
-                value={depto}
-                onChange={(e) => setDepto(e.target.value)}
-                className="text-black w-full p-2 border rounded border-gray-300"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4 flex max-md:flex-col max-md:*:w-full gap-2">
-            <div className="w-1/2">
+            {/* Provincia */}
+            <div>
               <label className="text-black block mb-2">Provincia*</label>
               <select
                 value={provincia.id || ""}
@@ -308,7 +411,8 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
               {errors.provincia && <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>}
             </div>
 
-            <div className="w-1/2">
+            {/* Ciudad */}
+            <div>
               <label className="text-black block mb-2">Ciudad*</label>
               <select
                 value={ciudad.id || ""}
@@ -334,28 +438,30 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
               </select>
               {errors.ciudad && <p className="text-red-500 text-sm mt-1">{errors.ciudad}</p>}
             </div>
+
+            {/* Alias */}
+            <div className="md:col-span-2">
+              <label className="text-black block mb-2">Alias*</label>
+              <input
+                type="text"
+                value={alias}
+                onChange={(e) => setAlias(e.target.value)}
+                placeholder="Casa, Trabajo, Oficina"
+                className={`text-black w-full p-2 border rounded placeholder:text-[#878787] ${
+                  errors.alias ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.alias && <p className="text-red-500 text-sm mt-1">{errors.alias}</p>}
+            </div>
           </div>
 
-          <div className="mb-4">
-            <label className="text-black block mb-2">Alias*</label>
-            <input
-              type="text"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-              placeholder="Casa, Trabajo, Oficina"
-              className={`text-black w-full p-2 border rounded placeholder:text-[#878787] ${
-                errors.alias ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.alias && <p className="text-red-500 text-sm mt-1">{errors.alias}</p>}
-          </div>
-
-          <div className="flex justify-between gap-4 max-md:*:py-0 mt-6">
+          {/* Botones */}
+          <div className="flex justify-end gap-4 mt-10">
             <button
               type="button"
               onClick={onClose}
               disabled={cargando}
-              className="bg-white text-[#0A76E1] py-3 px-3 rounded-full hover:bg-gray-200 border border-[#0A76E1] w-40 disabled:opacity-50"
+              className="bg-white text-[#0A76E1] py-3 px-6 rounded-full hover:bg-gray-200 border border-[#0A76E1] disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -363,7 +469,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
             <button
               type="submit"
               disabled={cargando}
-              className="bg-[#0A76E1] text-white py-3 px-3 rounded-full hover:bg-[#0A5BBE] w-40 disabled:opacity-50"
+              className="bg-[#0A76E1] text-white py-3 px-6 rounded-full hover:bg-[#0A5BBE] disabled:opacity-50"
             >
               {cargando ? "Guardando..." : "Guardar cambios"}
             </button>

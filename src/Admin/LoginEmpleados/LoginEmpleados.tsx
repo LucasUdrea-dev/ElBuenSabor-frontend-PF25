@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import RecuperarContrasena from "../../UserAuth/RecuperarContrasena";
 import { z } from "zod";
-import { userAuthentication } from "../../../ts/Clases";
+import { userAuthentication,host } from "../../../ts/Clases";
 import { useEmpleado } from "./EmpleadoContext";
 
 
@@ -16,7 +16,7 @@ const schema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
-const API_URL = "http://localhost:8080/api/auth/login";
+const API_URL = host + "/api/auth/login";
 
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>> & { general?: string };
 
@@ -90,7 +90,7 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
           login(response.data.jwt);
           localStorage.setItem('token', response.data.jwt);
           onClose();
-          navigate('/admin/administracion');
+          navigate('/admin/');
         } catch (loginError) {
           // Error del EmpleadoContext (ej: usuario con rol CUSTOMER)
           if (loginError instanceof Error) {
