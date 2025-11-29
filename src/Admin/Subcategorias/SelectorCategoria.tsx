@@ -25,7 +25,7 @@ export default function SelectorCategoria({ abierto, cerrar, setForm }: Props) {
       },
     };
 
-    const URL = `${host}/api/Categoria/full`;
+    const URL = `${host}/api/categoria/full`;
 
     try {
       const response = await axios.get(URL, axiosConfig);

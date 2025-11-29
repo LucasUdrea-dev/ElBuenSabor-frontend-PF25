@@ -291,17 +291,17 @@ export default function AdminInsumo() {
                             </h3>
                           </div>
                           <h3>
-                            {articulo.stockArticuloInsumo.cantidad}{" "}
-                            {articulo.unidadMedida.unidad}
-                            {articulo.unidadMedida.unidad == "unidad" &&
-                              articulo.stockArticuloInsumo.cantidad != 1 &&
+                            {articulo.stockArticuloInsumo?.cantidad}{" "}
+                            {articulo.unidadMedida?.unidad}
+                            {articulo.unidadMedida?.unidad == "unidad" &&
+                              articulo.stockArticuloInsumo?.cantidad != 1 &&
                               "es"}
                           </h3>
                           <div className="flex">
                             <div
                               className={`${
-                                articulo.stockArticuloInsumo.cantidad >
-                                articulo.stockArticuloInsumo.minStock
+                                articulo.stockArticuloInsumo?.cantidad >
+                                articulo.stockArticuloInsumo?.minStock
                                   ? "bg-green-600"
                                   : "bg-red-500"
                               } h-10 w-10 m-auto rounded-4xl`}

@@ -59,7 +59,7 @@ export default function AdminFormManufacturado({
   );
 
   const traerCategorias = useCallback(async () => {
-    const URLCategorias = `${host}/api/Categoria/full`;
+    const URLCategorias = `${host}/api/categoria/full`;
 
     try {
       const response = await axios.get(URLCategorias, axiosConfig);

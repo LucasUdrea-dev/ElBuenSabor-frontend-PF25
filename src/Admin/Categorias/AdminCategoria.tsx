@@ -31,7 +31,7 @@ export default function AdminCategoria() {
   }, []);
 
   const hardDeleteCategoria = async (categoria: Categoria) => {
-    const URL = `${host}/api/Categoria/full/drop/${categoria.id}`;
+    const URL = `${host}/api/categoria/full/drop/${categoria.id}`;
 
     try {
       if (
@@ -61,7 +61,7 @@ export default function AdminCategoria() {
   };
 
   const cargarCategorias = async () => {
-    const URL = `${host}/api/Categoria/full`;
+    const URL = `${host}/api/categoria/full`;
 
     try {
       const response = await axios.get(URL, axiosConfig);
