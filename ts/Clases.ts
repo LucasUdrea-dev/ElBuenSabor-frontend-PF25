@@ -41,7 +41,7 @@ export class Pedido {
   fecha: string = new Date().toISOString();
   detallePedidoList: DetallePedido[] = [];
   detallePromocionList: DetallePromocion[] = [];
-  estadoPedido: EstadoPedido = { id: 5, nombreEstado: "INCOMING" };
+  estadoPedido: EstadoPedido = { id: 5, nombreEstado: EstadosPedidosEnum.INCOMING };
   sucursal: Sucursal = new Sucursal();
   tipoEnvio: TipoEnvio = tiposEnvioEnum[1];
   tipoPago: TipoPago = tiposPagoEnum[1];
@@ -88,17 +88,41 @@ export class DetallePedido {
 
 export class EstadoPedido {
   id?: number | null = null;
-  nombreEstado: string = "INCOMING";
+  nombreEstado: EstadosPedidosEnum = EstadosPedidosEnum.INCOMING;
+}
+
+export enum EstadosPedidosEnum {
+  PREPARING = "PREPARING",
+  STANDBY = "STANDBY",
+  CANCELLED = "CANCELLED",
+  REJECTED = "REJECTED",
+  INCOMING = "INCOMING",
+  DELIVERED = "DELIVERED",
+  READY = "READY",
+  DELIVERING = "DELIVERING",
+}
+
+
+export const tiposEstadoPedidoEnum:  Record<string, EstadoPedido> = {
+  PREPARING: { id: 1, nombreEstado: EstadosPedidosEnum.PREPARING },
+  STANDBY: { id: 2, nombreEstado: EstadosPedidosEnum.STANDBY },
+  CANCELLED: { id: 3, nombreEstado: EstadosPedidosEnum.CANCELLED },
+  REJECTED: { id: 4, nombreEstado: EstadosPedidosEnum.REJECTED },
+  INCOMING: { id: 5, nombreEstado: EstadosPedidosEnum.INCOMING },
+  DELIVERED: { id: 6, nombreEstado: EstadosPedidosEnum.DELIVERED },
+  READY: { id: 7, nombreEstado: EstadosPedidosEnum.READY },
+  DELIVERING: { id: 8, nombreEstado: EstadosPedidosEnum.DELIVERING },
 }
 
 export const tiposEstadoPedido: EstadoPedido[] = [
-  { id: 1, nombreEstado: "PREPARING" },
-  { id: 2, nombreEstado: "STANDBY" },
-  { id: 3, nombreEstado: "CANCELLED" },
-  { id: 4, nombreEstado: "REJECTED" },
-  { id: 5, nombreEstado: "INCOMING" },
-  { id: 6, nombreEstado: "DELIVERED" },
-  { id: 7, nombreEstado: "READY" },
+  { id: 1, nombreEstado: EstadosPedidosEnum.PREPARING },
+  { id: 2, nombreEstado: EstadosPedidosEnum.STANDBY },
+  { id: 3, nombreEstado: EstadosPedidosEnum.CANCELLED },
+  { id: 4, nombreEstado: EstadosPedidosEnum.REJECTED },
+  { id: 5, nombreEstado: EstadosPedidosEnum.INCOMING },
+  { id: 6, nombreEstado: EstadosPedidosEnum.DELIVERED },
+  { id: 7, nombreEstado: EstadosPedidosEnum.READY },
+  { id: 8, nombreEstado: EstadosPedidosEnum.DELIVERING },
 ];
 
 export class Categoria {
