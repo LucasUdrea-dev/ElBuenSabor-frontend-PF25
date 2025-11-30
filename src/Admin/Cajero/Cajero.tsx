@@ -1,196 +1,119 @@
 import { useEffect, useState } from "react";
-import { host } from "../../../ts/Clases";
-// import axios from "axios";
+import {
+  axiosConfig,
+  EstadosPedidosEnum,
+  host,
+  Pedido,
+} from "../../../ts/Clases";
+import axios from "axios";
+import { usePedidosSocket } from "../../services/websocket/usePedidosSocket";
 
-// Interfaces hardcodeadas para los pedidos
-interface Pedido {
-  id: number;
-  numeroOrden: string;
-  cliente: string;
-  tipoEnvio: "DELIVERY" | "TAKEAWAY";
-  tiempoEstimado: number; // en minutos
-  estado: "INCOMING" | "READY" | "STANDBY" | "PREPARING" | "REJECTED";
-  fechaCreacion: Date;
-}
+const ESTADOS_CAJERO = [
+  EstadosPedidosEnum.INCOMING,
+  EstadosPedidosEnum.STANDBY,
+  EstadosPedidosEnum.READY,
+  EstadosPedidosEnum.REJECTED,
+  EstadosPedidosEnum.CANCELLED,
+];
 
 export default function Cajero() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const { pedidos, setPedidos } = usePedidosSocket(
+    "/topic/dashboard/cajero",
+    ESTADOS_CAJERO
+  );
+
   const [pedidosMostrados, setPedidosMostrados] = useState<Pedido[]>([]);
   const [buscador, setBuscador] = useState("");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
   const [filtroEstado, setFiltroEstado] = useState<
-    "TODOS" | "INCOMING" | "READY" | "STANDBY"
+    "TODOS" | "INCOMING" | "READY" | "STANDBY" | "REJECTED" | "CANCELLED"
   >("TODOS");
 
   const cantidadPorPagina = 10;
 
-  // Datos hardcodeados
-  const pedidosHardcodeados: Pedido[] = [
-    {
-      id: 1,
-      numeroOrden: "001",
-      cliente: "Juan Pérez",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 25,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T10:30:00"),
-    },
-    {
-      id: 2,
-      numeroOrden: "002",
-      cliente: "María González",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 15,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T10:45:00"),
-    },
-    {
-      id: 3,
-      numeroOrden: "003",
-      cliente: "Carlos López",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 30,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T11:00:00"),
-    },
-    {
-      id: 4,
-      numeroOrden: "004",
-      cliente: "Ana Martínez",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 20,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T11:15:00"),
-    },
-    {
-      id: 5,
-      numeroOrden: "005",
-      cliente: "Luis Rodríguez",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 35,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T11:30:00"),
-    },
-    {
-      id: 6,
-      numeroOrden: "006",
-      cliente: "Elena Torres",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 18,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T11:45:00"),
-    },
-    {
-      id: 7,
-      numeroOrden: "007",
-      cliente: "Pedro Sánchez",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 28,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T12:00:00"),
-    },
-    {
-      id: 8,
-      numeroOrden: "008",
-      cliente: "Rosa Fernández",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 22,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T12:15:00"),
-    },
-    {
-      id: 9,
-      numeroOrden: "009",
-      cliente: "Miguel Castro",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 32,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T12:30:00"),
-    },
-    {
-      id: 10,
-      numeroOrden: "010",
-      cliente: "Sofía Ruiz",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 16,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T12:45:00"),
-    },
-    {
-      id: 11,
-      numeroOrden: "011",
-      cliente: "Francisco Morales",
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 27,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T13:00:00"),
-    },
-    {
-      id: 12,
-      numeroOrden: "012",
-      cliente: "Carmen Jiménez",
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 19,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T13:15:00"),
-    },
-  ];
+  const cargarPedidos = async () => {
+    const URL = `${host}/api/pedidos/all`;
 
+    try {
+      const response = await axios.get(URL, axiosConfig);
+      setPedidos(
+        response.data.filter((pedido: Pedido) =>
+          ESTADOS_CAJERO.includes(pedido.estadoPedido.nombreEstado)
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
     cargarPedidos();
   }, []);
 
   const cambiarEstadoPedido = async (
     pedido: Pedido,
-    nuevoEstado: "REJECTED" | "PREPARING"
+    nuevoEstado: EstadosPedidosEnum
   ) => {
-    // const URL = `${host}/api/Pedido/${pedido.id}/estado`
-
-    const pedidoActualizado = { ...pedido, estado: nuevoEstado };
+    const URL = `${host}/api/pedidos/${pedido.id}/estado?estado=${nuevoEstado}`;
 
     try {
-      // const response = await axios.put(URL, { estado: nuevoEstado })
-      // console.log("Estado del pedido actualizado: " + response.status)
+      await axios.put(URL, "nada", axiosConfig);
 
-      // Actualizar estado local
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((p) => (p.id === pedido.id ? pedidoActualizado : p))
-      );
-
-      console.log(
-        `Pedido ${pedido.numeroOrden} cambiado a estado: ${nuevoEstado}`
-      );
+      if (!ESTADOS_CAJERO.includes(nuevoEstado)) {
+        setPedidos((prev) => prev.filter((p) => p.id !== pedido.id));
+      }
     } catch (error) {
-      console.error(error);
+      alert("Error al cambiar el estado del pedido");
     }
   };
 
-  const cargarPedidos = async () => {
-    // const URL = `${host}/api/Pedido`
-
-    try {
-      // const response = await axios.get(URL)
-      // setPedidos(response.data)
-
-      // Usar datos hardcodeados por ahora
-      setPedidos(pedidosHardcodeados);
-    } catch (error) {
-      console.error(error);
+  const avanzar = (pedido: Pedido) => {
+    switch (pedido.estadoPedido.nombreEstado) {
+      case EstadosPedidosEnum.INCOMING:
+        return cambiarEstadoPedido(pedido, EstadosPedidosEnum.PREPARING);
+      case EstadosPedidosEnum.STANDBY:
+        return cambiarEstadoPedido(pedido, EstadosPedidosEnum.INCOMING);
+      case EstadosPedidosEnum.READY:
+        if (pedido.tipoEnvio.tipoDelivery === "TAKEAWAY") {
+          return cambiarEstadoPedido(pedido, EstadosPedidosEnum.DELIVERED);
+        }else{
+          return cambiarEstadoPedido(pedido, EstadosPedidosEnum.DELIVERING);
+        }
     }
+  };
+
+  const rechazar = (pedido: Pedido) => {
+    return cambiarEstadoPedido(pedido, EstadosPedidosEnum.REJECTED);
+  };
+
+  const enEspera = (pedido: Pedido) => {
+    return cambiarEstadoPedido(pedido, EstadosPedidosEnum.STANDBY);
   };
 
   useEffect(() => {
     let filtrado: Pedido[] = pedidos;
 
     // Filtrar por estado
-    if (filtroEstado !== "TODOS") {
-      filtrado = filtrado.filter((pedido) => pedido.estado === filtroEstado);
+    if (filtroEstado === "CANCELLED") {
+      filtrado = filtrado.filter(
+        (pedido) =>
+          pedido.estadoPedido.nombreEstado === "REJECTED" ||
+          pedido.estadoPedido.nombreEstado === "CANCELLED"
+      );
+    } else if (filtroEstado !== "TODOS") {
+      filtrado = filtrado.filter(
+        (pedido) => pedido.estadoPedido.nombreEstado === filtroEstado
+      );
     }
 
     // Filtrar por búsqueda de número de orden
     if (buscador) {
-      filtrado = filtrado.filter((pedido) =>
-        pedido.numeroOrden.toLowerCase().includes(buscador.toLowerCase())
+      filtrado = filtrado.filter(
+        (pedido) =>
+          pedido.id?.toString().includes(buscador) ||
+          pedido.usuario.nombre
+            .toLowerCase()
+            .includes(buscador.toLowerCase()) ||
+          pedido.usuario.apellido.toLowerCase().includes(buscador.toLowerCase())
       );
     }
 
@@ -207,12 +130,29 @@ export default function Cajero() {
         return "Listo";
       case "STANDBY":
         return "En Espera";
-      case "PREPARING":
-        return "Preparando";
       case "REJECTED":
         return "Rechazado";
+      case "CANCELLED":
+        return "Cancelado";
       default:
         return estado;
+    }
+  };
+
+  const getColorEstado = (estado: string) => {
+    switch (estado) {
+      case "INCOMING":
+        return "#D93F21";
+      case "READY":
+        return "#10B981";
+      case "STANDBY":
+        return "#065F46";
+      case "REJECTED":
+        return "#EF4444";
+      case "CANCELLED":
+        return "#EF4444";
+      default:
+        return "#878787";
     }
   };
 
@@ -232,10 +172,7 @@ export default function Cajero() {
 
             <div className="flex gap-5 pr-[2%] text-2xl items-center">
               {/**Filtros por estado como botones */}
-              <div className="flex gap-2 items-center font-lato pr-10">
-                <span className="text-black font-medium font-lato pr-5">
-                  Filtrar por:
-                </span>
+              <div className="flex w-3/4 justify-center flex-wrap gap-2 items-center font-lato pr-10">
                 <button
                   onClick={() => setFiltroEstado("TODOS")}
                   className={`px-4 py-2 rounded-4xl transition-colors ${
@@ -276,6 +213,16 @@ export default function Cajero() {
                 >
                   En Espera
                 </button>
+                <button
+                  onClick={() => setFiltroEstado("CANCELLED")}
+                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                    filtroEstado === "CANCELLED"
+                      ? "bg-[#D93F21] text-white"
+                      : "bg-[#878787] text-white"
+                  }`}
+                >
+                  Cancelados/Rechazados
+                </button>
               </div>
 
               {/**Buscador con icono */}
@@ -283,7 +230,7 @@ export default function Cajero() {
                 <input
                   onChange={(e) => setBuscador(e.target.value)}
                   className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-4xl font-lato"
-                  placeholder="Buscar..."
+                  placeholder="Cliente..."
                   type="text"
                 />
                 <img
@@ -320,53 +267,73 @@ export default function Cajero() {
                     >
                       <div>
                         <h3 className="font-normal text-gray-800">
-                          {pedido.numeroOrden}
+                          {pedido.id}
                         </h3>
                       </div>
                       <div>
-                        <h3>{pedido.cliente}</h3>
+                        <h3>
+                          {pedido.usuario.nombre} {pedido.usuario.apellido}
+                        </h3>
                       </div>
                       <div>
-                        <h3>{getTipoEnvioTexto(pedido.tipoEnvio)}</h3>
+                        <h3>
+                          {getTipoEnvioTexto(pedido.tipoEnvio.tipoDelivery)}
+                        </h3>
                       </div>
                       <div>
                         <h3>{pedido.tiempoEstimado} min</h3>
                       </div>
                       <div className="flex items-center justify-center gap-3">
                         <div
-                          className="bg-[#878787] text-white px-3 py-3 rounded-4xl text-2xl"
-                          style={{ width: "150px", height: "50px" }}
+                          className={`text-white px-3 py-3 rounded-4xl text-2xl flex items-center justify-center`}
+                          style={{
+                            width: "150px",
+                            height: "50px",
+                            backgroundColor: getColorEstado(
+                              pedido.estadoPedido.nombreEstado
+                            ),
+                          }}
                         >
-                          {getEstadoTexto(pedido.estado)}
+                          {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() =>
-                              cambiarEstadoPedido(pedido, "REJECTED")
-                            }
-                            disabled={pedido.estado === "REJECTED"}
-                            className="disabled:opacity-50"
-                          >
-                            <img
-                              className="h-10 w-10"
-                              src="/svg/EstadoNegativo.svg"
-                              alt="Rechazar"
-                            />
-                          </button>
-                          <button
-                            onClick={() =>
-                              cambiarEstadoPedido(pedido, "PREPARING")
-                            }
-                            disabled={pedido.estado === "PREPARING"}
-                            className="disabled:opacity-50"
-                          >
-                            <img
-                              className="h-10 w-10"
-                              src="/svg/EstadoPositivo.svg"
-                              alt="Preparar"
-                            />
-                          </button>
-                        </div>
+                        {pedido.estadoPedido.nombreEstado !== "REJECTED" &&
+                          pedido.estadoPedido.nombreEstado !== "CANCELLED" && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => rechazar(pedido)}
+                                className="disabled:opacity-50"
+                              >
+                                <img
+                                  className="h-10 w-10"
+                                  src="/svg/EstadoNegativo.svg"
+                                  alt="Rechazar"
+                                />
+                              </button>
+                              {pedido.estadoPedido.nombreEstado !==
+                                EstadosPedidosEnum.STANDBY && (
+                                <button
+                                  onClick={() => enEspera(pedido)}
+                                  className="disabled:opacity-50"
+                                >
+                                  <img
+                                    className="h-10 w-10"
+                                    src="/img/EstadoEspera.png"
+                                    alt="Rechazar"
+                                  />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => avanzar(pedido)}
+                                className="disabled:opacity-50"
+                              >
+                                <img
+                                  className="h-10 w-10"
+                                  src="/svg/EstadoPositivo.svg"
+                                  alt="Preparar"
+                                />
+                              </button>
+                            </div>
+                          )}
                       </div>
                     </div>
                   );

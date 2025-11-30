@@ -20,16 +20,14 @@ interface InsumoStock {
   nombre: string;
   nivelActual: number;
   nivelMinimo: number;
-  nivelMaximo: number;
   stockHistorico: number[];
   unidad: string;
 }
 
 interface ProductoVendido {
-  nombre: string;
-  ventasDiarias: number[];
-  ventasSemanales: number[];
-  ventasMensuales: number[];
+  nombreArticulo: string;
+  totalRecaudado: number;
+  cantidadVendida: number;
 }
 
 interface IngresoData {
@@ -42,7 +40,6 @@ type FiltroTiempo = "Diario" | "Semanal" | "Mensual" | "Anual";
 
 export default function Administracion() {
   const [insumoSeleccionado, setInsumoSeleccionado] = useState(0);
-  const [filtroVendidos, setFiltroVendidos] = useState<FiltroTiempo>("Diario");
   const [filtroIngresos, setFiltroIngresos] = useState<FiltroTiempo>("Diario");
   const [insumosStock, setInsumosStock] = useState<InsumoStock[]>([]);
   const [productosVendidos, setProductosVendidos] = useState<ProductoVendido[]>(
@@ -65,7 +62,7 @@ export default function Administracion() {
   };
 
   const obtenterProductosVendidos = async () => {
-    const URL = host + "/api/estadisticas/productos-mas-vendidos";
+    const URL = host + "/api/estadisticas/productos-mas-vendidos?sucursalId=1&limite=3";
     try {
       const response = await axios.get(URL, axiosConfig);
       setProductosVendidos(response.data);
@@ -144,33 +141,11 @@ export default function Administracion() {
   };
 
   const obtenerDatosVendidos = () => {
-    const data = productosVendidos.map((p) => {
-      let ventas;
-      switch (filtroVendidos) {
-        case "Diario":
-          ventas = p.ventasDiarias;
-          break;
-        case "Semanal":
-          ventas = p.ventasSemanales;
-          break;
-        case "Mensual":
-          ventas = p.ventasMensuales;
-          break;
-        default:
-          ventas = p.ventasDiarias;
-      }
-      return { nombre: p.nombre, ventas: ventas };
-    });
-
-    if (data.length === 0 || data[0].ventas.length === 0) return [];
-
-    return data[0].ventas.map((_, index) => {
-      const entry: { [key: string]: any } = { name: `Día ${index + 1}` };
-      data.forEach((p) => {
-        entry[p.nombre] = p.ventas[index];
-      });
-      return entry;
-    });
+    return productosVendidos.map((p) => ({
+      name: p.nombreArticulo,
+      cantidad: p.cantidadVendida,
+      recaudado: p.totalRecaudado,
+    }));
   };
 
   const datosIngresos = obtenerDatosIngresos();
@@ -181,7 +156,6 @@ export default function Administracion() {
           name: index + 1,
           stock: value,
           min: insumosStock[insumoSeleccionado].nivelMinimo,
-          max: insumosStock[insumoSeleccionado].nivelMaximo,
         }))
       : [];
   return (
@@ -246,12 +220,6 @@ export default function Administracion() {
                   stroke="#db4437"
                   name="Stock Mínimo"
                 />
-                <Line
-                  type="monotone"
-                  dataKey="max"
-                  stroke="#f4b400"
-                  name="Stock Máximo"
-                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -270,47 +238,26 @@ export default function Administracion() {
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Más vendidos</h2>
-                <div className="flex space-x-2">
-                  <select
-                    value={filtroVendidos}
-                    onChange={(e) =>
-                      setFiltroVendidos(e.target.value as FiltroTiempo)
-                    }
-                    className="text-white px-3 py-1 rounded text-sm border focus:outline-none"
-                    style={{
-                      backgroundColor: "#444444",
-                      borderColor: "#555555",
-                    }}
-                  >
-                    <option value="Diario">Diario</option>
-                    <option value="Semanal">Semanal</option>
-                    <option value="Mensual">Mensual</option>
-                  </select>
-                </div>
               </div>
             </div>
             <div className="p-4">
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={datosVendidos}>
+                <BarChart data={datosVendidos} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-                  <XAxis dataKey="name" stroke="#ccc" />
-                  <YAxis stroke="#ccc" />
+                  <XAxis type="number" xAxisId="cant" stroke="#8884d8" />
+                  <XAxis type="number" xAxisId="rec" orientation="top" stroke="#82ca9d" />
+                  <YAxis type="category" dataKey="name" stroke="#ccc" width={150} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#333",
                       border: "1px solid #555",
                     }}
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
                   />
                   <Legend />
-                  {productosVendidos.map((p, i) => (
-                    <Line
-                      key={p.nombre}
-                      type="monotone"
-                      dataKey={p.nombre}
-                      stroke={["#8884d8", "#82ca9d", "#ffc658"][i % 3]}
-                    />
-                  ))}
-                </LineChart>
+                  <Bar dataKey="cantidad" xAxisId="cant" fill="#8884d8" name="Cantidad Vendida" />
+                  <Bar dataKey="recaudado" xAxisId="rec" fill="#82ca9d" name="Total Recaudado" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>

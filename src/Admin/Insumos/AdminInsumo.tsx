@@ -53,7 +53,7 @@ export default function AdminInsumo() {
     articulo.existe = !articulo.existe;
 
     try {
-      const response = await axios.put(URL, articulo, axiosConfig);
+      const response = await axios.delete(URL, axiosConfig);
 
       console.log("Se borro logicamente el articulo: " + response.status);
       cargarInsumos();

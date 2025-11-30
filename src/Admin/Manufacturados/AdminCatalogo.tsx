@@ -38,7 +38,7 @@ export default function AdminCatalogo() {
   }, []);
 
   const borradoLogico = async (articulo: ArticuloManufacturado) => {
-    const URL = `${host}/api/ArticuloManufacturado/eliminar/${articulo.id}`;
+    const URL = `${host}/api/articuloManufacturado/eliminar/${articulo.id}`;
 
     try {
       const response = await axios.delete(URL, axiosConfig);
@@ -66,7 +66,7 @@ export default function AdminCatalogo() {
   };
 
   const cargarManufacturados = async () => {
-    const URL = `${host}/api/ArticuloManufacturado/full`;
+    const URL = `${host}/api/articuloManufacturado/full`;
 
     try {
       const response = await axios.get(URL, axiosConfig);

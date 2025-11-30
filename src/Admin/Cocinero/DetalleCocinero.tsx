@@ -1,39 +1,8 @@
 import React, { useState } from 'react';
 import LogoUser from '../../../public/svg/LogoUser.svg';
 import LogoReloj from '../../../public/svg/LogoReloj.svg';
-import LogoExclamacion from '../../../public/svg/LogoExclamacion.svg';
 import LogoDetalle from '../../../public/svg/LogoDetalle.svg';
-
-interface Producto {
-  id: number;
-  imagen: string;
-  denominacion: string;
-  cantidad: number;
-}
-
-interface Cliente {
-  nombre: string;
-  email: string;
-  telefono: string;
-}
-
-interface EstadoOrden {
-  estado: string;
-  actualizadoEl: Date;
-  actualizadoPor: string;
-}
-
-interface Pedido {
-  id: number;
-  numeroOrden: string;
-  cliente: Cliente;
-  tiempoEstimado: number;
-  estado: 'INCOMING' | 'READY' | 'STANDBY' | 'PREPARING' | 'REJECTED';
-  fechaCreacion: Date;
-  estadoOrden: EstadoOrden;
-  aclaracionesCliente: string;
-  productos: Producto[];
-}
+import { Pedido } from '../../../ts/Clases';
 
 interface DetallePedidoProps {
   pedido: Pedido;
@@ -41,8 +10,8 @@ interface DetallePedidoProps {
   onClose: () => void;
 }
 
-const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }) => {
-  const [pestañaActiva, setPestañaActiva] = useState<'detalles' | 'productos'>('detalles');
+const DetalleCocinero: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }) => {
+  const [pestañaActiva, setPestañaActiva] = useState<'detalles' | 'productos'>('productos');
 
   if (!isOpen) return null;
 
@@ -57,22 +26,23 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
     }
   };
 
-  const formatearFecha = (fecha: Date) =>
-    fecha.toLocaleDateString('es-ES', {
+  const formatearFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
 
-    
   return (
     <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 font-lato">
       <div className="bg-white rounded-2xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center bg-[#E9E9E9] rounded-t-2xl px-6 py-4 shadow-[0_2px_4px_-2px_rgba(0,0,0,0.3)]">
-          <h2 className="text-3xl font-bold text-gray-800">Orden {pedido.numeroOrden}</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Orden {pedido.id}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center"
@@ -127,9 +97,13 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
                   </thead>
                   <tbody>
                     <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-800">{pedido.cliente.nombre}</td>
-                      <td className="py-3 px-4 text-gray-800">{pedido.cliente.email}</td>
-                      <td className="py-3 px-4 text-gray-800">{pedido.cliente.telefono}</td>
+                      <td className="py-3 px-4 text-gray-800">{pedido.usuario.nombre} {pedido.usuario.apellido}</td>
+                      <td className="py-3 px-4 text-gray-800">{pedido.usuario.email}</td>
+                      <td className="py-3 px-4 text-gray-800">
+                        {pedido.usuario.telefonoList && pedido.usuario.telefonoList.length > 0 
+                          ? pedido.usuario.telefonoList[0].numero 
+                          : '-'}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -142,25 +116,23 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
 
                   Estado de la Orden
                 </h3>
-                 <table className="table-auto">
+                 <table className="table-auto w-full">
                   <thead>
                     <tr className="border-b border-gray-300">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Estado</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Actualizado el</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Actualizado por</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Estado Actual</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Fecha Creación</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b border-gray-200">
                       <td className="py-3 px-4">
                         <span className="inline-block bg-[#878787] text-white px-3 py-1 rounded-lg text-sm">
-                          {getEstadoTexto(pedido.estadoOrden.estado)}
+                          {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-gray-800">
-                        {formatearFecha(pedido.estadoOrden.actualizadoEl)}
+                        {formatearFecha(pedido.fecha)}
                       </td>
-                      <td className="py-3 px-4 text-gray-800">{pedido.estadoOrden.actualizadoPor}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -169,19 +141,7 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
           )}
 
           {pestañaActiva === 'productos' && (
-            <div className="space-y-6">
-              {/* Aclaraciones */}
-              <div className="bg-gray-100 border border-gray-300 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <img src={LogoExclamacion} alt="Icono Aclaraciones" className="mr-5 w-6 h-6" />
-
-                  Aclaraciones del Cliente
-                </h3>
-                <p className="text-gray-700 text-lg leading-relaxed">
-                  {pedido.aclaracionesCliente}
-                </p>
-              </div>
-
+            <div className="space-y-6 pb-6">
               {/* Productos */}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -197,18 +157,33 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
                     </tr>
                   </thead>
                   <tbody>
-                    {pedido.productos.map((producto) => (
-                      <tr key={producto.id} className="border-b border-gray-200">
+                    {pedido.detallePedidoList.map((detalle, index) => (
+                      <tr key={`prod-${index}`} className="border-b border-gray-200">
                         <td className="py-3 px-4">
                           <img
-                            src={producto.imagen}
-                            alt={producto.denominacion}
+                            src={detalle.articulo?.imagenArticulo || '/img/hamburguesa.jpg'}
+                            alt={detalle.articulo?.nombre}
                             className="w-16 h-16 object-cover rounded-lg"
                           />
                         </td>
-                        <td className="py-3 px-4 text-gray-800 font-medium">{producto.denominacion}</td>
+                        <td className="py-3 px-4 text-gray-800 font-medium">{detalle.articulo?.nombre}</td>
                         <td className="py-3 px-4 text-center font-semibold text-gray-800">
-                          {producto.cantidad}
+                          {detalle.cantidad}
+                        </td>
+                      </tr>
+                    ))}
+                     {pedido.detallePromocionList.map((detalle, index) => (
+                      <tr key={`promo-${index}`} className="border-b border-gray-200 bg-yellow-50">
+                        <td className="py-3 px-4">
+                          <img
+                            src={detalle.promocion?.imagen || '/img/hamburguesa.jpg'}
+                            alt={detalle.promocion?.denominacion}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                        </td>
+                        <td className="py-3 px-4 text-gray-800 font-medium">{detalle.promocion?.denominacion} (Promoción)</td>
+                        <td className="py-3 px-4 text-center font-semibold text-gray-800">
+                          {detalle.cantidad}
                         </td>
                       </tr>
                     ))}
@@ -223,4 +198,4 @@ const DetallePedido: React.FC<DetallePedidoProps> = ({ pedido, isOpen, onClose }
   );
 };
 
-export default DetallePedido;
+export default DetalleCocinero;

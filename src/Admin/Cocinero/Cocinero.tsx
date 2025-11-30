@@ -1,48 +1,30 @@
 import { useEffect, useState } from "react";
 import DetalleCocinero from "./DetalleCocinero";
-import { host } from "../../../ts/Clases";
-// import axios from "axios";
+import {
+  axiosConfig,
+  EstadosPedidosEnum,
+  host,
+  Pedido,
+} from "../../../ts/Clases";
+import axios from "axios";
+import { usePedidosSocket } from "../../services/websocket/usePedidosSocket";
 
-// Interfaces hardcodeadas para los pedidos
-interface Producto {
-  id: number;
-  imagen: string;
-  denominacion: string;
-  cantidad: number;
-}
-
-interface Cliente {
-  nombre: string;
-  email: string;
-  telefono: string;
-}
-
-interface EstadoOrden {
-  estado: string;
-  actualizadoEl: Date;
-  actualizadoPor: string;
-}
-
-interface Pedido {
-  id: number;
-  numeroOrden: string;
-  cliente: Cliente;
-  tipoEnvio: "DELIVERY" | "TAKEAWAY";
-  tiempoEstimado: number; // en minutos
-  estado: "INCOMING" | "READY" | "STANDBY" | "PREPARING" | "REJECTED";
-  fechaCreacion: Date;
-  estadoOrden: EstadoOrden;
-  aclaracionesCliente: string;
-  productos: Producto[];
-}
+const ESTADOS_COCINERO = [
+  EstadosPedidosEnum.STANDBY,
+  EstadosPedidosEnum.PREPARING,
+];
 
 export default function Cocinero() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const { pedidos, setPedidos } = usePedidosSocket(
+    "/topic/dashboard/cocina",
+    ESTADOS_COCINERO
+  );
+
   const [pedidosMostrados, setPedidosMostrados] = useState<Pedido[]>([]);
   const [buscador, setBuscador] = useState("");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
   const [filtroEstado, setFiltroEstado] = useState<
-    "TODOS" | "INCOMING" | "READY" | "STANDBY"
+    "TODOS" | "STANDBY" | "PREPARING"
   >("TODOS");
 
   // Estados para el modal
@@ -53,210 +35,20 @@ export default function Cocinero() {
 
   const cantidadPorPagina = 10;
 
-  // Datos hardcodeados
-  const pedidosHardcodeados: Pedido[] = [
-    {
-      id: 1,
-      numeroOrden: "001",
-      cliente: {
-        nombre: "Juan Pérez",
-        email: "juan.perez@email.com",
-        telefono: "+54 261 123-4567",
-      },
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 25,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T10:30:00"),
-      estadoOrden: {
-        estado: "INCOMING",
-        actualizadoEl: new Date("2024-06-17T10:30:00"),
-        actualizadoPor: "Sistema Automático",
-      },
-      aclaracionesCliente:
-        "Sin cebolla en la pizza, extra queso. Entregar en puerta principal, casa color azul.",
-      productos: [
-        {
-          id: 1,
-          imagen: "../../../public/img/pizza.jpg",
-          denominacion: "Pizza Margarita Grande",
-          cantidad: 1,
-        },
-        {
-          id: 2,
-          imagen: "../../../public/img/coca-cola.jpg",
-          denominacion: "Coca Cola 500ml",
-          cantidad: 2,
-        },
-      ],
-    },
-    {
-      id: 2,
-      numeroOrden: "002",
-      cliente: {
-        nombre: "María González",
-        email: "maria.gonzalez@email.com",
-        telefono: "+54 261 987-6543",
-      },
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 15,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T10:45:00"),
-      estadoOrden: {
-        estado: "READY",
-        actualizadoEl: new Date("2024-06-17T11:00:00"),
-        actualizadoPor: "Chef Roberto Martínez",
-      },
-      aclaracionesCliente: "Para retirar en el local. Agregar salsa extra.",
-      productos: [
-        {
-          id: 3,
-          imagen: "../../../public/img/hamburguesa.jpg",
-          denominacion: "Hamburguesa Completa",
-          cantidad: 2,
-        },
-        {
-          id: 4,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Papas Fritas Grandes",
-          cantidad: 1,
-        },
-      ],
-    },
-    {
-      id: 3,
-      numeroOrden: "003",
-      cliente: {
-        nombre: "Carlos López",
-        email: "carlos.lopez@email.com",
-        telefono: "+54 261 555-0123",
-      },
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 30,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T11:00:00"),
-      estadoOrden: {
-        estado: "STANDBY",
-        actualizadoEl: new Date("2024-06-17T11:05:00"),
-        actualizadoPor: "Ana Rodríguez",
-      },
-      aclaracionesCliente:
-        "Dirección: San Martín 1234. Llamar al llegar, portero eléctrico no funciona.",
-      productos: [
-        {
-          id: 5,
-          imagen: "../../../public/img/ravioles.jpg",
-          denominacion: "Pasta Bolognesa",
-          cantidad: 1,
-        },
-        {
-          id: 6,
-          imagen: "../../../public/img/categoriaEnsaladas.jpg",
-          denominacion: "Coca Cola 500ml",
-          cantidad: 1,
-        },
-      ],
-    },
-    {
-      id: 4,
-      numeroOrden: "004",
-      cliente: {
-        nombre: "Ana Martínez",
-        email: "ana.martinez@email.com",
-        telefono: "+54 261 444-5678",
-      },
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 20,
-      estado: "INCOMING",
-      fechaCreacion: new Date("2024-06-17T11:15:00"),
-      estadoOrden: {
-        estado: "INCOMING",
-        actualizadoEl: new Date("2024-06-17T11:15:00"),
-        actualizadoPor: "Sistema Automático",
-      },
-      aclaracionesCliente: "Pago en efectivo. Sin condimentos picantes.",
-      productos: [
-        {
-          id: 7,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Empanadas de Carne (x6)",
-          cantidad: 1,
-        },
-        {
-          id: 8,
-          imagen: "../../../public/img/coca-cola.jpg",
-          denominacion: "Agua Mineral 500ml",
-          cantidad: 1,
-        },
-      ],
-    },
-    {
-      id: 5,
-      numeroOrden: "005",
-      cliente: {
-        nombre: "Luis Rodríguez",
-        email: "luis.rodriguez@email.com",
-        telefono: "+54 261 333-2222",
-      },
-      tipoEnvio: "DELIVERY",
-      tiempoEstimado: 35,
-      estado: "READY",
-      fechaCreacion: new Date("2024-06-17T11:30:00"),
-      estadoOrden: {
-        estado: "READY",
-        actualizadoEl: new Date("2024-06-17T12:05:00"),
-        actualizadoPor: "Chef Roberto Martínez",
-      },
-      aclaracionesCliente: "Apartamento 4B, segundo piso. Timbre: Rodríguez.",
-      productos: [
-        {
-          id: 9,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Milanesa con Papas",
-          cantidad: 1,
-        },
-        {
-          id: 10,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Flan con Dulce de Leche",
-          cantidad: 2,
-        },
-      ],
-    },
-    {
-      id: 6,
-      numeroOrden: "006",
-      cliente: {
-        nombre: "Elena Torres",
-        email: "elena.torres@email.com",
-        telefono: "+54 261 777-8888",
-      },
-      tipoEnvio: "TAKEAWAY",
-      tiempoEstimado: 18,
-      estado: "STANDBY",
-      fechaCreacion: new Date("2024-06-17T11:45:00"),
-      estadoOrden: {
-        estado: "STANDBY",
-        actualizadoEl: new Date("2024-06-17T11:50:00"),
-        actualizadoPor: "María Fernández",
-      },
-      aclaracionesCliente:
-        "Vegetariano estricto. Sin productos de origen animal.",
-      productos: [
-        {
-          id: 11,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Ensalada Vegana",
-          cantidad: 1,
-        },
-        {
-          id: 12,
-          imagen: "../../../public/img/recibiTuPedido.jpg",
-          denominacion: "Jugo Natural de Naranja",
-          cantidad: 1,
-        },
-      ],
-    },
-  ];
+  const cargarPedidos = async () => {
+    const URL = `${host}/api/pedidos/all`;
+
+    try {
+      const response = await axios.get(URL, axiosConfig);
+      setPedidos(
+        response.data.filter((pedido: Pedido) =>
+          ESTADOS_COCINERO.includes(pedido.estadoPedido.nombreEstado)
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     cargarPedidos();
@@ -264,40 +56,33 @@ export default function Cocinero() {
 
   const cambiarEstadoPedido = async (
     pedido: Pedido,
-    nuevoEstado: "REJECTED" | "READY"
+    nuevoEstado: EstadosPedidosEnum
   ) => {
-    // const URL = `${host}/api/Pedido/${pedido.id}/estado`
-
-    const pedidoActualizado = { ...pedido, estado: nuevoEstado };
+    const URL = `${host}/api/pedidos/${pedido.id}/estado?estado=${nuevoEstado}`;
 
     try {
-      // const response = await axios.put(URL, { estado: nuevoEstado })
-      // console.log("Estado del pedido actualizado: " + response.status)
+      await axios.put(URL, "nada", axiosConfig);
 
-      // Actualizar estado local
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((p) => (p.id === pedido.id ? pedidoActualizado : p))
-      );
-
-      console.log(
-        `Pedido ${pedido.numeroOrden} cambiado a estado: ${nuevoEstado}`
-      );
+      if (!ESTADOS_COCINERO.includes(nuevoEstado)) {
+        setPedidos((prev) => prev.filter((p) => p.id !== pedido.id));
+      }
     } catch (error) {
-      console.error(error);
+      alert("Error al cambiar el estado del pedido");
     }
   };
 
-  const cargarPedidos = async () => {
-    // const URL = "${host}/api/Pedido"
+  const avanzar = (pedido: Pedido) => {
+    switch (pedido.estadoPedido.nombreEstado) {
+      case EstadosPedidosEnum.STANDBY:
+        return cambiarEstadoPedido(pedido, EstadosPedidosEnum.PREPARING);
+      case EstadosPedidosEnum.PREPARING:
+        return cambiarEstadoPedido(pedido, EstadosPedidosEnum.READY);
+    }
+  };
 
-    try {
-      // const response = await axios.get(URL)
-      // setPedidos(response.data)
-
-      // Usar datos hardcodeados por ahora
-      setPedidos(pedidosHardcodeados);
-    } catch (error) {
-      console.error(error);
+  const pausar = (pedido: Pedido) => {
+    if (pedido.estadoPedido.nombreEstado === EstadosPedidosEnum.PREPARING) {
+      return cambiarEstadoPedido(pedido, EstadosPedidosEnum.STANDBY);
     }
   };
 
@@ -318,15 +103,20 @@ export default function Cocinero() {
 
     // Filtrar por estado
     if (filtroEstado !== "TODOS") {
-      filtrado = filtrado.filter((pedido) => pedido.estado === filtroEstado);
+      filtrado = filtrado.filter(
+        (pedido) => pedido.estadoPedido.nombreEstado === filtroEstado
+      );
     }
 
     // Filtrar por búsqueda de número de orden o nombre de cliente
     if (buscador) {
       filtrado = filtrado.filter(
         (pedido) =>
-          pedido.numeroOrden.toLowerCase().includes(buscador.toLowerCase()) ||
-          pedido.cliente.nombre.toLowerCase().includes(buscador.toLowerCase())
+          pedido.id?.toString().includes(buscador) ||
+          pedido.usuario.nombre
+            .toLowerCase()
+            .includes(buscador.toLowerCase()) ||
+          pedido.usuario.apellido.toLowerCase().includes(buscador.toLowerCase())
       );
     }
 
@@ -352,6 +142,17 @@ export default function Cocinero() {
     }
   };
 
+  const getColorEstado = (estado: string) => {
+    switch (estado) {
+      case "PREPARING":
+        return "#D93F21"; // Color activo/fuego para preparando
+      case "STANDBY":
+        return "#878787"; // Gris para espera
+      default:
+        return "#878787";
+    }
+  };
+
   // Funcion para pasar de ingles a español
   const getTipoEnvioTexto = (tipoEnvio: string) => {
     return tipoEnvio === "DELIVERY" ? "Delivery" : "Retiro";
@@ -364,14 +165,11 @@ export default function Cocinero() {
         <div className="bg-white w-11/12 m-auto rounded-2xl">
           {/**Titulo, filtros y buscador */}
           <div className="flex justify-between p-6 h-2/12">
-            <h1 className="pl-18 pt-2 text-4xl font-lato">Pedidos</h1>
+            <h1 className="pl-18 pt-2 text-4xl font-lato">Cocina</h1>
 
             <div className="flex gap-5 pr-[2%] text-2xl items-center">
               {/**Filtros por estado como botones */}
               <div className="flex gap-2 items-center font-lato pr-10">
-                <span className="text-black font-medium font-lato pr-5">
-                  Filtrar por:
-                </span>
                 <button
                   onClick={() => setFiltroEstado("TODOS")}
                   className={`px-4 py-2 rounded-4xl transition-colors ${
@@ -383,26 +181,6 @@ export default function Cocinero() {
                   Todos
                 </button>
                 <button
-                  onClick={() => setFiltroEstado("INCOMING")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
-                    filtroEstado === "INCOMING"
-                      ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
-                  }`}
-                >
-                  Entrantes
-                </button>
-                <button
-                  onClick={() => setFiltroEstado("READY")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
-                    filtroEstado === "READY"
-                      ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
-                  }`}
-                >
-                  Listos
-                </button>
-                <button
                   onClick={() => setFiltroEstado("STANDBY")}
                   className={`px-4 py-2 rounded-4xl transition-colors ${
                     filtroEstado === "STANDBY"
@@ -411,6 +189,16 @@ export default function Cocinero() {
                   }`}
                 >
                   En Espera
+                </button>
+                <button
+                  onClick={() => setFiltroEstado("PREPARING")}
+                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                    filtroEstado === "PREPARING"
+                      ? "bg-[#D93F21] text-white"
+                      : "bg-[#878787] text-white"
+                  }`}
+                >
+                  Preparando
                 </button>
               </div>
 
@@ -456,24 +244,34 @@ export default function Cocinero() {
                     >
                       <div>
                         <h3 className="font-normal text-gray-800">
-                          {pedido.numeroOrden}
+                          {pedido.id}
                         </h3>
                       </div>
                       <div>
-                        <h3>{pedido.cliente.nombre}</h3>
+                        <h3>
+                          {pedido.usuario.nombre} {pedido.usuario.apellido}
+                        </h3>
                       </div>
                       <div>
-                        <h3>{getTipoEnvioTexto(pedido.tipoEnvio)}</h3>
+                        <h3>
+                          {getTipoEnvioTexto(pedido.tipoEnvio.tipoDelivery)}
+                        </h3>
                       </div>
                       <div>
                         <h3>{pedido.tiempoEstimado} min</h3>
                       </div>
                       <div className="flex items-center justify-center gap-3">
                         <div
-                          className="bg-[#878787] text-white px-3 py-3 rounded-4xl text-2xl"
-                          style={{ width: "150px", height: "50px" }}
+                          className="text-white px-3 py-3 rounded-4xl text-2xl flex items-center justify-center"
+                          style={{
+                            width: "150px",
+                            height: "50px",
+                            backgroundColor: getColorEstado(
+                              pedido.estadoPedido.nombreEstado
+                            ),
+                          }}
                         >
-                          {getEstadoTexto(pedido.estado)}
+                          {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -487,28 +285,30 @@ export default function Cocinero() {
                               alt="Ver detalles"
                             />
                           </button>
+                          
+                          {pedido.estadoPedido.nombreEstado === EstadosPedidosEnum.PREPARING && (
+                            <button
+                              onClick={() => pausar(pedido)}
+                              className="hover:opacity-80 transition-opacity"
+                              title="Pausar"
+                            >
+                               <img
+                                className="h-10 w-10"
+                                src="/img/EstadoEspera.png" 
+                                alt="Pausar"
+                              />
+                            </button>
+                          )}
+
                           <button
-                            onClick={() =>
-                              cambiarEstadoPedido(pedido, "REJECTED")
-                            }
-                            disabled={pedido.estado === "REJECTED"}
-                            className="disabled:opacity-50"
-                          >
-                            <img
-                              className="h-10 w-10"
-                              src="/svg/EstadoNegativo.svg"
-                              alt="Rechazar"
-                            />
-                          </button>
-                          <button
-                            onClick={() => cambiarEstadoPedido(pedido, "READY")}
-                            disabled={pedido.estado === "PREPARING"}
-                            className="disabled:opacity-50"
+                            onClick={() => avanzar(pedido)}
+                            className="hover:opacity-80 transition-opacity"
+                            title="Avanzar"
                           >
                             <img
                               className="h-10 w-10"
                               src="/svg/EstadoPositivo.svg"
-                              alt="Listo"
+                              alt="Avanzar"
                             />
                           </button>
                         </div>
