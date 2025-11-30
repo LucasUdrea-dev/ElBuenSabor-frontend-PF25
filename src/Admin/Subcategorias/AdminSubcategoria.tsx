@@ -85,7 +85,7 @@ export default function AdminSubcategoria() {
   };
 
   const cargarListaCategorias = async () => {
-    const URL = `${host}/api/Categoria/full`;
+    const URL = `${host}/api/categoria/full`;
 
     try {
       const response = await axios.get(URL, axiosConfig);

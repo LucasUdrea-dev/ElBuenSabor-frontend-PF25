@@ -33,7 +33,7 @@ export default function DetallePromocionCarrito({detallePromocion}: Props) {
                 <div className={`grid grid-cols-[2fr_4fr_2fr_20px] gap-2 items-center `}>
                     <div className={`flex items-center h-15 w-15`}>
                         <img className="h-14 rounded-xl w-14 border-2 border-[#D93F21] object-cover m-auto" 
-                        src={obtenerImagen(detallePromocion.promocion.imagen)} alt="" />
+                        src={detallePromocion.promocion.imagen} alt="" />
                     </div>
                     <div className="flex flex-col text-xl">
                         <div>
