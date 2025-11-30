@@ -65,7 +65,7 @@ const AgregarEmpleados = ({ isOpen, onClose, onEmpleadoCreado }: AgregarEmpleado
     }
   }, [isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
