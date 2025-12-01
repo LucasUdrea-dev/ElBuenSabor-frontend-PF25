@@ -123,22 +123,22 @@ export default function AdminSubcategoria() {
 
   return (
     <>
-      <div className="bg-[#333333] w-full min-h-screen py-10">
+      <div className="bg-[#333333] w-full min-h-screen py-8 px-4">
         {/**Tabla */}
         <div
-          className={`bg-white w-11/12 m-auto rounded-2xl ${
+          className={`bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl ${
             formSubcategoria && "hidden"
           }`}
         >
           {/**Titulo, agregar y buscador */}
-          <div className="flex justify-between p-5 h-2/12">
-            <h1 className="pl-5 text-4xl">Subcategorias</h1>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
+            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Subcategorias</h1>
 
-            <div className="flex gap-5 pr-[2%] text-2xl">
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-stretch sm:items-center">
               <select
                 onChange={(e) => setFiltroPorCategoria(Number(e.target.value))}
                 value={filtroPorCategoria}
-                className="bg-gray-300 rounded-4xl px-2"
+                className="bg-gray-200 hover:bg-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
               >
                 <option value={0}>Todos</option>
 
@@ -150,30 +150,37 @@ export default function AdminSubcategoria() {
                   ))}
               </select>
 
-              <input
-                onChange={(e) => setBuscador(e.target.value)}
-                className="bg-[#878787] text-white pl-5 rounded-4xl"
-                placeholder="Buscar..."
-                type="text"
-              />
+              <div className="relative">
+                <input
+                  onChange={(e) => setBuscador(e.target.value)}
+                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full"
+                  placeholder="Buscar..."
+                  type="text"
+                />
+                <img
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
+                  src="/svg/LupaBuscador.svg"
+                  alt="Buscar"
+                />
+              </div>
 
               <button
                 onClick={() => setFormSubcategoria(new Subcategoria())}
-                className="bg-[#D93F21] text-white px-10 rounded-4xl flex items-center gap-2"
+                className="bg-[#D93F21] hover:bg-[#B8341B] text-white px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 <h2>Agregar</h2>
-                <img className="h-5" src="/svg/Agregar.svg" alt="" />
+                <img className="h-4 w-4" src="/svg/Agregar.svg" alt="Agregar" />
               </button>
             </div>
           </div>
 
           {/**Tabla CRUD catalogo */}
-          <div className="w-full pb-10">
+          <div className="w-full pb-6">
             {/**Cabecera */}
-            <div className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center">
-              <h1>Categoria</h1>
-              <h1>Nombre</h1>
-              <h1>Acciones</h1>
+            <div className="text-sm md:text-base w-full grid grid-cols-3 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+              <h1 className="p-4 text-center">Categoria</h1>
+              <h1 className="p-4 text-center">Nombre</h1>
+              <h1 className="p-4 text-center">Acciones</h1>
             </div>
 
             {/**Articulos */}
@@ -186,33 +193,37 @@ export default function AdminSubcategoria() {
                   return (
                     <div
                       key={subcategoria.id}
-                      className="text-4xl w-full grid grid-cols-3 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center"
+                      className="text-sm md:text-base w-full grid grid-cols-3 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
                     >
-                      <div>
-                        <h3>{subcategoria.categoria?.denominacion}</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700 truncate">{subcategoria.categoria?.denominacion}</h3>
                       </div>
-                      <div>
-                        <h3>{subcategoria.denominacion}</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700 truncate">{subcategoria.denominacion}</h3>
                       </div>
-                      <div className="flex justify-around">
+                      <div className="p-4 flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => setFormSubcategoria(subcategoria)}
+                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                          title="Editar"
                         >
                           <img
-                            className="h-15"
+                            className="h-7 w-7"
                             src="/svg/LogoEditar.svg"
-                            alt=""
+                            alt="Editar"
                           />
                         </button>
                         <button
                           onClick={() => {
                             borradoLogico(subcategoria);
                           }}
+                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                          title="Eliminar"
                         >
                           <img
-                            className="h-15"
+                            className="h-7 w-7"
                             src={`/svg/LogoBorrar.svg`}
-                            alt=""
+                            alt="Eliminar"
                           />
                         </button>
                       </div>
@@ -222,9 +233,9 @@ export default function AdminSubcategoria() {
               })}
 
             {/**Paginacion */}
-            <div className="text-gray-500 flex items-center pt-10 pr-20 justify-end gap-2 text-2xl *:h-10">
+            <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
               {/**Informacion articulos mostrados y totales */}
-              <div className="h-10 flex items-center">
+              <div className="flex items-center">
                 <h4>
                   {paginaSeleccionada * cantidadPorPagina -
                     cantidadPorPagina +
@@ -239,49 +250,57 @@ export default function AdminSubcategoria() {
               </div>
 
               {/**Control de paginado a traves de botones */}
-              <button onClick={() => setPaginaSeleccionada(1)}>
-                <img className="h-10" src="/svg/PrimeraPagina.svg" alt="" />
-              </button>
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada((prev) => {
-                    if (paginaSeleccionada > 1) {
-                      return prev - 1;
-                    }
-                    return prev;
-                  })
-                }
-              >
-                <img className="h-10" src="/svg/AnteriorPagina.svg" alt="" />
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setPaginaSeleccionada(1)}
+                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                >
+                  <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
+                </button>
+                <button
+                  onClick={() =>
+                    setPaginaSeleccionada((prev) => {
+                      if (paginaSeleccionada > 1) {
+                        return prev - 1;
+                      }
+                      return prev;
+                    })
+                  }
+                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                >
+                  <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
+                </button>
 
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada((prev) => {
-                    if (
-                      paginaSeleccionada <
-                      Math.ceil(
-                        subcategoriasMostradas.length / cantidadPorPagina
-                      )
-                    ) {
-                      return prev + 1;
-                    }
-                    return prev;
-                  })
-                }
-              >
-                <img className="h-10" src="/svg/SiguientePagina.svg" alt="" />
-              </button>
+                <button
+                  onClick={() =>
+                    setPaginaSeleccionada((prev) => {
+                      if (
+                        paginaSeleccionada <
+                        Math.ceil(
+                          subcategoriasMostradas.length / cantidadPorPagina
+                        )
+                      ) {
+                        return prev + 1;
+                      }
+                      return prev;
+                    })
+                  }
+                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                >
+                  <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
+                </button>
 
-              <button
-                onClick={() =>
-                  setPaginaSeleccionada(
-                    Math.ceil(subcategoriasMostradas.length / cantidadPorPagina)
-                  )
-                }
-              >
-                <img className="h-10" src="/svg/UltimaPagina.svg" alt="" />
-              </button>
+                <button
+                  onClick={() =>
+                    setPaginaSeleccionada(
+                      Math.ceil(subcategoriasMostradas.length / cantidadPorPagina)
+                    )
+                  }
+                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                >
+                  <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
