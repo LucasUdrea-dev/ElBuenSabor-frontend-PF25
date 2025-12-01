@@ -1,11 +1,20 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { CarritoContext } from "./CarritoContext";
-import { axiosConfig, host, Pedido } from "../../ts/Clases";
+import {
+  axiosConfig,
+  host,
+  Pedido,
+  Sucursal,
+  tiposEstadoPedidoEnum,
+  Usuario,
+} from "../../ts/Clases";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { useUser } from "../UserAuth/UserContext";
 
 export default function OrdenRecibida() {
   const [params] = useSearchParams();
+  const { userSession } = useUser();
   const status = params.get("status");
   const carritoContext = useContext(CarritoContext);
   const navigate = useNavigate();
@@ -25,6 +34,54 @@ export default function OrdenRecibida() {
     vaciarPedido();
   };
 
+  const obtenerSucursal = async () => {
+    const URL = host + `/api/sucursales/${1}`;
+
+    try {
+      const response = await axios.get(URL, axiosConfig);
+
+      const sucursal: Sucursal = response.data;
+
+      return sucursal;
+    } catch (error) {
+      console.error(error);
+      return new Sucursal();
+    }
+  };
+
+  const obtenerUsuario = async () => {
+    if (!userSession?.id_user) {
+      console.error("No hay usuario logueado");
+      return new Usuario();
+    }
+
+    const URL = host + `/api/usuarios/${userSession.id_user}`;
+
+    try {
+      const response = await axios.get(URL, axiosConfig);
+
+      const usuario: Usuario = response.data;
+
+      return usuario;
+    } catch (error) {
+      console.error("Error al obtener el usuario:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          console.error(
+            "Sesión expirada. Por favor, inicia sesión nuevamente."
+          );
+          // Opcional: redirigir al login o limpiar carrito
+          // localStorage.removeItem("carrito");
+        } else if (error.response?.status === 404) {
+          console.error("Usuario no encontrado.");
+        } else {
+          console.error("Error al obtener el usuario:", error.response?.status);
+        }
+      }
+      return new Usuario();
+    }
+  };
+
   useEffect(() => {
     const procesarYGuardarPedido = async () => {
       if (pedidoGuardadoRef.current) {
@@ -32,13 +89,13 @@ export default function OrdenRecibida() {
         return;
       }
 
-      if (!pedido || !pedido.sucursal.id || !pedido.usuario.id) {
+      if (!pedido) {
         console.log(
           "Datos del pedido incompletos. No se puede guardar.",
           pedido
         );
         setError(
-          "Los datos del pedido están incompletos. Por favor, intente de nuevo."
+          "Ocurrio un error con su pedido. Por favor, cancele la orden desde su carrito y vuelva a intentarlo."
         );
         return;
       }
@@ -56,8 +113,15 @@ export default function OrdenRecibida() {
         const pedidoParaGuardar = { ...pedido };
         pedidoParaGuardar.fecha = new Date().toISOString();
 
+        pedidoParaGuardar.sucursal = await obtenerSucursal();
+        pedidoParaGuardar.usuario = await obtenerUsuario();
+
         if (pedidoParaGuardar.tipoEnvio.tipoDelivery !== "DELIVERY") {
           delete pedidoParaGuardar.direccionPedido;
+        }
+
+        if (Number(pedidoParaGuardar.tiempoEstimado) == 0) {
+          pedidoParaGuardar.estadoPedido = tiposEstadoPedidoEnum["READY"];
         }
 
         const urlPost = `${host}/api/pedidos`;
