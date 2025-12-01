@@ -108,29 +108,29 @@ export default function Empleados() {
   };
 
   return (
-    <div className="bg-[#333333] w-full min-h-screen py-10 font-['Lato']">
-      <div className="bg-white w-11/12 m-auto rounded-2xl">
+    <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
+      <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 h-2/12">
-          <h1 className="pl-11 pt-2 text-5xl font-lato text-black drop-shadow-sm">Empleados</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 border-b border-gray-200">
+          <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Empleados</h1>
 
           <button
             onClick={() => setModalAgregarAbierto(true)}
-            className="bg-[#D93F21] hover:bg-[#B8341B] text-white px-6 py-3 rounded-full font-lato text-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl mr-2"
+            className="bg-[#D93F21] hover:bg-[#B8341B] text-white px-6 py-2.5 rounded-lg font-lato text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
           >
             + Agregar Empleado
           </button>
         </div>
 
         {/* Filtros y buscador */}
-        <div className="flex justify-end gap-5 pr-[2%] text-2xl items-center pb-4 px-6">
-          <div className="flex gap-2 items-center font-lato pr-10">
-            <span className="text-black font-medium pr-5">Filtrar por:</span>
+        <div className="flex flex-col sm:flex-row justify-end gap-4 items-stretch sm:items-center p-6 border-b border-gray-200">
+          <div className="flex flex-wrap gap-2 items-center font-lato">
+            <span className="text-gray-700 font-medium text-sm">Filtrar por:</span>
             {["TODOS", "ACTIVOS", "INACTIVOS"].map(estado => (
               <button
                 key={estado}
                 onClick={() => setFiltroEstado(estado as any)}
-                className={`px-4 py-2 rounded-full transition-colors ${filtroEstado === estado ? "bg-[#D93F21]" : "bg-[#878787]"} text-white`}
+                className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${filtroEstado === estado ? "bg-[#D93F21]" : "bg-[#878787] hover:bg-[#6a6a6a]"} text-white`}
               >
                 {estado}
               </button>
@@ -141,31 +141,31 @@ export default function Empleados() {
             <input
               onChange={e => setBuscador(e.target.value)}
               value={buscador}
-              className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-full font-lato"
+              className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full sm:w-auto"
               placeholder="Buscar..."
               type="text"
             />
-            <img className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5" src="/svg/LupaBuscador.svg" alt="Buscar" />
+            <img className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80" src="/svg/LupaBuscador.svg" alt="Buscar" />
           </div>
         </div>
 
-        {error && <div className="text-2xl text-center py-4 bg-red-100 text-red-600 mx-6 rounded-lg font-lato">{error}</div>}
+        {error && <div className="text-sm text-center py-3 bg-red-100 text-red-600 mx-6 mt-4 rounded-lg font-lato">{error}</div>}
 
         {cargando ? (
-          <div className="text-3xl text-center py-20 text-gray-500 font-lato">
+          <div className="text-base text-center py-20 text-gray-500 font-lato">
             <div className="flex flex-col items-center gap-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D93F21]" />
               <p>Cargando empleados...</p>
             </div>
           </div>
         ) : (
-          <div className="w-full pb-10">
-            <div className="text-4xl w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-500 text-center font-lato mt-10">
-              <h1>Empleado</h1>
-              <h1>Email</h1>
-              <h1>Teléfono</h1>
-              <h1>Rol</h1>
-              <h1>Acciones</h1>
+          <div className="w-full pb-6">
+            <div className="text-sm md:text-base w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+              <h1 className="p-4 text-center">Empleado</h1>
+              <h1 className="p-4 text-center">Email</h1>
+              <h1 className="p-4 text-center">Teléfono</h1>
+              <h1 className="p-4 text-center">Rol</h1>
+              <h1 className="p-4 text-center">Acciones</h1>
             </div>
 
             {empleadosMostrados.length > 0 ? (
@@ -174,11 +174,11 @@ export default function Empleados() {
                 .map(emp => (
                   <div
                     key={emp.id}
-                    className={`text-3xl grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-400 text-center font-lato py-2 mt-10 ${!emp.existe ? "opacity-40" : ""}`}
+                    className={`text-sm md:text-base grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${!emp.existe ? "opacity-40" : ""}`}
                   >
-                    <div>{emp.nombre} {emp.apellido}</div>
-                    <div>{emp.email}</div>
-                    <div>
+                    <div className="p-4 flex items-center justify-center text-gray-700">{emp.nombre} {emp.apellido}</div>
+                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">{emp.email}</div>
+                    <div className="p-4 flex items-center justify-center text-gray-700">
                       {Array.isArray(emp.telefonoList)
                         ? emp.telefonoList.length > 0
                           ? emp.telefonoList.map((tel: any, idx: number) => (
@@ -190,22 +190,30 @@ export default function Empleados() {
                           : "Sin teléfono"
                         : emp.telefonoList || "Sin teléfono"}
                     </div>
-                    <div>{typeof emp.rol === "string" ? emp.rol : emp.rol?.tipoRol?.rol || "Sin rol"}</div>
-                    <div className="flex justify-center gap-3">
-                      <div className={`text-white px-3 py-2 rounded-full ${emp.existe ? "bg-green-600" : "bg-gray-500"}`}>
+                    <div className="p-4 flex items-center justify-center text-gray-700">{typeof emp.rol === "string" ? emp.rol : emp.rol?.tipoRol?.rol || "Sin rol"}</div>
+                    <div className="p-4 flex items-center justify-center gap-2">
+                      <div className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${emp.existe ? "bg-green-600" : "bg-gray-500"}`}>
                         {getEstadoTexto(emp.existe)}
                       </div>
-                      <button onClick={() => abrirModalEditar(emp)} title="Editar empleado">
-                        <img className="h-10 w-10" src="/public/svg/LogoEditar.svg" alt="Editar" />
+                      <button 
+                        onClick={() => abrirModalEditar(emp)} 
+                        title="Editar empleado"
+                        className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                      >
+                        <img className="h-7 w-7" src="/public/svg/LogoEditar.svg" alt="Editar" />
                       </button>
-                      <button onClick={() => borradoLogicoEmpleado(emp)}>
-                        <img className="h-10 w-10" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
+                      <button 
+                        onClick={() => borradoLogicoEmpleado(emp)}
+                        className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                        title={emp.existe ? "Desactivar" : "Activar"}
+                      >
+                        <img className="h-7 w-7" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
                       </button>
                     </div>
                   </div>
                 ))
             ) : (
-              <div className="text-3xl text-center py-10 text-gray-500 font-lato">
+              <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron empleados
               </div>
             )}
