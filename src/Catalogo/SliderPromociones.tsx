@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import {Promocion} from "../../ts/Clases.ts"
-import { obtenerImagen } from "../../ts/Imagen.ts"
 import DetallePromocion from "./DetallePromocion.tsx"
 
 interface Props{
@@ -46,7 +45,7 @@ export default function SliderPromociones({promos}: Props) {
                     <button onClick={()=>setDetallePromocion(promos[indexActual])}>
                         <img className="m-auto h-[400px] w-full top-1/2 
                         object-cover rounded-r-4xl max-lg:rounded-4xl" 
-                        src={obtenerImagen(promos[indexActual].imagen)} 
+                        src={promos[indexActual].imagen} 
                         alt="No se pudo recuperar la imagen" />
                     </button>
                     

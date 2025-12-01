@@ -35,7 +35,7 @@ export default function DetallePagoCarrito({isOpen, cerrarModal, cerrarCarrito}:
                 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 
                 {/**Modal */}
-                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-2xl w-1/2 max-w-lg">
+                <div onClick={(e)=> e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-lg md:w-1/2">
                     
                     <div className="flex flex-col gap-5 p-10">
                         
@@ -117,7 +117,7 @@ export default function DetallePagoCarrito({isOpen, cerrarModal, cerrarCarrito}:
                                     cerrarCarrito()
                                     navigate("/ordenRecibida")
                                 }}
-                                className="bg-[#D93F21] text-white p-2 w-3/4">Realizar Orden</button>
+                                className="bg-[#D93F21] text-white p-2 w-full md:w-3/4">Realizar Orden</button>
                             ): (
                                 <MercadoPago monto={pedido.tipoEnvio.tipoDelivery === "DELIVERY" ?
                                     (calcularPrecioTotal() + (calcularPrecioTotal() * 10/100)) 

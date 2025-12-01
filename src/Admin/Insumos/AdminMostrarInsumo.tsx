@@ -103,7 +103,7 @@ export default function AdminMostrarManufacturado({
                 <div className="flex flex-col gap-2">
                   <h2 className="text-3xl font-bold">{articulo?.nombre}</h2>
                   <div className="flex gap-2">
-                    <h3 className="bg-[#D93F21] text-white rounded-4xl p-1 px-5">
+                    <h3 className="bg-[#D93F21] flex items-center justify-center text-white rounded-4xl p-1 px-5">
                       {articulo?.subcategoria.categoria?.denominacion}
                     </h3>
                     <div className="flex items-center gap-2">

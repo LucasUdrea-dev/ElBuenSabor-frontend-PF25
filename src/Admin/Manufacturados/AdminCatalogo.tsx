@@ -38,10 +38,38 @@ export default function AdminCatalogo() {
   }, []);
 
   const borradoLogico = async (articulo: ArticuloManufacturado) => {
-    const URL = `${host}/api/articuloManufacturado/eliminar/${articulo.id}`;
+    const URL = `${host}/api/articuloManufacturado/actualizar/${articulo.id}`;
+
+    articulo.existe = !articulo.existe;
+
+    const dataToSend = {
+      id: articulo.id || null,
+      nombre: articulo.nombre,
+      descripcion: articulo.descripcion,
+      precio: articulo.precio,
+      existe: articulo.existe,
+      esParaElaborar: articulo.esParaElaborar,
+      imagenArticulo: articulo.imagenArticulo,
+      subcategoria: {
+        id: articulo.subcategoria.id,
+        categoria: articulo.subcategoria.categoria?.id
+          ? { id: Number(articulo.subcategoria.categoria.id) }
+          : undefined,
+      },
+      unidadMedida: {
+        id: articulo.unidadMedida.id,
+      },
+      tiempoEstimado: articulo.tiempoEstimado,
+      preparacion: articulo.preparacion,
+      sucursalId: 1,
+      insumos: articulo.detalleInsumos.map((detalle) => ({
+        articuloInsumo: { id: Number(detalle.articuloInsumo.id) },
+        cantidad: detalle.cantidad,
+      })),
+    };
 
     try {
-      const response = await axios.delete(URL, axiosConfig);
+      const response = await axios.put(URL, dataToSend, axiosConfig);
 
       console.log("Se borro logicamente el articulo: " + response.status);
       cargarManufacturados();
