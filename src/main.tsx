@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Inicio from "./Inicio.tsx";
 import Catalogo from "./Catalogo/Catalogo.tsx";
 import DireccionesUser from "./Direcciones User/DireccionesUser.tsx";
@@ -39,6 +39,7 @@ createRoot(document.getElementById("root")!).render(
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<App />}>
+                  <Route index element={<Navigate to="/inicio" replace />} />
                   <Route path="/inicio" element={<Inicio />} />
 
                   <Route path="/catalogo" element={<Catalogo />} />
