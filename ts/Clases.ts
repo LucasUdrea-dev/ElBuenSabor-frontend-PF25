@@ -1,5 +1,5 @@
 //export const host: string = "http://localhost:8080";
-export const host: string = "http://localhost:8080";
+export const host: string = "https://elbuensabor-backend-pf25.onrender.com";
 
 const getToken = () => localStorage.getItem("token");
 
