@@ -189,6 +189,11 @@ export default function PerfilEmpleado() {
         return;
       }
 
+      if (telefonoEditado.length !== 10) {
+        setErrorTelefono("El teléfono debe tener 10 dígitos");
+        return;
+      }
+
       const telefonoDTO = {
         id: telefono.id,
         numero: parseInt(telefonoEditado),
@@ -255,6 +260,11 @@ export default function PerfilEmpleado() {
 
     if (!/^[0-9]+$/.test(nuevoNumero)) {
       alert("Solo se permiten números");
+      return;
+    }
+
+    if (nuevoNumero.length !== 10) {
+      alert("El teléfono debe tener exactamente 10 dígitos");
       return;
     }
 
@@ -445,9 +455,8 @@ export default function PerfilEmpleado() {
                               <input
                                 type="text"
                                 value={telefonoEditado}
-                                onChange={(e) =>
-                                  setTelefonoEditado(e.target.value)
-                                }
+                                onChange={(e) => setTelefonoEditado(e.target.value)}
+                                maxLength={10}
                                 className="flex-1 px-3 py-2 rounded bg-[#999999]/35 text-white"
                                 autoFocus
                               />
