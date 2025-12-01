@@ -23,6 +23,7 @@ export default function AdminFormPromocion({
 }: Props) {
   const [sucursalActual, setSucursalActual] = useState<Sucursal>();
   const [form, setForm] = useState<Promocion>(new Promocion());
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [seleccionarArticulo, setSeleccionarArticulo] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState(1);
 
@@ -106,6 +107,7 @@ export default function AdminFormPromocion({
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     try {
       const sucursalFinal = { ...sucursalActual };
 
@@ -130,6 +132,8 @@ export default function AdminFormPromocion({
     } catch (error) {
       console.error("Ocurrió un error en handleSubmit:", error);
       alert("Ocurrió un error inesperado. Intente de nuevo.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -569,8 +573,12 @@ export default function AdminFormPromocion({
                     >
                       Anterior
                     </button>
-                    <button onClick={handleSubmit} className="bg-[#D93F21]">
-                      Guardar
+                    <button
+                      onClick={handleSubmit}
+                      className="bg-[#D93F21]"
+                      disabled={isLoading || subiendoImagen}
+                    >
+                      {isLoading ? "Guardando..." : "Guardar"}
                     </button>
                   </div>
                 </div>

@@ -779,9 +779,11 @@ export default function AdminFormInsumo({
                           ? handleSubmit()
                           : () => {}
                       }
-                      disabled={estaGuardando}
+                      disabled={estaGuardando || subiendoImagen}
                       className={`bg-[#D93F21] ${
-                        estaGuardando ? "opacity-60 cursor-not-allowed" : ""
+                        estaGuardando || subiendoImagen
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
                       }`}
                     >
                       {estaGuardando ? "Guardando..." : "Guardar"}
