@@ -148,47 +148,47 @@ export default function Facturas() {
 
   return (
     <>
-      <div className="bg-[#333333] w-full h-full py-10 font-['Lato']">
+      <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
         {/**Tabla */}
-        <div className="bg-white w-11/12 m-auto rounded-2xl">
+        <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
           {/**Título, filtros y buscador */}
-          <div className="flex justify-between p-6 h-2/12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
             <div className="flex items-center gap-4">
-              <h1 className="pl-5 pt-2 text-4xl font-lato">Facturas</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Facturas</h1>
             </div>
 
-            <div className="flex gap-5 pr-[2%] text-2xl items-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
               {/**Filtros por estado como botones */}
-              <div className="flex gap-2 items-center font-lato pr-10">
-                <span className="text-black font-medium font-lato pr-5">
+              <div className="flex flex-wrap gap-2 items-center font-lato">
+                <span className="text-gray-700 font-medium text-sm">
                   Filtrar por:
                 </span>
                 <button
                   onClick={() => setFiltroEstado("TODAS")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "TODAS"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Todas
                 </button>
                 <button
                   onClick={() => setFiltroEstado("ACTIVA")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "ACTIVA"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Activas
                 </button>
                 <button
                   onClick={() => setFiltroEstado("ANULADA")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "ANULADA"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Anuladas
@@ -199,12 +199,12 @@ export default function Facturas() {
               <div className="relative">
                 <input
                   onChange={(e) => setBuscador(e.target.value)}
-                  className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-4xl font-lato"
+                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full sm:w-auto"
                   placeholder="Buscar..."
                   type="text"
                 />
                 <img
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
                   src="/svg/LupaBuscador.svg"
                   alt="Buscar"
                 />
@@ -213,14 +213,14 @@ export default function Facturas() {
           </div>
 
           {/**Tabla CRUD pedidos/facturas */}
-          <div className="w-full pb-10">
+          <div className="w-full pb-6">
             {/**Cabecera */}
-            <div className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center font-lato">
-              <h1>Nro. Orden</h1>
-              <h1>Fecha</h1>
-              <h1>Monto</h1>
-              <h1>Cliente</h1>
-              <h1>Acciones</h1>
+            <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+              <h1 className="p-4 text-center">Nro. Orden</h1>
+              <h1 className="p-4 text-center">Fecha</h1>
+              <h1 className="p-4 text-center">Monto</h1>
+              <h1 className="p-4 text-center">Cliente</h1>
+              <h1 className="p-4 text-center">Acciones</h1>
             </div>
 
             {/**Pedidos */}
@@ -233,41 +233,41 @@ export default function Facturas() {
                   return (
                     <div
                       key={pedido.id}
-                      className="text-3xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center font-lato"
+                      className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
                     >
-                      <div>
-                        <h3>#{pedido.id}</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="font-semibold text-gray-800">#{pedido.id}</h3>
                       </div>
-                      <div>
-                        <h3>{formatearFecha(pedido.fecha)}</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700">{formatearFecha(pedido.fecha)}</h3>
                       </div>
-                      <div>
+                      <div className="p-4 flex items-center justify-center">
                         <h3 className="font-semibold text-emerald-600">
                           {formatearMonto(calcularTotal(pedido))}
                         </h3>
                       </div>
-                      <div>
-                        <h3>{pedido.usuario.nombre} {pedido.usuario.apellido}</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700">{pedido.usuario.nombre} {pedido.usuario.apellido}</h3>
                       </div>
-                      <div className="flex items-center justify-center gap-3">
+                      <div className="p-4 flex items-center justify-center gap-2">
                         <div
-                          className={`text-white px-3 py-3 rounded-4xl text-2xl ${
+                          className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${
                             pedido.estadoPedido.nombreEstado === EstadosPedidosEnum.DELIVERED
                               ? "bg-emerald-500"
                               : "bg-red-500"
                           }`}
-                          style={{ width: "120px", height: "50px" }}
+                          style={{ minWidth: "90px" }}
                         >
                           {pedido.estadoPedido.nombreEstado === EstadosPedidosEnum.DELIVERED ? "Activa" : "Anulada"}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <button
                             onClick={() => abrirDetalleFactura(pedido)}
-                            className="hover:opacity-80 transition-opacity"
+                            className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
                             title="Ver detalles"
                           >
                             <img
-                              className="h-10 w-10"
+                              className="h-7 w-7"
                               src="/svg/DetallePreparacion.svg"
                               alt="Ver detalles"
                             />
@@ -275,11 +275,11 @@ export default function Facturas() {
                           <button
                             onClick={() => anularPedido(pedido)}
                             disabled={pedido.estadoPedido.nombreEstado !== EstadosPedidosEnum.DELIVERED}
-                            className="disabled:opacity-50 hover:opacity-80 transition-opacity"
+                            className="disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
                             title="Anular factura"
                           >
                             <img
-                              className="h-10 w-10"
+                              className="h-7 w-7"
                               src="/svg/EstadoNegativo.svg"
                               alt="Anular"
                             />
@@ -293,16 +293,16 @@ export default function Facturas() {
 
             {/**Mensaje cuando no hay pedidos */}
             {pedidosMostrados.length === 0 && (
-              <div className="text-3xl text-center py-10 text-gray-500 font-lato">
+              <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron facturas con los filtros aplicados
               </div>
             )}
 
             {/**Paginación */}
             {pedidosMostrados.length > 0 && (
-              <div className="text-gray-500 flex items-center pt-10 pr-20 justify-end gap-2 text-2xl *:h-10 font-lato">
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
                 {/**Información pedidos mostrados y totales */}
-                <div className="h-10 flex items-center">
+                <div className="flex items-center">
                   <h4>
                     {paginaSeleccionada * cantidadPorPagina -
                       cantidadPorPagina +
@@ -317,47 +317,55 @@ export default function Facturas() {
                 </div>
 
                 {/**Control de paginado a través de botones */}
-                <button onClick={() => setPaginaSeleccionada(1)}>
-                  <img className="h-10" src="/svg/PrimeraPagina.svg" alt="" />
-                </button>
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (paginaSeleccionada > 1) {
-                        return prev - 1;
-                      }
-                      return prev;
-                    })
-                  }
-                >
-                  <img className="h-10" src="/svg/AnteriorPagina.svg" alt="" />
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (paginaSeleccionada > 1) {
+                          return prev - 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
+                  </button>
 
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (
-                        paginaSeleccionada <
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (
+                          paginaSeleccionada <
+                          Math.ceil(pedidosMostrados.length / cantidadPorPagina)
+                        ) {
+                          return prev + 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
                         Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                      ) {
-                        return prev + 1;
-                      }
-                      return prev;
-                    })
-                  }
-                >
-                  <img className="h-10" src="/svg/SiguientePagina.svg" alt="" />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada(
-                      Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                    )
-                  }
-                >
-                  <img className="h-10" src="/svg/UltimaPagina.svg" alt="" />
-                </button>
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

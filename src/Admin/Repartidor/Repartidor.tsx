@@ -131,26 +131,26 @@ export default function Repartidor() {
 
   return (
     <>
-      <div className="bg-[#333333] w-full min-h-screen py-4 md:py-10 font-['Lato']">
+      <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
         {/**Contenedor Principal */}
-        <div className="bg-white w-11/12 md:w-11/12 m-auto rounded-2xl overflow-hidden">
+        <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl overflow-hidden">
           {/**Titulo y buscador */}
-          <div className="flex flex-col md:flex-row justify-between p-4 md:p-6 gap-4 items-center border-b border-gray-200 md:border-none">
-            <h1 className="text-2xl md:text-4xl font-lato font-bold text-gray-800">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
+            <h1 className="text-2xl lg:text-3xl font-lato font-bold text-gray-800">
               Repartidor
             </h1>
 
-            <div className="w-full md:w-auto flex justify-center md:justify-end">
+            <div className="w-full lg:w-auto flex justify-start lg:justify-end">
               {/**Buscador con icono */}
-              <div className="relative w-full md:w-auto max-w-xs">
+              <div className="relative w-full sm:w-auto max-w-xs">
                 <input
                   onChange={(e) => setBuscador(e.target.value)}
-                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-full font-lato w-full placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato w-full text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
                   placeholder="Buscar cliente..."
                   type="text"
                 />
                 <img
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
                   src="/svg/LupaBuscador.svg"
                   alt="Buscar"
                 />
@@ -159,18 +159,18 @@ export default function Repartidor() {
           </div>
 
           {/**Lista de Pedidos */}
-          <div className="w-full pb-10 px-4 md:px-0">
+          <div className="w-full pb-6">
             {/**Cabecera (Solo visible en Desktop) */}
-            <div className="hidden md:grid grid-cols-5 gap-4 p-5 border-b border-gray-200 text-center font-bold text-lg text-gray-700">
-              <div>Orden N°</div>
-              <div>Cliente</div>
-              <div>Dirección</div>
-              <div>Teléfono</div>
-              <div>Acciones</div>
+            <div className="hidden md:grid grid-cols-5 gap-4 p-4 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-sm text-gray-700">
+              <div className="text-center">Orden N°</div>
+              <div className="text-center">Cliente</div>
+              <div className="text-center">Dirección</div>
+              <div className="text-center">Teléfono</div>
+              <div className="text-center">Acciones</div>
             </div>
 
             {/**Pedidos */}
-            <div className="flex flex-col gap-4 md:gap-0">
+            <div className="flex flex-col gap-3 p-4 md:p-0 md:gap-0">
               {pedidosMostrados.length > 0 ? (
                 pedidosMostrados.map((pedido, index) => {
                   if (
@@ -182,17 +182,17 @@ export default function Repartidor() {
                         key={pedido.id}
                         className="
                           flex flex-col md:grid md:grid-cols-5 md:gap-4 
-                          bg-gray-50 md:bg-white p-4 md:p-5 
-                          rounded-xl md:rounded-none shadow-sm md:shadow-none
+                          bg-white p-4 
+                          rounded-xl md:rounded-none shadow-md md:shadow-none
                           border border-gray-200 md:border-b md:border-x-0 md:border-t-0
-                          items-center text-center md:text-center
+                          hover:bg-gray-50 transition-colors
                         "
                       >
                         {/* Móvil: Encabezado de tarjeta */}
-                        <div className="md:hidden w-full flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
-                          <span className="font-bold text-gray-600">Orden #{pedido.id}</span>
+                        <div className="md:hidden w-full flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
+                          <span className="font-bold text-gray-800 text-sm">Orden #{pedido.id}</span>
                           <span 
-                            className="text-xs px-2 py-1 rounded-full text-white"
+                            className="text-xs px-3 py-1 rounded-lg text-white font-medium shadow-md"
                             style={{ backgroundColor: getColorEstado(pedido.estadoPedido.nombreEstado) }}
                           >
                             {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
@@ -200,39 +200,39 @@ export default function Repartidor() {
                         </div>
 
                         {/* Desktop: ID */}
-                        <div className="hidden md:flex items-center justify-center">
-                          <h3 className="font-normal text-gray-800 text-lg">{pedido.id}</h3>
+                        <div className="hidden md:flex items-center justify-center p-4">
+                          <h3 className="font-semibold text-gray-800 text-sm">#{pedido.id}</h3>
                         </div>
 
                         {/* Cliente */}
-                        <div className="w-full md:w-auto flex md:items-center md:justify-center mb-2 md:mb-0">
-                          <div className="md:hidden font-semibold mr-2">Cliente:</div>
-                          <h3 className="text-base md:text-lg truncate">
+                        <div className="w-full md:w-auto flex md:items-center md:justify-center md:p-4 mb-2 md:mb-0">
+                          <div className="md:hidden font-semibold text-gray-600 text-xs mr-2 min-w-[80px]">Cliente:</div>
+                          <h3 className="text-sm text-gray-700 truncate">
                             {pedido.usuario.nombre} {pedido.usuario.apellido}
                           </h3>
                         </div>
 
                         {/* Dirección */}
-                        <div className="w-full md:w-auto flex md:items-center md:justify-center mb-2 md:mb-0">
-                           <div className="md:hidden font-semibold mr-2">Dirección:</div>
-                          <h3 className="text-base md:text-lg truncate">
+                        <div className="w-full md:w-auto flex md:items-center md:justify-center md:p-4 mb-2 md:mb-0">
+                           <div className="md:hidden font-semibold text-gray-600 text-xs mr-2 min-w-[80px]">Dirección:</div>
+                          <h3 className="text-sm text-gray-700 truncate">
                             {pedido.direccionPedido?.direccion.nombreCalle} {pedido.direccionPedido?.direccion.numeracion}
                           </h3>
                         </div>
 
                          {/* Teléfono */}
-                         <div className="w-full md:w-auto flex md:items-center md:justify-center mb-4 md:mb-0">
-                           <div className="md:hidden font-semibold mr-2">Teléfono:</div>
-                           <h3 className="text-base md:text-lg">
+                         <div className="w-full md:w-auto flex md:items-center md:justify-center md:p-4 mb-4 md:mb-0">
+                           <div className="md:hidden font-semibold text-gray-600 text-xs mr-2 min-w-[80px]">Teléfono:</div>
+                           <h3 className="text-sm text-gray-700">
                               {pedido.usuario.telefonoList?.[0]?.numero || "-"}
                            </h3>
                         </div>
 
                         {/* Estado (Desktop) y Acciones */}
-                        <div className="w-full md:w-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-2">
+                        <div className="w-full md:w-auto flex flex-col md:flex-row items-center justify-center md:p-4 gap-3">
                           {/* Estado Badge (Solo Desktop) */}
                           <div
-                            className={`hidden md:flex text-white px-4 py-1 rounded-full text-base items-center justify-center`}
+                            className="hidden md:flex text-white px-3 py-1.5 rounded-lg text-xs font-medium items-center justify-center shadow-md"
                             style={{
                               minWidth: "100px",
                               backgroundColor: getColorEstado(pedido.estadoPedido.nombreEstado),
@@ -242,14 +242,14 @@ export default function Repartidor() {
                           </div>
 
                           {/* Botones de Acción */}
-                          <div className="flex gap-4 md:gap-2 w-full md:w-auto justify-around md:justify-center mt-2 md:mt-0">
+                          <div className="flex gap-2 w-full md:w-auto justify-around md:justify-center">
                             <button
                               onClick={() => abrirDetallePedido(pedido)}
-                              className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+                              className="p-2 hover:scale-110 hover:bg-gray-200 rounded-lg transition-all"
                               title="Ver detalles y mapa"
                             >
                               <img
-                                className="h-6 w-6 md:h-8 md:w-8"
+                                className="h-7 w-7"
                                 src="/svg/DetallePreparacion.svg"
                                 alt="Ver detalles"
                               />
@@ -257,11 +257,11 @@ export default function Repartidor() {
 
                             <button
                               onClick={() => enEspera(pedido)}
-                              className="p-2 bg-yellow-50 rounded-full hover:bg-yellow-100 transition-colors"
+                              className="p-2 hover:scale-110 hover:bg-gray-200 rounded-lg transition-all"
                               title="Poner en espera"
                             >
                               <img
-                                className="h-6 w-6 md:h-8 md:w-8"
+                                className="h-7 w-7"
                                 src="/img/EstadoEspera.png"
                                 alt="En Espera"
                               />
@@ -269,11 +269,11 @@ export default function Repartidor() {
 
                             <button
                               onClick={() => avanzar(pedido)}
-                              className="p-2 bg-green-50 rounded-full hover:bg-green-100 transition-colors"
+                              className="p-2 hover:scale-110 hover:bg-gray-200 rounded-lg transition-all"
                               title="Marcar como Entregado"
                             >
                               <img
-                                className="h-6 w-6 md:h-8 md:w-8"
+                                className="h-7 w-7"
                                 src="/svg/EstadoPositivo.svg"
                                 alt="Entregado"
                               />
@@ -286,7 +286,7 @@ export default function Repartidor() {
                   return null;
                 })
               ) : (
-                <div className="text-xl text-center py-10 text-gray-500 font-lato">
+                <div className="text-base text-center py-12 text-gray-500 font-lato">
                   No hay pedidos en camino
                 </div>
               )}
@@ -294,8 +294,8 @@ export default function Repartidor() {
 
             {/**Paginacion */}
             {pedidosMostrados.length > 0 && (
-              <div className="text-gray-500 flex flex-col md:flex-row items-center pt-6 md:pt-10 md:pr-20 justify-center md:justify-end gap-4 text-lg font-lato">
-                <div className="h-10 flex items-center">
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                <div className="flex items-center">
                   <h4>
                     {paginaSeleccionada * cantidadPorPagina -
                       cantidadPorPagina +
@@ -312,17 +312,17 @@ export default function Repartidor() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setPaginaSeleccionada(1)}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
                   >
-                    <img className="h-8" src="/svg/PrimeraPagina.svg" alt="Inicio" />
+                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Inicio" />
                   </button>
                   <button
                     onClick={() =>
                       setPaginaSeleccionada((prev) => (prev > 1 ? prev - 1 : prev))
                     }
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
                   >
-                    <img className="h-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
+                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
                   </button>
                   <button
                     onClick={() =>
@@ -332,9 +332,9 @@ export default function Repartidor() {
                           : prev
                       )
                     }
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
                   >
-                    <img className="h-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
+                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
                   </button>
                   <button
                     onClick={() =>
@@ -342,9 +342,9 @@ export default function Repartidor() {
                         Math.ceil(pedidosMostrados.length / cantidadPorPagina)
                       )
                     }
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
                   >
-                    <img className="h-8" src="/svg/UltimaPagina.svg" alt="Fin" />
+                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Fin" />
                   </button>
                 </div>
               </div>

@@ -163,65 +163,65 @@ export default function Cajero() {
 
   return (
     <>
-      <div className="bg-[#333333] w-full h-full py-10 font-['Lato']">
+      <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
         {/**Tabla */}
-        <div className="bg-white w-11/12 m-auto rounded-2xl">
+        <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
           {/**Titulo, filtros y buscador */}
-          <div className="flex justify-between p-6 h-2/12">
-            <h1 className="pl-18 pt-2 text-4xl font-lato">Entregas</h1>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
+            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Entregas</h1>
 
-            <div className="flex gap-5 pr-[2%] text-2xl items-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
               {/**Filtros por estado como botones */}
-              <div className="flex w-3/4 justify-center flex-wrap gap-2 items-center font-lato pr-10">
+              <div className="flex flex-wrap gap-2 font-lato">
                 <button
                   onClick={() => setFiltroEstado("TODOS")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "TODOS"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Todos
                 </button>
                 <button
                   onClick={() => setFiltroEstado("INCOMING")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "INCOMING"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Entrantes
                 </button>
                 <button
                   onClick={() => setFiltroEstado("READY")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "READY"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   Listos
                 </button>
                 <button
                   onClick={() => setFiltroEstado("STANDBY")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "STANDBY"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
                   En Espera
                 </button>
                 <button
                   onClick={() => setFiltroEstado("CANCELLED")}
-                  className={`px-4 py-2 rounded-4xl transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
                     filtroEstado === "CANCELLED"
                       ? "bg-[#D93F21] text-white"
-                      : "bg-[#878787] text-white"
+                      : "bg-[#878787] text-white hover:bg-[#6a6a6a]"
                   }`}
                 >
-                  Cancelados/Rechazados
+                  Cancelados
                 </button>
               </div>
 
@@ -229,12 +229,12 @@ export default function Cajero() {
               <div className="relative">
                 <input
                   onChange={(e) => setBuscador(e.target.value)}
-                  className="bg-[#878787] text-white pl-12 pr-5 py-2 rounded-4xl font-lato"
+                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full sm:w-auto"
                   placeholder="Cliente..."
                   type="text"
                 />
                 <img
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
                   src="/svg/LupaBuscador.svg"
                   alt="Buscar"
                 />
@@ -243,14 +243,14 @@ export default function Cajero() {
           </div>
 
           {/**Tabla CRUD pedidos */}
-          <div className="w-full pb-10">
+          <div className="w-full pb-6">
             {/**Cabecera */}
-            <div className="text-4xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center font-lato">
-              <h1>Orden N°</h1>
-              <h1>Cliente</h1>
-              <h1>Envío</h1>
-              <h1>Tiempo Est.</h1>
-              <h1>Estado y Acciones</h1>
+            <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+              <h1 className="p-4 text-center">Orden N°</h1>
+              <h1 className="p-4 text-center">Cliente</h1>
+              <h1 className="p-4 text-center">Envío</h1>
+              <h1 className="p-4 text-center">Tiempo Est.</h1>
+              <h1 className="p-4 text-center">Estado y Acciones</h1>
             </div>
 
             {/**Pedidos */}
@@ -263,32 +263,31 @@ export default function Cajero() {
                   return (
                     <div
                       key={pedido.id}
-                      className="text-3xl w-full grid grid-cols-5 *:border-1 *:border-r-0 *:border-gray-500 *:w-full *:p-5 *:border-collapse text-center *:flex *:items-center *:justify-center font-lato"
+                      className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
                     >
-                      <div>
-                        <h3 className="font-normal text-gray-800">
-                          {pedido.id}
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="font-semibold text-gray-800">
+                          #{pedido.id}
                         </h3>
                       </div>
-                      <div>
-                        <h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700">
                           {pedido.usuario.nombre} {pedido.usuario.apellido}
                         </h3>
                       </div>
-                      <div>
-                        <h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700">
                           {getTipoEnvioTexto(pedido.tipoEnvio.tipoDelivery)}
                         </h3>
                       </div>
-                      <div>
-                        <h3>{pedido.tiempoEstimado} min</h3>
+                      <div className="p-4 flex items-center justify-center">
+                        <h3 className="text-gray-700">{pedido.tiempoEstimado} min</h3>
                       </div>
-                      <div className="flex items-center justify-center gap-3">
+                      <div className="p-4 flex items-center justify-center gap-2">
                         <div
-                          className={`text-white px-3 py-3 rounded-4xl text-2xl flex items-center justify-center`}
+                          className="text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium flex items-center justify-center shadow-md"
                           style={{
-                            width: "150px",
-                            height: "50px",
+                            minWidth: "100px",
                             backgroundColor: getColorEstado(
                               pedido.estadoPedido.nombreEstado
                             ),
@@ -298,13 +297,14 @@ export default function Cajero() {
                         </div>
                         {pedido.estadoPedido.nombreEstado !== "REJECTED" &&
                           pedido.estadoPedido.nombreEstado !== "CANCELLED" && (
-                            <div className="flex gap-2">
+                            <div className="flex gap-1.5">
                               <button
                                 onClick={() => rechazar(pedido)}
-                                className="disabled:opacity-50"
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                                title="Rechazar"
                               >
                                 <img
-                                  className="h-10 w-10"
+                                  className="h-7 w-7"
                                   src="/svg/EstadoNegativo.svg"
                                   alt="Rechazar"
                                 />
@@ -313,21 +313,23 @@ export default function Cajero() {
                                 EstadosPedidosEnum.STANDBY && (
                                 <button
                                   onClick={() => enEspera(pedido)}
-                                  className="disabled:opacity-50"
+                                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                                  title="En Espera"
                                 >
                                   <img
-                                    className="h-10 w-10"
+                                    className="h-7 w-7"
                                     src="/img/EstadoEspera.png"
-                                    alt="Rechazar"
+                                    alt="En Espera"
                                   />
                                 </button>
                               )}
                               <button
                                 onClick={() => avanzar(pedido)}
-                                className="disabled:opacity-50"
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                                title="Avanzar"
                               >
                                 <img
-                                  className="h-10 w-10"
+                                  className="h-7 w-7"
                                   src="/svg/EstadoPositivo.svg"
                                   alt="Preparar"
                                 />
@@ -342,16 +344,16 @@ export default function Cajero() {
 
             {/**Mensaje cuando no hay pedidos */}
             {pedidosMostrados.length === 0 && (
-              <div className="text-3xl text-center py-10 text-gray-500 font-lato">
+              <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron pedidos con los filtros aplicados
               </div>
             )}
 
             {/**Paginacion */}
             {pedidosMostrados.length > 0 && (
-              <div className="text-gray-500 flex items-center pt-10 pr-20 justify-end gap-2 text-2xl *:h-10 font-lato">
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
                 {/**Informacion pedidos mostrados y totales */}
-                <div className="h-10 flex items-center">
+                <div className="flex items-center">
                   <h4>
                     {paginaSeleccionada * cantidadPorPagina -
                       cantidadPorPagina +
@@ -366,47 +368,55 @@ export default function Cajero() {
                 </div>
 
                 {/**Control de paginado a traves de botones */}
-                <button onClick={() => setPaginaSeleccionada(1)}>
-                  <img className="h-10" src="/svg/PrimeraPagina.svg" alt="" />
-                </button>
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (paginaSeleccionada > 1) {
-                        return prev - 1;
-                      }
-                      return prev;
-                    })
-                  }
-                >
-                  <img className="h-10" src="/svg/AnteriorPagina.svg" alt="" />
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (paginaSeleccionada > 1) {
+                          return prev - 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
+                  </button>
 
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (
-                        paginaSeleccionada <
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (
+                          paginaSeleccionada <
+                          Math.ceil(pedidosMostrados.length / cantidadPorPagina)
+                        ) {
+                          return prev + 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
                         Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                      ) {
-                        return prev + 1;
-                      }
-                      return prev;
-                    })
-                  }
-                >
-                  <img className="h-10" src="/svg/SiguientePagina.svg" alt="" />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada(
-                      Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                    )
-                  }
-                >
-                  <img className="h-10" src="/svg/UltimaPagina.svg" alt="" />
-                </button>
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

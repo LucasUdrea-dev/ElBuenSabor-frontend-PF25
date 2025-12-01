@@ -137,55 +137,63 @@ const EditCorreoUser: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md font-lato">
-        <h2 className="text-2xl font-bold mb-6 text-center text-black">
-          Editar email
-        </h2>
-
-        <div className="mb-4">
-          <label className="block mb-2 text-gray-700">Nuevo correo</label>
-          <input
-            type="email"
-            value={nuevoCorreo}
-            onChange={(e) => setNuevoCorreo(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded text-black"
-            disabled={cargando}
-            placeholder="ejemplo@correo.com"
-          />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#444444] rounded-xl max-w-md w-full shadow-2xl">
+        <div className="bg-[#333333]/40 px-6 py-4 border-b border-white/10">
+          <h3 className="text-xl font-semibold text-white">Editar email</h3>
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-2 text-gray-700">
-            Repetir nuevo correo
-          </label>
-          <input
-            type="email"
-            value={confirmarCorreo}
-            onChange={(e) => setConfirmarCorreo(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded text-black"
-            disabled={cargando}
-            placeholder="ejemplo@correo.com"
-          />
-        </div>
+        <div className="p-6 space-y-5">
+          <div>
+            <label className="block text-sm font-semibold text-white mb-2">
+              Nuevo correo
+            </label>
+            <input
+              type="email"
+              value={nuevoCorreo}
+              onChange={(e) => setNuevoCorreo(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
+              disabled={cargando}
+              placeholder="ejemplo@correo.com"
+            />
+          </div>
 
-        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
+          <div>
+            <label className="block text-sm font-semibold text-white mb-2">
+              Repetir nuevo correo
+            </label>
+            <input
+              type="email"
+              value={confirmarCorreo}
+              onChange={(e) => setConfirmarCorreo(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
+              disabled={cargando}
+              placeholder="ejemplo@correo.com"
+            />
+          </div>
 
-        <div className="flex justify-between gap-2 mt-10">
-          <button
-            onClick={onClose}
-            className="bg-white text-[#0A76E1] py-3 px-3 rounded-full hover:bg-gray-200 border border-[#0A76E1] w-40"
-            disabled={cargando}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleGuardar}
-            className="bg-[#0A76E1] text-white py-3 px-3 rounded-full hover:bg-[#0A5BBE] w-40 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={cargando}
-          >
-            {cargando ? "Guardando..." : "Guardar"}
-          </button>
+          {error && (
+            <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <button
+              onClick={onClose}
+              className="bg-[#999999]/35 hover:bg-[#999999]/50 px-6 py-2.5 rounded-lg text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={cargando}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleGuardar}
+              className="bg-[#D93F21] hover:bg-[#C13519] px-6 py-2.5 rounded-lg text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={cargando}
+            >
+              {cargando ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

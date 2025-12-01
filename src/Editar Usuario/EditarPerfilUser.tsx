@@ -4,6 +4,7 @@ import { z } from 'zod';
 import axios from 'axios';
 import EditCorreoUser from './EditCorreoUser';
 import EditContrasenaUser from './EditContrasenaUser';
+import AgregarTelefonoModal from './AgregarTelefonoModal';
 import { Usuario, Telefono,host } from '../../ts/Clases';
 import { useUser } from '../UserAuth/UserContext';
 import { useCloudinary } from '../useCloudinary'; 
@@ -35,6 +36,7 @@ export default function EditarPerfilUser() {
   const navigate = useNavigate();
   const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
   const [mostrarModalContrasena, setMostrarModalContrasena] = useState(false);
+  const [mostrarModalAgregarTelefono, setMostrarModalAgregarTelefono] = useState(false);
   const { userSession } = useUser();
 
   // Usamos el hook de Cloudinary
@@ -259,21 +261,7 @@ export default function EditarPerfilUser() {
     }
   };
 
-  const agregarTelefono = async () => {
-    const nuevoNumero = prompt("Ingrese el nuevo número de teléfono:");
-
-    if (!nuevoNumero) return;
-
-    if (!/^[0-9]+$/.test(nuevoNumero)) {
-      alert("Solo se permiten números");
-      return;
-    }
-
-     if (nuevoNumero.length !== 10) {
-      alert("El teléfono debe tener exactamente 10 dígitos");
-      return;
-    }
-
+  const agregarTelefono = async (nuevoNumero: string) => {
     try {
       const telefonoDTO = {
         numero: parseInt(nuevoNumero),
@@ -361,13 +349,13 @@ export default function EditarPerfilUser() {
 
   return (
     <div className="min-h-screen text-white p-6 bg-[#333333] font-lato">
-      <div className="bg-[#444444] rounded-xl max-w-6xl mx-auto overflow-hidden shadow-lg">
+      <div className="bg-[#444444] rounded-xl max-w-5xl mx-auto overflow-hidden shadow-xl">
         <div className="bg-[#333333]/40 px-6 py-4 border-b border-white/10">
-          <h2 className="font-lato text-xl font-semibold">Editar perfil</h2>
+          <h2 className="font-lato text-2xl font-semibold">Editar perfil</h2>
         </div>
 
         <div className="flex flex-col md:flex-row p-6 gap-8">
-          <div className="flex flex-col items-center justify-center gap-1 md:w-1/3 mb-30">
+          <div className="flex flex-col items-center justify-start gap-4 md:w-1/3">
             {/* Input file oculto */}
             <input
               ref={fileInputRef}
@@ -380,30 +368,30 @@ export default function EditarPerfilUser() {
             {/* Imagen de perfil */}
             <div className="relative">
               {subiendoImagen ? (
-                <div className="w-82 h-82 flex items-center justify-center bg-[#555555] rounded-full">
-                  <p className="text-white">Subiendo...</p>
+                <div className="w-48 h-48 flex items-center justify-center bg-[#555555] rounded-full shadow-lg">
+                  <p className="text-white text-sm">Subiendo...</p>
                 </div>
               ) : (
                 <img
                   //image de Cloudinary o default
                   src={image || "../public/svg/imagenUsuario.svg"}
                   alt="Imagen de Usuario"
-                  className="w-82 h-82 rounded-full object-cover"
+                  className="w-48 h-48 rounded-full object-cover shadow-lg ring-4 ring-white/10"
                 />
               )}
             </div>
 
-            <div className="flex flex-row gap-4 mt-4">
+            <div className="flex flex-col w-full gap-3">
               <button
                 onClick={irADirecciones}
-                className="px-5 py-2 rounded-lg bg-[#666666] hover:bg-[#7a7a7a] text-white font-medium shadow transition duration-300"
+                className="w-full px-5 py-2.5 rounded-lg bg-[#666666] hover:bg-[#7a7a7a] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
               >
                 Mis direcciones
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()} // Activa el input file
                 disabled={subiendoImagen} // Deshabilitado mientras sube
-                className="px-5 py-2 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-5 py-2.5 rounded-lg bg-[#888888] hover:bg-[#9c9c9c] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {subiendoImagen ? "Subiendo..." : "Cambiar imagen"}
               </button>
@@ -414,25 +402,25 @@ export default function EditarPerfilUser() {
             {cargando ? (
               <p>Cargando...</p>
             ) : (
-              <div className="flex flex-col space-y-4 lg:mt-8">
+              <div className="flex flex-col space-y-5">
                 {/* Campo: Nombre */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">Nombre</label>
+                  <label className="block text-sm font-semibold mb-2">Nombre</label>
                   <input
                     type="text"
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleChange}
-                    className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
                   />
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                  <p className="text-red-400 text-sm mt-1 min-h-[1.25rem]">
                     {errores.nombre ?? "\u00A0"}
                   </p>
                 </div>
 
                 {/* Campo: Apellido */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">
+                  <label className="block text-sm font-semibold mb-2">
                     Apellido
                   </label>
                   <input
@@ -440,20 +428,21 @@ export default function EditarPerfilUser() {
                     name="apellido"
                     value={formData.apellido}
                     onChange={handleChange}
-                    className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
                   />
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                  <p className="text-red-400 text-sm mt-1 min-h-[1.25rem]">
                     {errores.apellido ?? "\u00A0"}
                   </p>
                 </div>
 
                 {/* Lista de Teléfonos */}
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <label className="text-sm font-bold">Teléfonos</label>
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="text-sm font-semibold">Teléfonos</label>
                     <button
-                      onClick={agregarTelefono}
-                      className="text-sm px-3 py-1 rounded bg-[#D93F21] hover:bg-[#D93F21]/80 text-white"
+                      type="button"
+                      onClick={() => setMostrarModalAgregarTelefono(true)}
+                      className="text-sm px-4 py-1.5 rounded-lg bg-[#D93F21] hover:bg-[#C13519] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
                     >
                       + Agregar teléfono
                     </button>
@@ -477,12 +466,12 @@ export default function EditarPerfilUser() {
                                 value={telefonoEditado}
                                 onChange={(e) => setTelefonoEditado(e.target.value)}
                                 maxLength={10}
-                                className="flex-1 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all"
                                 autoFocus
                               />
                               <button
                                 onClick={() => guardarTelefono(telefono)}
-                                className="p-2 hover:bg-green-600/20 rounded transition"
+                                className="p-2 hover:bg-green-600/20 rounded-lg transition"
                                 title="Guardar"
                               >
                                 <svg
@@ -501,7 +490,7 @@ export default function EditarPerfilUser() {
                               </button>
                               <button
                                 onClick={cancelarEdicionTelefono}
-                                className="p-2 hover:bg-red-600/20 rounded transition"
+                                className="p-2 hover:bg-red-600/20 rounded-lg transition"
                                 title="Cancelar"
                               >
                                 <svg
@@ -525,15 +514,15 @@ export default function EditarPerfilUser() {
                                 type="text"
                                 value={telefono.numero}
                                 readOnly
-                                className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                                className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white"
                               />
 
-                              <div className="flex gap-0">
+                              <div className="flex gap-1">
                                 <button
                                   onClick={() =>
                                     iniciarEdicionTelefono(telefono)
                                   }
-                                  className="p-2 hover:scale-110 transition"
+                                  className="p-2 hover:scale-110 hover:bg-white/10 rounded-lg transition"
                                   title="Editar"
                                 >
                                   <img
@@ -545,13 +534,13 @@ export default function EditarPerfilUser() {
 
                                 <button
                                   onClick={() => eliminarTelefono(telefono)}
-                                  className="p-2 hover:bg-red-600/20 rounded transition"
+                                  className="p-2 hover:bg-red-600/20 rounded-lg transition"
                                   title="Eliminar"
                                 >
                                   <img
                                     src="../../public/svg/LogoBorrar.svg"
                                     alt="Borrar"
-                                    className="w-7 h-7"
+                                    className="w-6 h-6"
                                   />
                                 </button>
                               </div>
@@ -570,19 +559,19 @@ export default function EditarPerfilUser() {
 
                 {/* Campo: Email */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">Email</label>
+                  <label className="block text-sm font-semibold mb-2">Email</label>
                   <div className="relative flex items-center">
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       readOnly
-                      className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white pr-10"
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white pr-12"
                     />
                     <button
                       onClick={() => setMostrarModalCorreo(true)}
                       type="button"
-                      className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
+                      className="absolute right-3 p-1.5 hover:scale-110 hover:bg-white/10 rounded-lg transition"
                     >
                       <img
                         src="../public/svg/LapizEdit.svg"
@@ -591,14 +580,14 @@ export default function EditarPerfilUser() {
                       />
                     </button>
                   </div>
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                  <p className="text-red-400 text-sm mt-1 min-h-[1.25rem]">
                     {errores.email ?? "\u00A0"}
                   </p>
                 </div>
 
                 {/* Campo: Contraseña */}
                 <div>
-                  <label className="block text-sm font-bold mb-1">
+                  <label className="block text-sm font-semibold mb-2">
                     Contraseña
                   </label>
                   <div className="relative flex items-center">
@@ -607,12 +596,12 @@ export default function EditarPerfilUser() {
                       name="contrasena"
                       value="********"
                       readOnly
-                      className="w-6/7 px-3 py-2 rounded bg-[#999999]/35 text-white"
+                      className="w-full px-4 py-2.5 rounded-lg bg-[#999999]/35 text-white pr-12"
                     />
                     <button
                       onClick={() => setMostrarModalContrasena(true)}
                       type="button"
-                      className="absolute right-15 max-md:right-0 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
+                      className="absolute right-3 p-1.5 hover:scale-110 hover:bg-white/10 rounded-lg transition"
                     >
                       <img
                         src="../public/svg/LapizEdit.svg"
@@ -621,21 +610,21 @@ export default function EditarPerfilUser() {
                       />
                     </button>
                   </div>
-                  <p className="text-red-400 text-sm mt-1 min-h-[0.5rem]">
+                  <p className="text-red-400 text-sm mt-1 min-h-[1.25rem]">
                     {"\u00A0"}
                   </p>
                 </div>
 
-                <div className="flex justify-end gap-3 mt-6">
+                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/10">
                   <button
                     onClick={cancelar}
-                    className="bg-[#999999]/35 hover:bg-[#999999]/20 px-4 py-2 rounded text-white"
+                    className="bg-[#999999]/35 hover:bg-[#999999]/50 px-6 py-2.5 rounded-lg text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={guardarCambios}
-                    className="bg-[#D93F21] hover:bg-[#D93F21]/80 px-4 py-2 rounded text-white"
+                    className="bg-[#D93F21] hover:bg-[#C13519] px-6 py-2.5 rounded-lg text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     Guardar
                   </button>
@@ -666,6 +655,15 @@ export default function EditarPerfilUser() {
             newFormData.email = nuevoCorreo;
             return newFormData;
           });
+        }}
+      />
+
+      <AgregarTelefonoModal
+        isOpen={mostrarModalAgregarTelefono}
+        onClose={() => setMostrarModalAgregarTelefono(false)}
+        onAgregar={(numero) => {
+          agregarTelefono(numero);
+          setMostrarModalAgregarTelefono(false);
         }}
       />
     </div>
