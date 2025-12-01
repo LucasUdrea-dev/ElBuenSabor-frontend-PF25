@@ -111,7 +111,7 @@ export default function SeleccionarDireccionCarrito({
         {/**Modal */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-2xl w-1/2 max-w-lg"
+          className="bg-white rounded-2xl w-full max-w-lg md:w-1/2"
         >
           <div className="flex flex-col gap-10 items-center px-5 py-10">
             <div className="text-2xl font-bold text-center py-2">
@@ -137,10 +137,10 @@ export default function SeleccionarDireccionCarrito({
               </select>
             </div>
 
-            <div className="w-2/3 m-auto flex flex-col gap-2 items-center justify-center">
+            <div className="w-full md:w-2/3 m-auto flex flex-col gap-2 items-center justify-center">
               <button
                 onClick={() => guardar()}
-                className="bg-[#0A76E1] text-white w-2/3 py-4 text-xl rounded-4xl"
+                className="bg-[#0A76E1] text-white w-full py-4 text-xl rounded-4xl"
               >
                 Guardar
               </button>

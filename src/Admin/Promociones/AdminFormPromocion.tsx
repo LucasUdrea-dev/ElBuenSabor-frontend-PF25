@@ -299,7 +299,7 @@ export default function AdminFormPromocion({
                     onClick={() => setSeleccionarArticulo(true)}
                     className="bg-white px-2 text-[#D93F21]"
                   >
-                    Agregar ingrediente
+                    Agregar productos
                   </button>
                 </div>
 

@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import { Promocion } from "../../ts/Clases";
-import { obtenerImagen } from "../../ts/Imagen";
 import { CarritoContext } from "../Carrito/CarritoContext";
 
 interface Props{
@@ -38,7 +37,7 @@ export default function DetallePromocion({promocion, onClose}: Props) {
                     
                     {/**Imagen y tiempo */}
                     <div className="relative">
-                        <img className="h-full object-cover rounded-t-2xl" src={obtenerImagen(promocion.imagen)} alt="No se encontro la imagen" />
+                        <img className="h-full object-cover rounded-t-2xl" src={promocion.imagen} alt="No se encontro la imagen" />
                     </div>
                     
                     <div className="w-11/12 m-auto text-black flex flex-col gap-2">

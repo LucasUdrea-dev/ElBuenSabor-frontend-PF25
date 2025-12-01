@@ -257,11 +257,13 @@ export default function Catalogo() {
                 categoriaSeleccionada === "" && "bg-[#D93F21]"
               } px-1 pt-1 pb-5 rounded-[20rem] flex flex-col gap-1`}
             >
-              <img
-                className="rounded-full object-cover h-25 m-auto"
-                src="./img/categoriaTodos.jpg"
-                alt="No se encontro la imagen"
-              />
+              <div className="bg-white rounded-full">
+                <img
+                  className="object-cover rounded-full h-25 m-auto"
+                  src="./img/categoriaTodos.jpg"
+                  alt="Imagen"
+                />
+              </div>
               <h3 className="m-auto">Todos</h3>
             </button>
             {categorias.map((categoria, index) => (

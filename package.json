@@ -17,6 +17,8 @@
     "bootstrap": "^5.3.6",
     "firebase": "^11.7.3",
     "frontend": "file:",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^3.0.4",
     "leaflet": "^1.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -47,4 +49,3 @@
     "vite": "^6.3.1"
   }
 }
-

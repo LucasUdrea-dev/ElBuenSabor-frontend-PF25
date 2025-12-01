@@ -48,12 +48,12 @@ export default function AdminInsumo() {
   }, []);
 
   const borradoLogico = async (articulo: ArticuloInsumo) => {
-    const URL = `${host}/api/insumos/eliminar/${articulo.id}`;
+    const URL = `${host}/api/insumos/actualizar/${articulo.id}`;
 
     articulo.existe = !articulo.existe;
 
     try {
-      const response = await axios.delete(URL, axiosConfig);
+      const response = await axios.put(URL, articulo, axiosConfig);
 
       console.log("Se borro logicamente el articulo: " + response.status);
       cargarInsumos();

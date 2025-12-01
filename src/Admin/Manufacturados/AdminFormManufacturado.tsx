@@ -196,8 +196,8 @@ export default function AdminFormManufacturado({
 
   const guardarArticuloManufacturado = async (form: ArticuloManufacturado) => {
     const URL = form.id
-      ? `${host}/api/ArticuloManufacturado/actualizar/${form.id}`
-      : `${host}/api/ArticuloManufacturado/crear`;
+      ? `${host}/api/articuloManufacturado/actualizar/${form.id}`
+      : `${host}/api/articuloManufacturado/crear`;
 
     // Transform data to match API structure
     const dataToSend = {

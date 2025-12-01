@@ -41,7 +41,10 @@ export class Pedido {
   fecha: string = new Date().toISOString();
   detallePedidoList: DetallePedido[] = [];
   detallePromocionList: DetallePromocion[] = [];
-  estadoPedido: EstadoPedido = { id: 5, nombreEstado: EstadosPedidosEnum.INCOMING };
+  estadoPedido: EstadoPedido = {
+    id: 5,
+    nombreEstado: EstadosPedidosEnum.INCOMING,
+  };
   sucursal: Sucursal = new Sucursal();
   tipoEnvio: TipoEnvio = tiposEnvioEnum[1];
   tipoPago: TipoPago = tiposPagoEnum[1];
@@ -102,8 +105,7 @@ export enum EstadosPedidosEnum {
   DELIVERING = "DELIVERING",
 }
 
-
-export const tiposEstadoPedidoEnum:  Record<string, EstadoPedido> = {
+export const tiposEstadoPedidoEnum: Record<string, EstadoPedido> = {
   PREPARING: { id: 1, nombreEstado: EstadosPedidosEnum.PREPARING },
   STANDBY: { id: 2, nombreEstado: EstadosPedidosEnum.STANDBY },
   CANCELLED: { id: 3, nombreEstado: EstadosPedidosEnum.CANCELLED },
@@ -112,7 +114,7 @@ export const tiposEstadoPedidoEnum:  Record<string, EstadoPedido> = {
   DELIVERED: { id: 6, nombreEstado: EstadosPedidosEnum.DELIVERED },
   READY: { id: 7, nombreEstado: EstadosPedidosEnum.READY },
   DELIVERING: { id: 8, nombreEstado: EstadosPedidosEnum.DELIVERING },
-}
+};
 
 export const tiposEstadoPedido: EstadoPedido[] = [
   { id: 1, nombreEstado: EstadosPedidosEnum.PREPARING },

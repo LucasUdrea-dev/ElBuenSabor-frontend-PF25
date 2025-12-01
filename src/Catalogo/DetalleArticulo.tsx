@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import { ArticuloInsumo, ArticuloManufacturado } from "../../ts/Clases";
-import { obtenerImagen } from "../../ts/Imagen";
 import { CarritoContext } from "../Carrito/CarritoContext";
 
 interface Props {
@@ -52,7 +51,7 @@ export default function DetalleArticulo({ articulo, isOpen, onClose }: Props) {
           <div className="relative">
             <img
               className="h-full object-cover rounded-t-2xl"
-              src={obtenerImagen(articulo.imagenArticulo)}
+              src={articulo.imagenArticulo}
               alt="No se encontro la imagen"
             />
             {articulo.tiempoEstimado && (

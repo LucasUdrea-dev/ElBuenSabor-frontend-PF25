@@ -12,7 +12,7 @@ import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
-// icono personalizado 
+// icono personalizado
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -33,8 +33,17 @@ type Errors = {
 };
 
 const direccionSchema = z.object({
-  calle: z.string().nonempty("La calle es obligatoria.").regex(/^[a-zA-Z0-9\sáéíóúÁÉÍÓÚüÜñÑ]+$/, "La calle solo puede contener letras y números."),
-  numero: z.string().nonempty("El número es obligatorio.").regex(/^\d+$/, "El número debe ser solo dígitos."),
+  calle: z
+    .string()
+    .nonempty("La calle es obligatoria.")
+    .regex(
+      /^[a-zA-Z0-9\sáéíóúÁÉÍÓÚüÜñÑ]+$/,
+      "La calle solo puede contener letras y números."
+    ),
+  numero: z
+    .string()
+    .nonempty("El número es obligatorio.")
+    .regex(/^\d+$/, "El número debe ser solo dígitos."),
   ciudad: z.number().positive("La ciudad es obligatoria."),
   provincia: z.number().positive("La provincia es obligatoria."),
   alias: z.string().nonempty("El alias es obligatorio."),
@@ -54,7 +63,6 @@ type Props = {
 const MapClickHandler: React.FC<{
   onLocationSelect: (lat: number, lng: number) => void;
 }> = ({ onLocationSelect }) => {
-
   //hook que escuchar eventos del mapa
   useMapEvents({
     click: (e) => {
@@ -82,7 +90,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
   // Coordenadas por defecto Mendoza
   const defaultCenter: LatLngExpression = [-32.8895, -68.8458];
-  const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null); //posicion inicial del marcador
+  const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(
+    null
+  ); //posicion inicial del marcador
 
   const { userSession } = useUser();
 
@@ -103,10 +113,11 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
   // Actualizar marcador cuando cambian las coordenadas manualmente
   useEffect(() => {
-    const lat = parseFloat(latitud);      // Convertir strings a números
+    const lat = parseFloat(latitud); // Convertir strings a números
     const lng = parseFloat(longitud);
-    if (!isNaN(lat) && !isNaN(lng)) {   // Si ambas coordenadas son números válidos
-      setMarkerPosition([lat, lng]);   // Actualizar la posición del marcador
+    if (!isNaN(lat) && !isNaN(lng)) {
+      // Si ambas coordenadas son números válidos
+      setMarkerPosition([lat, lng]); // Actualizar la posición del marcador
     }
   }, [latitud, longitud]);
 
@@ -131,8 +142,16 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
 
     if (direccion.descripcionEntrega) {
       const partes = direccion.descripcionEntrega.split(",");
-      const pisoVal = partes.find((p) => p.includes("Piso"))?.split(":")[1]?.trim() || "";
-      const deptoVal = partes.find((p) => p.includes("Depto"))?.split(":")[1]?.trim() || "";
+      const pisoVal =
+        partes
+          .find((p) => p.includes("Piso"))
+          ?.split(":")[1]
+          ?.trim() || "";
+      const deptoVal =
+        partes
+          .find((p) => p.includes("Depto"))
+          ?.split(":")[1]
+          ?.trim() || "";
       setPiso(pisoVal);
       setDepto(deptoVal);
     }
@@ -168,7 +187,7 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
     setLatitud(lat.toFixed(6)); // SE GUARDAN las coordenadas en los estados y redondea a 6 decimales
     setLongitud(lng.toFixed(6));
 
-    setMarkerPosition([lat, lng]);  // Actualizar la posición del marcador en el mapa
+    setMarkerPosition([lat, lng]); // Actualizar la posición del marcador en el mapa
   };
 
   const validarCampos = (): boolean => {
@@ -221,8 +240,8 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
         longitud: parseFloat(longitud || "0"),
         descripcionEntrega: `Piso: ${piso}, Depto: ${depto}`,
         ciudad: {
-          id: ciudad.id
-        }
+          id: ciudad.id,
+        },
       };
 
       console.log("Actualizando dirección:", direccionDTO);
@@ -231,9 +250,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
         `${host}/api/Direccion/usuario/${userSession.id_user}/${direccion.id}`,
         direccionDTO,
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
         }
       );
@@ -242,11 +261,12 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
     } catch (error: any) {
       console.error("Error al editar la dirección:", error);
       console.error("Respuesta del servidor:", error.response?.data);
-      
-      const mensajeError = error.response?.data?.error || 
-                          error.response?.data?.message || 
-                          "Error al actualizar la dirección. Por favor, intente nuevamente.";
-      
+
+      const mensajeError =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Error al actualizar la dirección. Por favor, intente nuevamente.";
+
       setErrors({ general: mensajeError });
     } finally {
       setCargando(false);
@@ -269,30 +289,30 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
         )}
 
         <form onSubmit={handleEditarDireccion}>
-
           <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="text-black block mb-2 font-lato">Latitud</label>
-                <input
-                  type="text"
-                  value={latitud}
-                  onChange={(e) => setLatitud(e.target.value)}
-                  placeholder="-32.889500"
-                  className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-black block mb-2 font-lato">Longitud</label>
-                <input
-                  type="text"
-                  value={longitud}
-                  onChange={(e) => setLongitud(e.target.value)}
-                  placeholder="-68.845800"
-                  className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
-                />
-              </div>
+            <div className="flex-1">
+              <label className="text-black block mb-2 font-lato">Latitud</label>
+              <input
+                type="text"
+                value={latitud}
+                onChange={(e) => setLatitud(e.target.value)}
+                placeholder="-32.889500"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
+              />
             </div>
-
+            <div className="flex-1">
+              <label className="text-black block mb-2 font-lato">
+                Longitud
+              </label>
+              <input
+                type="text"
+                value={longitud}
+                onChange={(e) => setLongitud(e.target.value)}
+                placeholder="-68.845800"
+                className="text-black w-full p-2 border rounded border-gray-300 placeholder:text-[#878787] font-lato"
+              />
+            </div>
+          </div>
 
           {/* Sección del Mapa */}
           <div className="mb-6">
@@ -312,7 +332,13 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   center={markerPosition || defaultCenter}
                   zoom={13}
                   style={{ height: "400px", width: "100%" }}
-                  key={markerPosition ? `${(markerPosition as [number, number])[0]}-${(markerPosition as [number, number])[1]}` : 'default'}
+                  key={
+                    markerPosition
+                      ? `${(markerPosition as [number, number])[0]}-${
+                          (markerPosition as [number, number])[1]
+                        }`
+                      : "default"
+                  }
                 >
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -322,12 +348,11 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   {markerPosition && <Marker position={markerPosition} />}
                 </MapContainer>
                 <div className="bg-gray-50 p-3 text-sm text-gray-600 font-lato">
-                  💡 Haz clic en el mapa para actualizar la ubicación exacta de tu dirección
+                  💡 Haz clic en el mapa para actualizar la ubicación exacta de
+                  tu dirección
                 </div>
               </div>
             )}
-
-            
           </div>
 
           {/* Grid de 2 columnas para el resto de campos */}
@@ -343,7 +368,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   errors.calle ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.calle && <p className="text-red-500 text-sm mt-1">{errors.calle}</p>}
+              {errors.calle && (
+                <p className="text-red-500 text-sm mt-1">{errors.calle}</p>
+              )}
             </div>
 
             {/* Número, Piso, Depto */}
@@ -357,7 +384,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   errors.numero ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.numero && <p className="text-red-500 text-sm mt-1">{errors.numero}</p>}
+              {errors.numero && (
+                <p className="text-red-500 text-sm mt-1">{errors.numero}</p>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -408,7 +437,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   </option>
                 ))}
               </select>
-              {errors.provincia && <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>}
+              {errors.provincia && (
+                <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>
+              )}
             </div>
 
             {/* Ciudad */}
@@ -436,7 +467,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   </option>
                 ))}
               </select>
-              {errors.ciudad && <p className="text-red-500 text-sm mt-1">{errors.ciudad}</p>}
+              {errors.ciudad && (
+                <p className="text-red-500 text-sm mt-1">{errors.ciudad}</p>
+              )}
             </div>
 
             {/* Alias */}
@@ -451,7 +484,9 @@ const EditDireccion: React.FC<Props> = ({ isOpen, onClose, direccion }) => {
                   errors.alias ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.alias && <p className="text-red-500 text-sm mt-1">{errors.alias}</p>}
+              {errors.alias && (
+                <p className="text-red-500 text-sm mt-1">{errors.alias}</p>
+              )}
             </div>
           </div>
 

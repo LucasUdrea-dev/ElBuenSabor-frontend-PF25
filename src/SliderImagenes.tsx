@@ -1,8 +1,8 @@
 import { useState } from "react"
-import {obtenerImagen} from "../ts/Imagen.ts"
+import { Promocion } from "../ts/Clases"
 
 interface Props{
-    data: any[]
+    data: Promocion[]
 }
 
 export default function SliderImagenes({data}: Props) {
@@ -33,7 +33,7 @@ export default function SliderImagenes({data}: Props) {
             <button className="absolute left-0 text-5xl h-full w-1/7 hover:bg-black/70 transition duration-500 rounded-l-4xl" onClick={anteriorImagen} type="button">{"<"}</button>
             {data.length > 0 ? (
                 
-                <img className="h-full m-auto w-full top-1/2 object-cover rounded-4xl" src={obtenerImagen(data[indexActual].imagen)} alt="No se pudo recuperar la imagen" />
+                <img className="h-full m-auto w-full top-1/2 object-cover rounded-4xl" src={(data[indexActual].imagen)} alt="No se pudo recuperar la imagen" />
                 
             ) : (
                 <p>Cargando imagenes...</p>
