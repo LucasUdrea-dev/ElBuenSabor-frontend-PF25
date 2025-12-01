@@ -15,6 +15,7 @@ export default function AdminFormCategoria({
   cargarAdminCatalogo,
 }: Props) {
   const [form, setForm] = useState<Categoria>(new Categoria());
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Usamos el hook de Cloudinary
   const {
@@ -55,6 +56,7 @@ export default function AdminFormCategoria({
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true); // Iniciar el estado de carga
     try {
       let formFinal = { ...form };
 
@@ -77,8 +79,11 @@ export default function AdminFormCategoria({
     } catch (error) {
       console.error("Ocurrio un error en handleSubmit:", error);
       alert("Ocurrio un error inesperado. Intente de nuevo.");
+    } finally {
+      setIsLoading(false); // Finalizar el estado de carga
     }
   };
+
 
   const guardarCategoria = async (form: Categoria) => {
     let URL = form.id
@@ -245,8 +250,9 @@ export default function AdminFormCategoria({
                       form.denominacion && image ? handleSubmit() : () => {}
                     }
                     className="bg-[#D93F21]"
+                    disabled={isLoading || subiendoImagen}
                   >
-                    Guardar
+                    {isLoading ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
               </div>

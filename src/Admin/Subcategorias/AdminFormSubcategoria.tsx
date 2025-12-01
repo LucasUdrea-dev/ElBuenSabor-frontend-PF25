@@ -15,6 +15,7 @@ export default function AdminFormSubcategoria({
   cargarAdminSubcategoria,
 }: Props) {
   const [form, setForm] = useState<Subcategoria>(new Subcategoria());
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectorCategoria, setSelectorCategoria] = useState(false);
 
   // Obtener token del localStorage
@@ -44,6 +45,7 @@ export default function AdminFormSubcategoria({
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     try {
       const guardadoExitoso = await guardarSubcategoria(form);
 
@@ -57,6 +59,8 @@ export default function AdminFormSubcategoria({
     } catch (error) {
       console.error("Ocurrio un error en handleSubmit:", error);
       alert("Ocurrio un error inesperado. Intente de nuevo.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -178,8 +182,9 @@ export default function AdminFormSubcategoria({
                         : () => {}
                     }
                     className="bg-[#D93F21]"
+                    disabled={isLoading}
                   >
-                    Guardar
+                    {isLoading ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
               </div>

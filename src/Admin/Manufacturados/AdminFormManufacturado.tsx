@@ -31,6 +31,7 @@ export default function AdminFormManufacturado({
   const [form, setForm] = useState<ArticuloManufacturado>(
     new ArticuloManufacturado()
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [indexCategoria, setIndexCategoria] = useState<number | null>(null);
   const [seleccionarArticulo, setSeleccionarArticulo] = useState(false);
   const [seccionActiva, setSeccionActiva] = useState(1);
@@ -160,6 +161,7 @@ export default function AdminFormManufacturado({
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     try {
       let unidadMedidaManufacturado = new UnidadMedida();
       unidadMedidaManufacturado = {
@@ -191,6 +193,8 @@ export default function AdminFormManufacturado({
     } catch (error) {
       console.error("Ocurrio un error en handleSubmit:", error);
       alert("Ocurrio un error inesperado. Intente de nuevo.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -855,8 +859,9 @@ export default function AdminFormManufacturado({
                           : () => {}
                       }
                       className="bg-[#D93F21]"
+                      disabled={isLoading || subiendoImagen}
                     >
-                      Guardar
+                      {isLoading ? "Guardando..." : "Guardar"}
                     </button>
                   </div>
                 </div>
