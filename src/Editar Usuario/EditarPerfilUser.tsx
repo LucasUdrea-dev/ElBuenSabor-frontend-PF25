@@ -289,6 +289,18 @@ export default function EditarPerfilUser() {
 
   const guardarCambios = async () => {
     try {
+
+      // Verificar si hubo cambios en nombre o apellido
+      if (
+        usuario &&
+        usuario.nombre === formData.nombre &&
+        usuario.apellido === formData.apellido
+      ) {
+        alert("No hay cambios para guardar.");
+        return;
+      }
+
+
       const usuarioPlano = {
         id: formData.id,
         nombre: formData.nombre,

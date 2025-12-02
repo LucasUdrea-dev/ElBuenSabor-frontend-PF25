@@ -295,6 +295,18 @@ export default function PerfilEmpleado() {
 
   const guardarCambios = async () => {
     try {
+
+      // Verificar si hubo cambios en nombre o apellido
+      if (
+        empleado &&
+        empleado.nombre === formData.nombre &&
+        empleado.apellido === formData.apellido
+      ) {
+        alert("No hay cambios para guardar.");
+        return;
+      }
+
+
       const empleadoPlano = {
         id: formData.id,
         nombre: formData.nombre,
