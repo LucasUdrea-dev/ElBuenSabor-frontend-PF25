@@ -155,12 +155,12 @@ export default function EditarPerfilUser() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target; // name (nombre del campo) y value (valor ingresado)
 
     setFormData((prev) => {
-      const newFormData = new Usuario();
-      Object.assign(newFormData, prev);
-      (newFormData as any)[name] = value;
+      const newFormData = new Usuario();    //Crea una nueva instancia
+      Object.assign(newFormData, prev);    //Copia los valores previos
+      (newFormData as any)[name] = value; //Actualiza dinámicamente la propiedad específica que cambió usando [name]
       return newFormData;
     });
 
@@ -174,14 +174,14 @@ export default function EditarPerfilUser() {
   };
 
   const iniciarEdicionTelefono = (telefono: Telefono) => {
-    setEditandoTelefonoId(telefono.id);
-    setTelefonoEditado(telefono.numero.toString());
-    setErrorTelefono("");
+    setEditandoTelefonoId(telefono.id); // Marca cuál está siendo editado
+    setTelefonoEditado(telefono.numero.toString()); // Carga el número actual en el input
+    setErrorTelefono(""); // Limpia errores previos
   };
 
   const cancelarEdicionTelefono = () => {
-    setEditandoTelefonoId(null);
-    setTelefonoEditado("");
+    setEditandoTelefonoId(null); // Desmarca el teléfono
+    setTelefonoEditado(""); // Limpia el input
     setErrorTelefono("");
   };
 

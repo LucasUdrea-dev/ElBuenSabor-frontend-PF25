@@ -69,6 +69,7 @@ const EditContrasenaUser: React.FC<Props> = ({
       confirmarContrasena,
     });
 
+    // Manejo de errores de validación
     if (!resultado.success) {
       const errores = resultado.error.flatten().fieldErrors;
       setError(

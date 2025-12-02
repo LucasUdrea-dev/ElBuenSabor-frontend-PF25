@@ -93,9 +93,12 @@ export default function Empleados() {
     }
 
     setPaginaSeleccionada(1);
+    // filtra y/o busca en empleados escribe el resultado en empleadosMostrados
     setEmpleadosMostrados(filtrado);
   }, [empleados, buscador, filtroEstado]);
 
+
+  
   const getEstadoTexto = (existe: boolean) => (existe ? "Activo" : "Inactivo");
 
   const handleEmpleadoCreado = () => {
