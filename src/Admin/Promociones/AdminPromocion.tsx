@@ -90,7 +90,7 @@ export default function AdminPromocion() {
           {/**Titulo, agregar y buscador */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 border-b border-gray-200">
             <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">
-              Catálogo
+              Promociones
             </h1>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-stretch sm:items-center">
