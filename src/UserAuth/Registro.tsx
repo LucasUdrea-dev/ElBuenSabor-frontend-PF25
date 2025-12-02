@@ -338,7 +338,7 @@ const RegistroModal = ({
               className="absolute right-2 top-13 transform -translate-y-1/2"
             >
               <img
-                src={`public/svg/${
+                src={`/svg/${
                   showPassword
                     ? "ic_baseline-visibility-off.svg"
                     : "ic_baseline-visibility.svg"
@@ -373,7 +373,7 @@ const RegistroModal = ({
               className="absolute right-2 top-13 transform -translate-y-1/2"
             >
               <img
-                src={`public/svg/${
+                src={`/svg/${
                   showRepeatPassword
                     ? "ic_baseline-visibility-off.svg"
                     : "ic_baseline-visibility.svg"
@@ -423,7 +423,7 @@ const RegistroModal = ({
                 }`}
               >
                 <img
-                  src="public/svg/flat-color-icons_google.svg"
+                  src="/svg/flat-color-icons_google.svg"
                   alt="Google"
                   className="w-6 h-6"
                 />

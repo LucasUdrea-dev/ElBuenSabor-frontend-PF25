@@ -538,7 +538,7 @@ export default function EditarPerfilUser() {
                                   title="Editar"
                                 >
                                   <img
-                                    src="../public/svg/LapizEdit.svg"
+                                    src="/svg/LapizEdit.svg"
                                     alt="Editar"
                                     className="w-5 h-5"
                                   />
@@ -550,7 +550,7 @@ export default function EditarPerfilUser() {
                                   title="Eliminar"
                                 >
                                   <img
-                                    src="../../public/svg/LogoBorrar.svg"
+                                    src="/svg/LogoBorrar.svg"
                                     alt="Borrar"
                                     className="w-6 h-6"
                                   />
@@ -586,7 +586,7 @@ export default function EditarPerfilUser() {
                       className="absolute right-3 p-1.5 hover:scale-110 hover:bg-white/10 rounded-lg transition"
                     >
                       <img
-                        src="../public/svg/LapizEdit.svg"
+                        src="/svg/LapizEdit.svg"
                         alt="Editar correo"
                         className="w-5 h-5"
                       />
@@ -616,7 +616,7 @@ export default function EditarPerfilUser() {
                       className="absolute right-3 p-1.5 hover:scale-110 hover:bg-white/10 rounded-lg transition"
                     >
                       <img
-                        src="../public/svg/LapizEdit.svg"
+                        src="/svg/LapizEdit.svg"
                         alt="Editar contraseña"
                         className="w-5 h-5"
                       />

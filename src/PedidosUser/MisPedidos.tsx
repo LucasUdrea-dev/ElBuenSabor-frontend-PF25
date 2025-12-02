@@ -244,7 +244,7 @@ const MisPedidos: React.FC = () => {
                   "
                   title="Actualizar pedidos"
                 >
-                  <img src="./svg/refreshOrdenes.svg" alt="" />
+                  <img src="/svg/refreshOrdenes.svg" alt="" />
                 </button>
                 <select
                   className="bg-[#444444] text-white px-4 py-2 rounded border border-[#555555] font-lato"

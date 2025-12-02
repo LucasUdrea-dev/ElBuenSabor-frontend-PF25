@@ -529,7 +529,7 @@ export default function PerfilEmpleado() {
                                   title="Editar"
                                 >
                                   <img
-                                    src="../../public/svg/LapizEdit.svg"
+                                    src="/svg/LapizEdit.svg"
                                     alt="Editar"
                                     className="w-5 h-5"
                                   />
@@ -541,7 +541,7 @@ export default function PerfilEmpleado() {
                                   title="Eliminar"
                                 >
                                   <img
-                                    src="../../public/svg/LogoBorrar.svg"
+                                    src="/svg/LogoBorrar.svg"
                                     alt="Borrar"
                                     className="w-7 h-7"
                                   />
@@ -577,7 +577,7 @@ export default function PerfilEmpleado() {
                       className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
                       <img
-                        src="../../public/svg/LapizEdit.svg"
+                        src="/svg/LapizEdit.svg"
                         alt="Editar correo"
                         className="w-5 h-5"
                       />
@@ -607,7 +607,7 @@ export default function PerfilEmpleado() {
                       className="absolute right-15 top-1/2 transform -translate-y-1/2 p-1 hover:scale-110 transition"
                     >
                       <img
-                        src="../../public/svg/LapizEdit.svg"
+                        src="/svg/LapizEdit.svg"
                         alt="Editar contraseña"
                         className="w-5 h-5"
                       />
