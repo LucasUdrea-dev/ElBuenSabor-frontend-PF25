@@ -49,70 +49,93 @@ export default function Administracion() {
   const [ingresosSemanales, setIngresosSemanales] = useState<IngresoData[]>([]);
   const [ingresosMensuales, setIngresosMensuales] = useState<IngresoData[]>([]);
   const [ingresosAnuales, setIngresosAnuales] = useState<IngresoData[]>([]);
+  
+  const [loadingStock, setLoadingStock] = useState(true);
+  const [loadingVendidos, setLoadingVendidos] = useState(true);
+  const [loadingIngresos, setLoadingIngresos] = useState(true);
 
   const obtenerInsumosStock = async () => {
     const URL = host + "/api/estadisticas/insumos-stock";
+    setLoadingStock(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setInsumosStock(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingStock(false);
     }
   };
 
   const obtenterProductosVendidos = async () => {
-    const URL = host + "/api/estadisticas/productos-mas-vendidos?sucursalId=1&limite=3";
+    const URL =
+      host + "/api/estadisticas/productos-mas-vendidos?sucursalId=1&limite=3";
+    setLoadingVendidos(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setProductosVendidos(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingVendidos(false);
     }
   };
 
   const obtenerIngresosDiarios = async () => {
     const URL = host + "/api/estadisticas/ingresos/diarios";
+    setLoadingIngresos(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setIngresosDiarios(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingIngresos(false);
     }
   };
 
   const obtenerIngresosSemanales = async () => {
     const URL = host + "/api/estadisticas/ingresos/semanales";
+    setLoadingIngresos(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setIngresosSemanales(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingIngresos(false);
     }
   };
 
   const obtenerIngresosMensuales = async () => {
     const URL = host + "/api/estadisticas/ingresos/mensuales";
+    setLoadingIngresos(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setIngresosMensuales(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingIngresos(false);
     }
   };
 
   const obtenerIngresosAnuales = async () => {
     const URL = host + "/api/estadisticas/ingresos/anuales";
+    setLoadingIngresos(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setIngresosAnuales(response.data);
       console.log(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingIngresos(false);
     }
   };
 
@@ -153,11 +176,19 @@ export default function Administracion() {
   const stockHistoricoData =
     insumosStock.length > 0 && insumosStock[insumoSeleccionado].stockHistorico
       ? insumosStock[insumoSeleccionado].stockHistorico.map((value, index) => ({
-          name: index + 1,
+          name: String(index + 1),
           stock: value,
           min: insumosStock[insumoSeleccionado].nivelMinimo,
         }))
       : [];
+
+  if (insumosStock.length > 0) {
+    stockHistoricoData.push({
+      name: "Actual",
+      stock: insumosStock[insumoSeleccionado].nivelActual,
+      min: insumosStock[insumoSeleccionado].nivelMinimo,
+    });
+  }
   return (
     <div
       className="min-h-screen bg-gray-800 text-white p-6"
@@ -196,32 +227,38 @@ export default function Administracion() {
             </div>
           </div>
           <div className="p-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stockHistoricoData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-                <XAxis dataKey="name" stroke="#ccc" />
-                <YAxis stroke="#ccc" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#333",
-                    border: "1px solid #555",
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="stock"
-                  stroke="#8884d8"
-                  name="Stock Actual"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="min"
-                  stroke="#db4437"
-                  name="Stock Mínimo"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {loadingStock ? (
+              <div className="w-full h-[300px] bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
+                <div className="text-gray-500">Cargando stock...</div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={stockHistoricoData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+                  <XAxis dataKey="name" stroke="#ccc" />
+                  <YAxis stroke="#ccc" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#333",
+                      border: "1px solid #555",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="stock"
+                    stroke="#8884d8"
+                    name="Stock Historico"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="min"
+                    stroke="#db4437"
+                    name="Stock Mínimo"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -241,24 +278,54 @@ export default function Administracion() {
               </div>
             </div>
             <div className="p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={datosVendidos} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-                  <XAxis type="number" xAxisId="cant" stroke="#8884d8" />
-                  <XAxis type="number" xAxisId="rec" orientation="top" stroke="#82ca9d" />
-                  <YAxis type="category" dataKey="name" stroke="#ccc" width={150} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#333",
-                      border: "1px solid #555",
-                    }}
-                    cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
-                  />
-                  <Legend />
-                  <Bar dataKey="cantidad" xAxisId="cant" fill="#8884d8" name="Cantidad Vendida" />
-                  <Bar dataKey="recaudado" xAxisId="rec" fill="#82ca9d" name="Total Recaudado" />
-                </BarChart>
-              </ResponsiveContainer>
+              {loadingVendidos ? (
+                <div className="w-full h-[300px] bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
+                  <div className="text-gray-500">Cargando productos...</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={datosVendidos}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+                    <XAxis type="number" xAxisId="cant" stroke="#8884d8" />
+                    <XAxis
+                      type="number"
+                      xAxisId="rec"
+                      orientation="top"
+                      stroke="#82ca9d"
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      stroke="#ccc"
+                      width={150}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#333",
+                        border: "1px solid #555",
+                      }}
+                      cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="cantidad"
+                      xAxisId="cant"
+                      fill="#8884d8"
+                      name="Cantidad Vendida"
+                    />
+                    <Bar
+                      dataKey="recaudado"
+                      xAxisId="rec"
+                      fill="#82ca9d"
+                      name="Total Recaudado"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -295,27 +362,33 @@ export default function Administracion() {
             </div>
 
             <div className="p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={datosIngresos}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-                  <XAxis dataKey="periodo" stroke="#ccc" />
-                  <YAxis yAxisId="left" stroke="#8884d8" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#333",
-                      border: "1px solid #555",
-                    }}
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="ganancias" fill="#8884d8" />
-                  <Bar yAxisId="right" dataKey="ordenes" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
+              {loadingIngresos ? (
+                <div className="w-full h-[300px] bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
+                  <div className="text-gray-500">Cargando ingresos...</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={datosIngresos}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+                    <XAxis dataKey="periodo" stroke="#ccc" />
+                    <YAxis yAxisId="left" stroke="#8884d8" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#333",
+                        border: "1px solid #555",
+                      }}
+                    />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="ganancias" fill="#8884d8" />
+                    <Bar yAxisId="right" dataKey="ordenes" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
-          </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { host, Categoria, Subcategoria } from "../../../ts/Clases.ts";
 import axios from "axios";
 import AdminFormCategoria from "./AdminFormSubcategoria.tsx";
+import { LoadingTable } from "../../components/LoadingTable.tsx";
 
 export default function AdminSubcategoria() {
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
@@ -15,6 +16,8 @@ export default function AdminSubcategoria() {
   const [formSubcategoria, setFormSubcategoria] = useState<Subcategoria | null>(
     null
   );
+  const [loadingCambio, setLoadingCambio] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cantidadPorPagina = 10;
 
@@ -43,6 +46,7 @@ export default function AdminSubcategoria() {
           "Borrar una subcategoria es una accion irreversible. Desea continuar?"
         )
       ) {
+        setLoadingCambio(true);
         const response = await axios.delete(URL, axiosConfig);
 
         console.log("Se borro la subcategoria: " + response.status);
@@ -57,6 +61,8 @@ export default function AdminSubcategoria() {
       } else {
         alert("La subcategoria esta en uso, no se puede eliminar");
       }
+    } finally {
+      setLoadingCambio(false);
     }
   };
 
@@ -66,7 +72,7 @@ export default function AdminSubcategoria() {
 
   const cargarSubcategorias = async () => {
     const URL = `${host}/api/subcategoria/full`;
-
+    setLoading(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setSubcategorias(response.data);
@@ -81,6 +87,8 @@ export default function AdminSubcategoria() {
           "Error al cargar las subcategorías. Por favor, intenta de nuevo."
         );
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,7 +140,9 @@ export default function AdminSubcategoria() {
         >
           {/**Titulo, agregar y buscador */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
-            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Subcategorias</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">
+              Subcategorias
+            </h1>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-stretch sm:items-center">
               <select
@@ -174,135 +184,165 @@ export default function AdminSubcategoria() {
             </div>
           </div>
 
-          {/**Tabla CRUD catalogo */}
-          <div className="w-full pb-6">
-            {/**Cabecera */}
-            <div className="text-sm md:text-base w-full grid grid-cols-3 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
-              <h1 className="p-4 text-center">Categoria</h1>
-              <h1 className="p-4 text-center">Nombre</h1>
-              <h1 className="p-4 text-center">Acciones</h1>
-            </div>
-
-            {/**Articulos */}
-            {subcategoriasMostradas.length > 0 &&
-              subcategoriasMostradas.map((subcategoria, index) => {
-                if (
-                  index < paginaSeleccionada * cantidadPorPagina &&
-                  index >= cantidadPorPagina * (paginaSeleccionada - 1)
-                ) {
-                  return (
-                    <div
-                      key={subcategoria.id}
-                      className="text-sm md:text-base w-full grid grid-cols-3 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
-                    >
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="text-gray-700 truncate">{subcategoria.categoria?.denominacion}</h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="text-gray-700 truncate">{subcategoria.denominacion}</h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => setFormSubcategoria(subcategoria)}
-                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                          title="Editar"
-                        >
-                          <img
-                            className="h-7 w-7"
-                            src="/svg/LogoEditar.svg"
-                            alt="Editar"
-                          />
-                        </button>
-                        <button
-                          onClick={() => {
-                            borradoLogico(subcategoria);
-                          }}
-                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                          title="Eliminar"
-                        >
-                          <img
-                            className="h-7 w-7"
-                            src={`/svg/LogoBorrar.svg`}
-                            alt="Eliminar"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
-              })}
-
-            {/**Paginacion */}
-            <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
-              {/**Informacion articulos mostrados y totales */}
-              <div className="flex items-center">
-                <h4>
-                  {paginaSeleccionada * cantidadPorPagina -
-                    cantidadPorPagina +
-                    1}
-                  -
-                  {paginaSeleccionada * cantidadPorPagina <
-                  subcategoriasMostradas.length
-                    ? paginaSeleccionada * cantidadPorPagina
-                    : subcategoriasMostradas.length}{" "}
-                  de {subcategoriasMostradas.length}
-                </h4>
+          {loading ? (
+            <LoadingTable nombre="subcategorías" />
+          ) : (
+            <div className="w-full pb-6">
+              {/**Cabecera */}
+              <div className="text-sm md:text-base w-full grid grid-cols-3 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+                <h1 className="p-4 text-center">Categoria</h1>
+                <h1 className="p-4 text-center">Nombre</h1>
+                <h1 className="p-4 text-center">Acciones</h1>
               </div>
 
-              {/**Control de paginado a traves de botones */}
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setPaginaSeleccionada(1)}
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
-                </button>
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (paginaSeleccionada > 1) {
-                        return prev - 1;
-                      }
-                      return prev;
-                    })
+              {/**Articulos */}
+              {subcategoriasMostradas.length > 0 &&
+                subcategoriasMostradas.map((subcategoria, index) => {
+                  if (
+                    index < paginaSeleccionada * cantidadPorPagina &&
+                    index >= cantidadPorPagina * (paginaSeleccionada - 1)
+                  ) {
+                    return (
+                      <div
+                        key={subcategoria.id}
+                        className="text-sm md:text-base w-full grid grid-cols-3 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
+                      >
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="text-gray-700 truncate">
+                            {subcategoria.categoria?.denominacion}
+                          </h3>
+                        </div>
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="text-gray-700 truncate">
+                            {subcategoria.denominacion}
+                          </h3>
+                        </div>
+                        <div className="p-4 flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setFormSubcategoria(subcategoria)}
+                            className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                            title="Editar"
+                          >
+                            <img
+                              className="h-7 w-7"
+                              src="/svg/LogoEditar.svg"
+                              alt="Editar"
+                            />
+                          </button>
+                          <button
+                            onClick={() => {
+                              borradoLogico(subcategoria);
+                            }}
+                            className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                              loadingCambio
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            title="Eliminar"
+                            disabled={loadingCambio}
+                          >
+                            <img
+                              className="h-7 w-7"
+                              src={`/svg/LogoBorrar.svg`}
+                              alt="Eliminar"
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    );
                   }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
-                </button>
+                })}
 
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (
-                        paginaSeleccionada <
+              {/**Paginacion */}
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                {/**Informacion articulos mostrados y totales */}
+                <div className="flex items-center">
+                  <h4>
+                    {paginaSeleccionada * cantidadPorPagina -
+                      cantidadPorPagina +
+                      1}
+                    -
+                    {paginaSeleccionada * cantidadPorPagina <
+                    subcategoriasMostradas.length
+                      ? paginaSeleccionada * cantidadPorPagina
+                      : subcategoriasMostradas.length}{" "}
+                    de {subcategoriasMostradas.length}
+                  </h4>
+                </div>
+
+                {/**Control de paginado a traves de botones */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/PrimeraPagina.svg"
+                      alt="Primera"
+                    />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (paginaSeleccionada > 1) {
+                          return prev - 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/AnteriorPagina.svg"
+                      alt="Anterior"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (
+                          paginaSeleccionada <
+                          Math.ceil(
+                            subcategoriasMostradas.length / cantidadPorPagina
+                          )
+                        ) {
+                          return prev + 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/SiguientePagina.svg"
+                      alt="Siguiente"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
                         Math.ceil(
                           subcategoriasMostradas.length / cantidadPorPagina
                         )
-                      ) {
-                        return prev + 1;
-                      }
-                      return prev;
-                    })
-                  }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada(
-                      Math.ceil(subcategoriasMostradas.length / cantidadPorPagina)
-                    )
-                  }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
-                </button>
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/UltimaPagina.svg"
+                      alt="Última"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/**Editar, crear manufacturado */}

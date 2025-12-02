@@ -19,6 +19,7 @@ export default function Clientes() {
   const [error, setError] = useState<string | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<ClienteExtendido | null>(null);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const cantidadPorPagina = 10;
   const API_BASE_URL = `${host}/api/usuarios`;
@@ -38,6 +39,7 @@ export default function Clientes() {
     
     if (!confirm(`¿Estás seguro de que deseas ${accion} a ${cliente.nombre} ${cliente.apellido}?`)) return;
 
+    setLoadingAction(true);
     try {
       await axios.delete(`${API_BASE_URL}/${cliente.id}`, {
         headers: getAuthHeaders()
@@ -51,6 +53,8 @@ export default function Clientes() {
     } catch (err) {
       console.error("Error:", err);
       alert(`Error al ${accion} el cliente`);
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -229,8 +233,9 @@ export default function Clientes() {
                     </button>
                     <button 
                       onClick={() => borradoLogicoCliente(cliente)}
-                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                      className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
                       title={cliente.existe ? "Desactivar" : "Activar"}
+                      disabled={loadingAction}
                     >
                         <img className="h-7 w-7" src={`/svg/${cliente.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={cliente.existe ? "Desactivar" : "Activar"} />
                     </button>

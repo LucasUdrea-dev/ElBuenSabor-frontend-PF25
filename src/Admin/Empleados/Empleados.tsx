@@ -15,6 +15,7 @@ export default function Empleados() {
   const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<any>(null);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const cantidadPorPagina = 10;
   const API_BASE_URL = `${host}/api/empleados`;
@@ -52,7 +53,8 @@ export default function Empleados() {
     const accion = empleado.existe ? "desactivar" : "activar";
     
     if (!confirm(`¿Estás seguro de que deseas ${accion} a ${empleado.nombre} ${empleado.apellido}?`)) return;
-
+    
+    setLoadingAction(true);
     try {
       await axios.delete(`${API_BASE_URL}/${empleado.id}`, {
         headers: getAuthHeaders()
@@ -66,6 +68,8 @@ export default function Empleados() {
     } catch (err) {
       console.error("Error:", err);
       alert(`Error al ${accion} el empleado`);
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -204,8 +208,9 @@ export default function Empleados() {
                       </button>
                       <button 
                         onClick={() => borradoLogicoEmpleado(emp)}
-                        className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                        className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
                         title={emp.existe ? "Desactivar" : "Activar"}
+                        disabled={loadingAction}
                       >
                         <img className="h-7 w-7" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
                       </button>

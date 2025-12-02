@@ -30,7 +30,7 @@ export default function AdminFormInsumo({
     []
   );
   const [form, setForm] = useState<ArticuloInsumo>(new ArticuloInsumo());
-  const [indexCategoria, setIndexCategoria] = useState(1);
+  const [indexCategoria, setIndexCategoria] = useState("");
   const [seccionActiva, setSeccionActiva] = useState(1);
 
   const {
@@ -65,10 +65,8 @@ export default function AdminFormInsumo({
       const response = await axios.get(URLCategorias, axiosConfig);
 
       // Filter only categories that are "esParaElaborar" (for manufacturing/insumos)
-      const categoriasParaElaborar = response.data.filter(
-        (cat: Categoria) => cat.esParaElaborar === true
-      );
-      setListaCategorias(categoriasParaElaborar);
+      const categoriasParaInsumos = response.data;
+      setListaCategorias(categoriasParaInsumos);
     } catch (error) {
       console.error(error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -135,7 +133,7 @@ export default function AdminFormInsumo({
   useEffect(() => {
     if (indexCategoria && listaCategorias.length > 0) {
       const categoriaSeleccionada = listaCategorias.find(
-        (cat) => cat.id === indexCategoria
+        (cat) => cat.id === Number(indexCategoria)
       );
       if (categoriaSeleccionada?.denominacion) {
         traerSubcategorias(categoriaSeleccionada.denominacion);
@@ -151,24 +149,29 @@ export default function AdminFormInsumo({
       }
       //Si el articulo es para editar, se asigna la categoria del articulo al select
       if (articulo.subcategoria.id && articulo.subcategoria.categoria) {
-        setIndexCategoria(Number(articulo.subcategoria.categoria.id));
+        setIndexCategoria(String(articulo.subcategoria.categoria.id));
         // Load subcategories for the article's category
         if (articulo.subcategoria.categoria.denominacion) {
           traerSubcategorias(articulo.subcategoria.categoria.denominacion);
         }
         //Si es un articulo nuevo, se asigna la primera categoria en la lista de categorias
       } else if (listaCategorias.length > 0) {
-        setIndexCategoria(Number(listaCategorias[0].id));
+        setIndexCategoria(String(listaCategorias[0].id));
       }
     }
   }, [articulo, listaCategorias, setImage, traerSubcategorias]);
+
+  useEffect(() => {
+    setForm((prev) => ({...prev, subcategoria: new Subcategoria()}))
+  }, [form.esParaElaborar]);
+
 
   const cerrarFormulario = () => {
     cargarAdminInsumo();
     cerrarEditar();
     setSeccionActiva(1);
     setImage("");
-    setIndexCategoria(1);
+    setIndexCategoria("");
   };
 
   const handleSubmit = async () => {
@@ -504,17 +507,37 @@ export default function AdminFormInsumo({
                                     : "max-h-0"
                                 }`}
               >
+                <div className="grid grid-cols-[1fr_10fr] items-center justify-start gap-2">
+                  <input
+                    id="esParaElaborar"
+                    checked={form.esParaElaborar}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        esParaElaborar: e.target.checked,
+                      }))
+                    }
+                    className="h-5 w-5 cursor-pointer"
+                    type="checkbox"
+                  />
+                  <label htmlFor="esParaElaborar" className="cursor-pointer">
+                    ¿Es para elaborar?
+                  </label>
+                </div>
                 <div>
                   <h3>Categoria:</h3>
                   <select
                     value={indexCategoria}
-                    onChange={(e) => setIndexCategoria(Number(e.target.value))}
+                    onChange={(e) => setIndexCategoria((e.target.value))}
                     name="categoria"
-                  >
+                  > 
+                    <option value="">Seleccionar...</option>
                     {listaCategorias.length > 0 &&
-                      listaCategorias.map((categoria) => (
+                      listaCategorias.filter((cat)=> cat.esParaElaborar === form.esParaElaborar).map((categoria) => (
                         <option key={categoria.id} value={Number(categoria.id)}>
-                          {categoria.denominacion}
+                          {categoria.denominacion} (
+                          {categoria.esParaElaborar ? "Para elaborar" : "Venta"}
+                          )
                         </option>
                       ))}
                   </select>
@@ -752,18 +775,6 @@ export default function AdminFormInsumo({
                       type="checkbox"
                     />
                     <label>¿Desea que esté disponible?</label>
-                    <input
-                      checked={form.esParaElaborar}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          esParaElaborar: e.target.checked,
-                        }))
-                      }
-                      className="h-5"
-                      type="checkbox"
-                    />
-                    <label>¿Es para elaborar?</label>
                   </div>
                   <div className="flex justify-center gap-5 *:p-2 *:rounded-4xl">
                     <button

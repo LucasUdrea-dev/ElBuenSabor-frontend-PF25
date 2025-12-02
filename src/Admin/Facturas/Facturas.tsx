@@ -31,6 +31,7 @@ export default function Facturas() {
   // Estados para el modal
   const [modalAbierto, setModalAbierto] = useState(false);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Pedido | null>(null);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const cantidadPorPagina = 10;
 
@@ -56,6 +57,7 @@ export default function Facturas() {
   // Función para anular pedido (cambiar estado a CANCELLED)
   const anularPedido = async (pedido: Pedido) => {
     const URL = `${host}/api/pedidos/${pedido.id}/estado?estado=${EstadosPedidosEnum.CANCELLED}`;
+    setLoadingAction(true);
 
     try {
       await axios.put(URL, "nada", axiosConfig);
@@ -63,6 +65,8 @@ export default function Facturas() {
     } catch (error) {
       console.error("Error al anular pedido:", error);
       alert("Error al anular el pedido");
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -274,8 +278,8 @@ export default function Facturas() {
                           </button>
                           <button
                             onClick={() => anularPedido(pedido)}
-                            disabled={pedido.estadoPedido.nombreEstado !== EstadosPedidosEnum.DELIVERED}
-                            className="disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                            disabled={pedido.estadoPedido.nombreEstado !== EstadosPedidosEnum.DELIVERED || loadingAction}
+                            className={`disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
                             title="Anular factura"
                           >
                             <img

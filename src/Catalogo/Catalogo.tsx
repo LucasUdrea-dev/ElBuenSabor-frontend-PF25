@@ -9,6 +9,7 @@ import {
 } from "../../ts/Clases";
 import ArticuloCardCatalogo from "./ArticuloCardCatalogo";
 import axios from "axios";
+import { LoadingTable } from "../components/LoadingTable.tsx";
 
 export default function Catalogo() {
   const [buscador, setBuscador] = useState("");
@@ -24,6 +25,8 @@ export default function Catalogo() {
   >([]);
   const [ordenamiento, setOrdenamiento] = useState("");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
+  const [loadingArticulos, setLoadingArticulos] = useState(false);
+  const [loadingPromos, setLoadingPromos] = useState(false);
 
   const articulosPorPagina = 9;
 
@@ -54,7 +57,7 @@ export default function Catalogo() {
   //Funcion para obtener promociones
   const cargarPromos = async () => {
     const URL = host + "/api/promociones/existente";
-
+    setLoadingPromos(true);
     try {
       const response = await axios.get(URL);
 
@@ -63,13 +66,15 @@ export default function Catalogo() {
       setPromos(promocionesObtenidas);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingPromos(false);
     }
   };
 
   //Obtener articulos para venta
   const cargarArticulos = async () => {
     const URL = host + "/api/articulo/venta";
-
+    setLoadingArticulos(true);
     try {
       const response = await axios.get(URL);
 
@@ -79,6 +84,8 @@ export default function Catalogo() {
       setTodosArticulos(articulosObtenidos);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingArticulos(false);
     }
   };
 
@@ -221,7 +228,7 @@ export default function Catalogo() {
 
         {/**Promociones */}
         <div className="max-w-7xl mx-auto px-6 pb-8">
-          <SliderPromociones promos={promos} />
+          <SliderPromociones promos={promos} loading={loadingPromos} />
         </div>
 
         {/**Categorias */}
@@ -328,35 +335,39 @@ export default function Catalogo() {
 
         {/**Products Grid */}
         <div className="max-w-7xl mx-auto px-6 pb-8">
-          <div
-            className={`grid ${
-              articulosFiltrados.length > 0
-                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                : ""
-            } gap-6`}
-          >
-            {articulosFiltrados.length > 0 ? (
-              articulosFiltrados.map((articulo, index) => {
-                if (
-                  index < articulosPorPagina * paginaSeleccionada &&
-                  index >= articulosPorPagina * (paginaSeleccionada - 1)
-                ) {
-                  return (
-                    <ArticuloCardCatalogo
-                      key={articulo.id}
-                      articulo={articulo}
-                    />
-                  );
-                }
-              })
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <h2 className="text-xl md:text-2xl text-gray-400">
-                  No se encuentran productos
-                </h2>
-              </div>
-            )}
-          </div>
+          {loadingArticulos ? (
+            <LoadingTable nombre="productos" />
+          ) : (
+            <div
+              className={`grid ${
+                articulosFiltrados.length > 0
+                  ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                  : ""
+              } gap-6`}
+            >
+              {articulosFiltrados.length > 0 ? (
+                articulosFiltrados.map((articulo, index) => {
+                  if (
+                    index < articulosPorPagina * paginaSeleccionada &&
+                    index >= articulosPorPagina * (paginaSeleccionada - 1)
+                  ) {
+                    return (
+                      <ArticuloCardCatalogo
+                        key={articulo.id}
+                        articulo={articulo}
+                      />
+                    );
+                  }
+                })
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <h2 className="text-xl md:text-2xl text-gray-400">
+                    No se encuentran productos
+                  </h2>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/**Pagination */}

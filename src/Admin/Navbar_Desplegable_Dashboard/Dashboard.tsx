@@ -41,25 +41,25 @@ export default function Dashboard({
       rolesPermitidos: ["ADMIN"],
     },
     {
+      nombre: "Cajero",
+      icono: "/svg/IconsDashboard/Cajero.svg",
+      descripcion: "Punto de venta y cobros",
+      ruta: "/admin/adminCajero",
+      rolesPermitidos: ["ADMIN", "CAJERO"],
+    },
+    {
       nombre: "Cocinero",
       icono: "/svg/IconsDashboard/Cocinero.svg",
       descripcion: "Panel de cocina y pedidos",
       ruta: "/admin/adminCocinero",
       rolesPermitidos: ["ADMIN", "COCINERO"],
     },
-      {
-        nombre: "Repartidor",
-        icono: "/svg/IconsDashboard/Repartidor.svg",
-        descripcion: "Gestión de entregas",
-        ruta: "/admin/repartidor",
-        rolesPermitidos: ['ADMIN', 'DELIVERY']
-      },
     {
-      nombre: "Cajero",
-      icono: "/svg/IconsDashboard/Cajero.svg",
-      descripcion: "Punto de venta y cobros",
-      ruta: "/admin/adminCajero",
-      rolesPermitidos: ["ADMIN", "CAJERO"],
+      nombre: "Repartidor",
+      icono: "/svg/IconsDashboard/Repartidor.svg",
+      descripcion: "Gestión de entregas",
+      ruta: "/admin/repartidor",
+      rolesPermitidos: ["ADMIN", "DELIVERY"],
     },
     {
       nombre: "Clientes",
