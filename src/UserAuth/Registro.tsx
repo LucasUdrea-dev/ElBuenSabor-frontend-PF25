@@ -14,14 +14,17 @@ const schema = z
       .string()
       .min(1, "El nombre es obligatorio")
       .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
+      
     apellido: z
       .string()
       .min(1, "El apellido es obligatorio")
       .regex(/^[a-zA-Z\s]*$/, "Solo letras y espacios"),
-    telefono: z
-      .string()
-      .min(1, "El teléfono es obligatorio")
-      .regex(/^[0-9]+$/, "Solo números"),
+
+    telefono: z.string()
+      .regex(/^[0-9]+$/, "Solo números")
+      .min(10, "El teléfono debe tener 10 dígitos")
+      .max(10, "El teléfono debe tener 10 dígitos"),
+
     email: z.string().email("Formato de email inválido"),
     contrasena: z
       .string()
