@@ -114,6 +114,7 @@ export default function Empleados() {
   return (
     <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
       <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 border-b border-gray-200">
           <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Empleados</h1>
@@ -153,7 +154,11 @@ export default function Empleados() {
           </div>
         </div>
 
-        {error && <div className="text-sm text-center py-3 bg-red-100 text-red-600 mx-6 mt-4 rounded-lg font-lato">{error}</div>}
+        {error && (
+          <div className="text-sm text-center py-3 bg-red-100 text-red-600 mx-6 mt-4 rounded-lg font-lato">
+            {error}
+          </div>
+        )}
 
         {cargando ? (
           <div className="text-base text-center py-20 text-gray-500 font-lato">
@@ -164,6 +169,8 @@ export default function Empleados() {
           </div>
         ) : (
           <div className="w-full pb-6">
+
+            {/* Encabezado tabla */}
             <div className="text-sm md:text-base w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
               <h1 className="p-4 text-center">Empleado</h1>
               <h1 className="p-4 text-center">Email</h1>
@@ -172,6 +179,7 @@ export default function Empleados() {
               <h1 className="p-4 text-center">Acciones</h1>
             </div>
 
+            {/* Filas paginadas */}
             {empleadosMostrados.length > 0 ? (
               empleadosMostrados
                 .slice((paginaSeleccionada - 1) * cantidadPorPagina, paginaSeleccionada * cantidadPorPagina)
@@ -180,8 +188,14 @@ export default function Empleados() {
                     key={emp.id}
                     className={`text-sm md:text-base grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${!emp.existe ? "opacity-40" : ""}`}
                   >
-                    <div className="p-4 flex items-center justify-center text-gray-700">{emp.nombre} {emp.apellido}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">{emp.email}</div>
+                    <div className="p-4 flex items-center justify-center text-gray-700">
+                      {emp.nombre} {emp.apellido}
+                    </div>
+
+                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">
+                      {emp.email}
+                    </div>
+
                     <div className="p-4 flex items-center justify-center text-gray-700">
                       {Array.isArray(emp.telefonoList)
                         ? emp.telefonoList.length > 0
@@ -194,25 +208,43 @@ export default function Empleados() {
                           : "Sin teléfono"
                         : emp.telefonoList || "Sin teléfono"}
                     </div>
-                    <div className="p-4 flex items-center justify-center text-gray-700">{typeof emp.rol === "string" ? emp.rol : emp.rol?.tipoRol?.rol || "Sin rol"}</div>
+
+                    <div className="p-4 flex items-center justify-center text-gray-700">
+                      {typeof emp.rol === "string"
+                        ? emp.rol
+                        : emp.rol?.tipoRol?.rol || "Sin rol"}
+                    </div>
+
                     <div className="p-4 flex items-center justify-center gap-2">
-                      <div className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${emp.existe ? "bg-green-600" : "bg-gray-500"}`}>
+                      <div
+                        className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${
+                          emp.existe ? "bg-green-600" : "bg-gray-500"
+                        }`}
+                      >
                         {getEstadoTexto(emp.existe)}
                       </div>
-                      <button 
-                        onClick={() => abrirModalEditar(emp)} 
+
+                      <button
+                        onClick={() => abrirModalEditar(emp)}
                         title="Editar empleado"
                         className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
                       >
                         <img className="h-7 w-7" src="/public/svg/LogoEditar.svg" alt="Editar" />
                       </button>
-                      <button 
+
+                      <button
                         onClick={() => borradoLogicoEmpleado(emp)}
-                        className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                          loadingAction ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                         title={emp.existe ? "Desactivar" : "Activar"}
                         disabled={loadingAction}
                       >
-                        <img className="h-7 w-7" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
+                        <img
+                          className="h-7 w-7"
+                          src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`}
+                          alt={emp.existe ? "Desactivar" : "Activar"}
+                        />
                       </button>
                     </div>
                   </div>
@@ -220,6 +252,68 @@ export default function Empleados() {
             ) : (
               <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron empleados
+              </div>
+            )}
+
+            {/* PAGINACIÓN — AGREGADA SIN MODIFICAR NADA MÁS */}
+            {empleadosMostrados.length > 0 && (
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm flex-wrap">
+
+                {/* Info de rango mostrado */}
+                <div>
+                  <h4>
+                    {paginaSeleccionada * cantidadPorPagina - cantidadPorPagina + 1}
+                    -
+                    {paginaSeleccionada * cantidadPorPagina < empleadosMostrados.length
+                      ? paginaSeleccionada * cantidadPorPagina
+                      : empleadosMostrados.length}{" "}
+                    de {empleadosMostrados.length}
+                  </h4>
+                </div>
+
+                {/* Botones */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(prev => (prev > 1 ? prev - 1 : prev))
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(prev =>
+                        prev <
+                        Math.ceil(empleadosMostrados.length / cantidadPorPagina)
+                          ? prev + 1
+                          : prev
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
+                        Math.ceil(empleadosMostrados.length / cantidadPorPagina)
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

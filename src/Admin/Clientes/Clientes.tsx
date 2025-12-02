@@ -36,7 +36,7 @@ export default function Clientes() {
 
   const borradoLogicoCliente = async (cliente: any) => {
     const accion = cliente.existe ? "desactivar" : "activar";
-    
+
     if (!confirm(`¿Estás seguro de que deseas ${accion} a ${cliente.nombre} ${cliente.apellido}?`)) return;
 
     setLoadingAction(true);
@@ -72,34 +72,53 @@ export default function Clientes() {
         throw new Error("La respuesta del servidor no es un array");
       }
 
-      const clientesMapeados: ClienteExtendido[] = data.map((usuario: any) => {
-        // Si el usuario tiene lista de teléfonos, tomamos el primero
-        const numeroTelefono =
-          usuario.telefonoList?.length > 0
-            ? usuario.telefonoList[0].numero.toString()
-            : "Sin teléfono";
+      // Cargar pedidos por cliente
+      const clientesConOrdenes = await Promise.all(
+        data.map(async (usuario: any) => {
+          const numeroTelefono =
+            usuario.telefonoList?.length > 0
+              ? usuario.telefonoList[0].numero.toString()
+              : "Sin teléfono";
 
-        return {
-          ...usuario,
-          existe: Boolean(usuario.existe),
-          telefono: numeroTelefono,
-          ordenes: usuario.ordenes || 0,
-          fechaRegistro: usuario.fechaRegistro ? new Date(usuario.fechaRegistro) : new Date(),
-        };
-      });
+          // GET pedidos del cliente
+          let ordenes = 0;
+          try {
+            const pedidosRes = await axios.get(
+              `${host}/api/pedidos/usuario/${usuario.id}`,
+              { headers: getAuthHeaders() }
+            );
+            ordenes = Array.isArray(pedidosRes.data)
+              ? pedidosRes.data.length
+              : 0;
+          } catch {
+            ordenes = 0;
+          }
 
-      setClientes(clientesMapeados);
+          return {
+            ...usuario,
+            existe: Boolean(usuario.existe),
+            telefono: numeroTelefono,
+            ordenes,
+            fechaRegistro: usuario.fechaRegistro
+              ? new Date(usuario.fechaRegistro)
+              : new Date(),
+          };
+        })
+      );
+
+      setClientes(clientesConOrdenes);
     } catch (error: any) {
       console.error("Error al cargar clientes:", error);
-      const mensaje =
+      setError(
         error.response?.data?.error ||
         error.message ||
-        "Error al cargar los clientes desde el servidor";
-      setError(mensaje);
+        "Error al cargar los clientes desde el servidor"
+      );
     } finally {
       setCargando(false);
     }
   };
+
 
   const abrirDetalleCliente = (cliente: ClienteExtendido) => {
     setClienteSeleccionado(cliente);
@@ -136,12 +155,13 @@ export default function Clientes() {
 
   const getEstadoTexto = (existe: boolean) => (existe ? "Activo" : "Inactivo");
 
-  return (
+ return (
     <div className="bg-[#333333] w-full min-h-screen py-8 px-4 font-['Lato']">
       <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
+
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
-            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Clientes</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Clientes</h1>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
             <div className="flex flex-wrap gap-2 font-lato items-center">
@@ -159,6 +179,7 @@ export default function Clientes() {
               ))}
             </div>
 
+            {/* Buscador */}
             <div className="relative">
               <input
                 onChange={(e) => setBuscador(e.target.value)}
@@ -192,6 +213,7 @@ export default function Clientes() {
           </div>
         ) : (
           <div className="w-full pb-6">
+
             {/* Encabezado tabla */}
             <div className="text-sm md:text-base w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
               <h1 className="p-4 text-center">Cliente</h1>
@@ -203,56 +225,133 @@ export default function Clientes() {
 
             {/* Filas */}
             {clientesMostrados.length > 0 ? (
-            clientesMostrados
-                .slice((paginaSeleccionada - 1) * cantidadPorPagina, paginaSeleccionada * cantidadPorPagina)
-                .map(cliente => (
-                <div
-                    key={cliente.id}
-                    className={`text-sm md:text-base grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${
-                    !cliente.existe ? "opacity-40" : ""
-                    }`}
-                >
-                    <div className="p-4 flex items-center justify-center text-gray-700">{cliente.nombre} {cliente.apellido}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">{cliente.email}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700">{cliente.telefono}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700 font-semibold">{cliente.ordenes}</div>
-                    <div className="p-4 flex items-center justify-center gap-2">
+              clientesMostrados.map((cliente, index) => {
+                if (
+                  index < paginaSeleccionada * cantidadPorPagina &&
+                  index >= cantidadPorPagina * (paginaSeleccionada - 1)
+                ) {
+                  return (
                     <div
-                        className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${
-                        cliente.existe ? "bg-green-600" : "bg-gray-500"
-                        }`}
+                      key={cliente.id}
+                      className={`text-sm md:text-base grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${
+                        !cliente.existe ? "opacity-40" : ""
+                      }`}
                     >
-                        {getEstadoTexto(cliente.existe)}
+                      <div className="p-4 flex items-center justify-center text-gray-700">
+                        {cliente.nombre} {cliente.apellido}
+                      </div>
+                      <div className="p-4 flex items-center justify-center text-gray-700 truncate">{cliente.email}</div>
+                      <div className="p-4 flex items-center justify-center text-gray-700">{cliente.telefono}</div>
+                      <div className="p-4 flex items-center justify-center text-gray-700 font-semibold">
+                        {cliente.ordenes}
+                      </div>
+                      <div className="p-4 flex items-center justify-center gap-2">
+                        <div
+                          className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${
+                            cliente.existe ? "bg-green-600" : "bg-gray-500"
+                          }`}
+                        >
+                          {getEstadoTexto(cliente.existe)}
+                        </div>
+                        <button
+                          onClick={() => abrirDetalleCliente(cliente)}
+                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                          title="Ver detalles"
+                        >
+                          <img className="h-7 w-7" src="/svg/DetallePreparacion.svg" alt="Ver detalles" />
+                        </button>
+                        <button
+                          onClick={() => borradoLogicoCliente(cliente)}
+                          className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                            loadingAction ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
+                          title={cliente.existe ? "Desactivar" : "Activar"}
+                          disabled={loadingAction}
+                        >
+                          <img
+                            className="h-7 w-7"
+                            src={`/svg/${cliente.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`}
+                            alt={cliente.existe ? "Desactivar" : "Activar"}
+                          />
+                        </button>
+                      </div>
                     </div>
-                    <button 
-                      onClick={() => abrirDetalleCliente(cliente)}
-                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                      title="Ver detalles"
-                    >
-                        <img className="h-7 w-7" src="/svg/DetallePreparacion.svg" alt="Ver detalles" />
-                    </button>
-                    <button 
-                      onClick={() => borradoLogicoCliente(cliente)}
-                      className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
-                      title={cliente.existe ? "Desactivar" : "Activar"}
-                      disabled={loadingAction}
-                    >
-                        <img className="h-7 w-7" src={`/svg/${cliente.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={cliente.existe ? "Desactivar" : "Activar"} />
-                    </button>
-                    </div>
-                </div>
-                ))
+                  );
+                }
+              })
             ) : (
-            <div className="text-base text-center py-12 text-gray-500 font-lato">
+              <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron clientes
-            </div>
+              </div>
+            )}
+
+            {/* PAGINACIÓN ESTILO CAJERO */}
+            {clientesMostrados.length > 0 && (
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm flex-wrap">
+
+                {/* Info de cantidad mostrada */}
+                <div>
+                  <h4>
+                    {paginaSeleccionada * cantidadPorPagina - cantidadPorPagina + 1}
+                    -
+                    {paginaSeleccionada * cantidadPorPagina < clientesMostrados.length
+                      ? paginaSeleccionada * cantidadPorPagina
+                      : clientesMostrados.length}{" "}
+                    de {clientesMostrados.length}
+                  </h4>
+                </div>
+
+                {/* Botones de paginado */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => (prev > 1 ? prev - 1 : prev))
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) =>
+                        prev <
+                        Math.ceil(clientesMostrados.length / cantidadPorPagina)
+                          ? prev + 1
+                          : prev
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
+                        Math.ceil(clientesMostrados.length / cantidadPorPagina)
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" />
+                  </button>
+                </div>
+              </div>
             )}
 
           </div>
         )}
       </div>
 
-      {/* Modal de detalles */}
+      {/* Modal */}
       {modalAbierto && clienteSeleccionado && (
         <DetalleClienteAdmin
           cliente={clienteSeleccionado}
