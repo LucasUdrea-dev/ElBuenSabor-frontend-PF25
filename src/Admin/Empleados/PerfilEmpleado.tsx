@@ -384,7 +384,7 @@ export default function PerfilEmpleado() {
               ) : (
                 <img
                   //image de Cloudinary o default
-                  src={image || "../../../public/svg/ImagenUsuario.svg"}
+                  src={image || "/svg/ImagenUsuario.svg"}
                   alt="Imagen de Usuario"
                   className="w-82 h-82 rounded-full object-cover"
                 />
