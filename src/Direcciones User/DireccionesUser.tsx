@@ -76,12 +76,11 @@ export default function DireccionesUser() {
       // Actualiza el estado local
       setDirecciones((prev) => prev.filter((d) => d.id !== direccionAEliminar));
       
-      console.log("✅ Dirección eliminada exitosamente");
+      console.log("Dirección eliminada exitosamente");
     } catch (error: any) {
       console.error("Error al eliminar la dirección:", error);
-      console.error("📥 Respuesta del servidor:", error.response?.data);
+      console.error("Respuesta del servidor:", error.response?.data);
       
-      // Puedes mostrar un mensaje de error al usuario aquí si lo deseas
       alert(error.response?.data?.error || "Error al eliminar la dirección");
     } finally {
       setEliminarDireccionOpen(false);
