@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import LogoUser from '../../../public/svg/LogoUser.svg';
-import LogoReloj from '../../../public/svg/LogoReloj.svg';
-import LogoDetalle from '../../../public/svg/LogoDetalle.svg';
+const LogoUser = '/svg/LogoUser.svg';
+const LogoReloj = '/svg/LogoReloj.svg';
+const LogoDetalle = '/svg/LogoDetalle.svg';
 import { Pedido } from '../../../ts/Clases';
 
 interface DetallePedidoProps {

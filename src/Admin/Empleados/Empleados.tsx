@@ -204,7 +204,7 @@ export default function Empleados() {
                         title="Editar empleado"
                         className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
                       >
-                        <img className="h-7 w-7" src="/public/svg/LogoEditar.svg" alt="Editar" />
+                        <img className="h-7 w-7" src="/svg/LogoEditar.svg" alt="Editar" />
                       </button>
                       <button 
                         onClick={() => borradoLogicoEmpleado(emp)}
@@ -212,18 +212,108 @@ export default function Empleados() {
                         title={emp.existe ? "Desactivar" : "Activar"}
                         disabled={loadingAction}
                       >
-                        <img className="h-7 w-7" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-            ) : (
-              <div className="text-base text-center py-12 text-gray-500 font-lato">
-                No se encontraron empleados
-              </div>
-            )}
-          </div>
-        )}
+                                              <img className="h-7 w-7" src={`/svg/${emp.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={emp.existe ? "Desactivar" : "Activar"} />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))
+                                  ) : (
+                                    <div className="text-base text-center py-12 text-gray-500 font-lato">
+                                      No se encontraron empleados
+                                    </div>
+                                  )}
+                        
+                                  {/* Paginacion */}
+                                  {empleadosMostrados.length > 0 && (
+                                    <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                                      {/**Informacion articulos mostrados y totales */}
+                                      <div className="flex items-center">
+                                        <h4>
+                                          {paginaSeleccionada * cantidadPorPagina -
+                                            cantidadPorPagina +
+                                            1}
+                                          -
+                                          {paginaSeleccionada * cantidadPorPagina <
+                                          empleadosMostrados.length
+                                            ? paginaSeleccionada * cantidadPorPagina
+                                            : empleadosMostrados.length}{" "}
+                                          de {empleadosMostrados.length}
+                                        </h4>
+                                      </div>
+                        
+                                      {/**Control de paginado a traves de botones */}
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={() => setPaginaSeleccionada(1)}
+                                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <img
+                                            className="h-8 w-8"
+                                            src="/svg/PrimeraPagina.svg"
+                                            alt="Primera"
+                                          />
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            setPaginaSeleccionada((prev) => {
+                                              if (paginaSeleccionada > 1) {
+                                                return prev - 1;
+                                              }
+                                              return prev;
+                                            })
+                                          }
+                                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <img
+                                            className="h-8 w-8"
+                                            src="/svg/AnteriorPagina.svg"
+                                            alt="Anterior"
+                                          />
+                                        </button>
+                        
+                                        <button
+                                          onClick={() =>
+                                            setPaginaSeleccionada((prev) => {
+                                              if (
+                                                paginaSeleccionada <
+                                                Math.ceil(
+                                                  empleadosMostrados.length / cantidadPorPagina
+                                                )
+                                              ) {
+                                                return prev + 1;
+                                              }
+                                              return prev;
+                                            })
+                                          }
+                                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <img
+                                            className="h-8 w-8"
+                                            src="/svg/SiguientePagina.svg"
+                                            alt="Siguiente"
+                                          />
+                                        </button>
+                        
+                                        <button
+                                          onClick={() =>
+                                            setPaginaSeleccionada(
+                                              Math.ceil(
+                                                empleadosMostrados.length / cantidadPorPagina
+                                              )
+                                            )
+                                          }
+                                          className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <img
+                                            className="h-8 w-8"
+                                            src="/svg/UltimaPagina.svg"
+                                            alt="Última"
+                                          />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>        )}
       </div>
 
       {/* Modal Agregar Empleado */}

@@ -269,7 +269,7 @@ export default function Catalogo() {
               <div className="bg-white rounded-full p-2">
                 <img
                   className="object-cover rounded-full h-20 w-20"
-                  src="./img/categoriaTodos.jpg"
+                  src="/img/categoriaTodos.jpg"
                   alt="Todos"
                 />
               </div>

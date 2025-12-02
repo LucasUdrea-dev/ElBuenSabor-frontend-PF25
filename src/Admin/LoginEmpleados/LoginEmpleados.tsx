@@ -199,7 +199,7 @@ const InicioSesionEmpleado = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 className="absolute right-2 top-1/2 transform -translate-y-1/2"
               >
                 <img
-                  src={`public/svg/${showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"}`}
+                  src={`/svg/${showPassword ? "ic_baseline-visibility-off.svg" : "ic_baseline-visibility.svg"}`}
                   alt="Visibilidad"
                   className="w-6 h-6"
                 />

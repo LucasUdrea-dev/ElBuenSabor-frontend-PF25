@@ -5,20 +5,24 @@ import { Usuario, host } from "../../../ts/Clases";
 
 interface ClienteExtendido extends Usuario {
   telefono?: string;
-  ordenes?: number;
   fechaRegistro?: Date;
 }
 
 export default function Clientes() {
   const [clientes, setClientes] = useState<ClienteExtendido[]>([]);
-  const [clientesMostrados, setClientesMostrados] = useState<ClienteExtendido[]>([]);
+  const [clientesMostrados, setClientesMostrados] = useState<
+    ClienteExtendido[]
+  >([]);
   const [buscador, setBuscador] = useState("");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
-  const [filtroEstado, setFiltroEstado] = useState<"TODOS" | "ACTIVOS" | "INACTIVOS">("TODOS");
+  const [filtroEstado, setFiltroEstado] = useState<
+    "TODOS" | "ACTIVOS" | "INACTIVOS"
+  >("TODOS");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<ClienteExtendido | null>(null);
+  const [clienteSeleccionado, setClienteSeleccionado] =
+    useState<ClienteExtendido | null>(null);
   const [loadingAction, setLoadingAction] = useState(false);
 
   const cantidadPorPagina = 10;
@@ -26,7 +30,8 @@ export default function Clientes() {
 
   // Token
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -36,17 +41,22 @@ export default function Clientes() {
 
   const borradoLogicoCliente = async (cliente: any) => {
     const accion = cliente.existe ? "desactivar" : "activar";
-    
-    if (!confirm(`¿Estás seguro de que deseas ${accion} a ${cliente.nombre} ${cliente.apellido}?`)) return;
+
+    if (
+      !confirm(
+        `¿Estás seguro de que deseas ${accion} a ${cliente.nombre} ${cliente.apellido}?`
+      )
+    )
+      return;
 
     setLoadingAction(true);
     try {
       await axios.delete(`${API_BASE_URL}/${cliente.id}`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       });
 
-      setClientes(prevClientes =>
-        prevClientes.map(emp =>
+      setClientes((prevClientes) =>
+        prevClientes.map((emp) =>
           emp.id === cliente.id ? { ...emp, existe: !emp.existe } : emp
         )
       );
@@ -84,7 +94,9 @@ export default function Clientes() {
           existe: Boolean(usuario.existe),
           telefono: numeroTelefono,
           ordenes: usuario.ordenes || 0,
-          fechaRegistro: usuario.fechaRegistro ? new Date(usuario.fechaRegistro) : new Date(),
+          fechaRegistro: usuario.fechaRegistro
+            ? new Date(usuario.fechaRegistro)
+            : new Date(),
         };
       });
 
@@ -141,17 +153,23 @@ export default function Clientes() {
       <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
-            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Clientes</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">
+            Clientes
+          </h1>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
             <div className="flex flex-wrap gap-2 font-lato items-center">
-              <span className="text-gray-700 font-medium text-sm">Filtrar por:</span>
+              <span className="text-gray-700 font-medium text-sm">
+                Filtrar por:
+              </span>
               {["TODOS", "ACTIVOS", "INACTIVOS"].map((estado) => (
                 <button
                   key={estado}
                   onClick={() => setFiltroEstado(estado as any)}
                   className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg ${
-                    filtroEstado === estado ? "bg-[#D93F21]" : "bg-[#878787] hover:bg-[#6a6a6a]"
+                    filtroEstado === estado
+                      ? "bg-[#D93F21]"
+                      : "bg-[#878787] hover:bg-[#6a6a6a]"
                   } text-white`}
                 >
                   {estado}
@@ -193,61 +211,172 @@ export default function Clientes() {
         ) : (
           <div className="w-full pb-6">
             {/* Encabezado tabla */}
-            <div className="text-sm md:text-base w-full grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+            <div className="text-sm md:text-base w-full grid grid-cols-4 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
               <h1 className="p-4 text-center">Cliente</h1>
               <h1 className="p-4 text-center">Email</h1>
               <h1 className="p-4 text-center">Teléfono</h1>
-              <h1 className="p-4 text-center">Órdenes</h1>
               <h1 className="p-4 text-center">Acciones</h1>
             </div>
 
             {/* Filas */}
             {clientesMostrados.length > 0 ? (
-            clientesMostrados
-                .slice((paginaSeleccionada - 1) * cantidadPorPagina, paginaSeleccionada * cantidadPorPagina)
-                .map(cliente => (
-                <div
+              clientesMostrados
+                .slice(
+                  (paginaSeleccionada - 1) * cantidadPorPagina,
+                  paginaSeleccionada * cantidadPorPagina
+                )
+                .map((cliente) => (
+                  <div
                     key={cliente.id}
-                    className={`text-sm md:text-base grid grid-cols-[1fr_1.5fr_1fr_0.7fr_1fr] border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${
-                    !cliente.existe ? "opacity-40" : ""
+                    className={`text-sm md:text-base grid grid-cols-4 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato ${
+                      !cliente.existe ? "opacity-40" : ""
                     }`}
-                >
-                    <div className="p-4 flex items-center justify-center text-gray-700">{cliente.nombre} {cliente.apellido}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">{cliente.email}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700">{cliente.telefono}</div>
-                    <div className="p-4 flex items-center justify-center text-gray-700 font-semibold">{cliente.ordenes}</div>
+                  >
+                    <div className="p-4 flex items-center justify-center text-gray-700">
+                      {cliente.nombre} {cliente.apellido}
+                    </div>
+                    <div className="p-4 flex items-center justify-center text-gray-700 truncate">
+                      {cliente.email}
+                    </div>
+                    <div className="p-4 flex items-center justify-center text-gray-700">
+                      {cliente.telefono}
+                    </div>
                     <div className="p-4 flex items-center justify-center gap-2">
-                    <div
+                      <div
                         className={`text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-md ${
-                        cliente.existe ? "bg-green-600" : "bg-gray-500"
+                          cliente.existe ? "bg-green-600" : "bg-gray-500"
                         }`}
-                    >
+                      >
                         {getEstadoTexto(cliente.existe)}
+                      </div>
+                      <button
+                        onClick={() => abrirDetalleCliente(cliente)}
+                        className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                        title="Ver detalles"
+                      >
+                        <img
+                          className="h-7 w-7"
+                          src="/svg/DetallePreparacion.svg"
+                          alt="Ver detalles"
+                        />
+                      </button>
+                      <button
+                        onClick={() => borradoLogicoCliente(cliente)}
+                        className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                          loadingAction ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        title={cliente.existe ? "Desactivar" : "Activar"}
+                        disabled={loadingAction}
+                      >
+                        <img
+                          className="h-7 w-7"
+                          src={`/svg/${
+                            cliente.existe
+                              ? "LogoBorrar.svg"
+                              : "LogoActivar.svg"
+                          }`}
+                          alt={cliente.existe ? "Desactivar" : "Activar"}
+                        />
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => abrirDetalleCliente(cliente)}
-                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                      title="Ver detalles"
-                    >
-                        <img className="h-7 w-7" src="/svg/DetallePreparacion.svg" alt="Ver detalles" />
-                    </button>
-                    <button 
-                      onClick={() => borradoLogicoCliente(cliente)}
-                      className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${loadingAction ? "opacity-50 cursor-not-allowed" : ""}`}
-                      title={cliente.existe ? "Desactivar" : "Activar"}
-                      disabled={loadingAction}
-                    >
-                        <img className="h-7 w-7" src={`/svg/${cliente.existe ? "LogoBorrar.svg" : "LogoActivar.svg"}`} alt={cliente.existe ? "Desactivar" : "Activar"} />
-                    </button>
-                    </div>
-                </div>
+                  </div>
                 ))
             ) : (
-            <div className="text-base text-center py-12 text-gray-500 font-lato">
+              <div className="text-base text-center py-12 text-gray-500 font-lato">
                 No se encontraron clientes
-            </div>
+              </div>
             )}
 
+            {/* Paginacion */}
+            {clientesMostrados.length > 0 && (
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                {/**Informacion articulos mostrados y totales */}
+                <div className="flex items-center">
+                  <h4>
+                    {paginaSeleccionada * cantidadPorPagina -
+                      cantidadPorPagina +
+                      1}
+                    -
+                    {paginaSeleccionada * cantidadPorPagina <
+                    clientesMostrados.length
+                      ? paginaSeleccionada * cantidadPorPagina
+                      : clientesMostrados.length}{" "}
+                    de {clientesMostrados.length}
+                  </h4>
+                </div>
+
+                {/**Control de paginado a traves de botones */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/PrimeraPagina.svg"
+                      alt="Primera"
+                    />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (paginaSeleccionada > 1) {
+                          return prev - 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/AnteriorPagina.svg"
+                      alt="Anterior"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (
+                          paginaSeleccionada <
+                          Math.ceil(
+                            clientesMostrados.length / cantidadPorPagina
+                          )
+                        ) {
+                          return prev + 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/SiguientePagina.svg"
+                      alt="Siguiente"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
+                        Math.ceil(
+                          clientesMostrados.length / cantidadPorPagina
+                        )
+                      )
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/UltimaPagina.svg"
+                      alt="Última"
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
