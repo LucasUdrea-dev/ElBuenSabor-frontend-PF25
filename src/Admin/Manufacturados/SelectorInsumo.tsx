@@ -37,7 +37,9 @@ export default function SelectorInsumo({ abierto, cerrar, setForm }: Props) {
     try {
       const response = await axios.get(URL, axiosConfig);
 
-      setListaInsumos(response.data);
+      const insumos: ArticuloInsumo[] = response.data;
+
+      setListaInsumos(insumos.filter((insumo) => insumo.esParaElaborar));
     } catch (error) {
       console.error(error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -50,7 +52,6 @@ export default function SelectorInsumo({ abierto, cerrar, setForm }: Props) {
 
   useEffect(() => {
     traerInsumos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

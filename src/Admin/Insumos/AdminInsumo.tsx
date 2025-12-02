@@ -5,6 +5,7 @@ import AdminFormInsumo from "./AdminFormInsumo.tsx";
 // import { obtenerImagen } from "../../../ts/Imagen.ts";
 import ModificarStock from "./ModificarStock.tsx";
 import AdminMostrarInsumo from "./AdminMostrarInsumo.tsx";
+import { LoadingTable } from "../../components/LoadingTable.tsx";
 
 interface ModificarStock {
   articulo: ArticuloInsumo;
@@ -29,6 +30,8 @@ export default function AdminInsumo() {
     null
   );
   const [formInsumo, setFormInsumo] = useState<ArticuloInsumo | null>(null);
+  const [loadingCambio, setLoadingCambio] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cantidadPorPagina = 10;
 
@@ -51,6 +54,7 @@ export default function AdminInsumo() {
     const URL = `${host}/api/insumos/actualizar/${articulo.id}`;
 
     articulo.existe = !articulo.existe;
+    setLoadingCambio(true);
 
     try {
       const response = await axios.put(URL, articulo, axiosConfig);
@@ -66,6 +70,8 @@ export default function AdminInsumo() {
       } else {
         alert("Error al eliminar el insumo. Por favor, intenta de nuevo.");
       }
+    } finally {
+      setLoadingCambio(false);
     }
   };
 
@@ -79,7 +85,7 @@ export default function AdminInsumo() {
 
   const cargarInsumos = async () => {
     const URL = `${host}/api/insumos/full`;
-
+    setLoading(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setArticulosInsumos(response.data);
@@ -92,6 +98,8 @@ export default function AdminInsumo() {
       } else {
         alert("Error al cargar los insumos. Por favor, intenta de nuevo.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,7 +132,9 @@ export default function AdminInsumo() {
         >
           {/**Titulo, agregar y buscador */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
-            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Insumos</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">
+              Insumos
+            </h1>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-stretch sm:items-center">
               <button
@@ -158,304 +168,340 @@ export default function AdminInsumo() {
             </div>
           </div>
 
-          {/**Tabla CRUD catalogo */}
-          <div className="w-full pb-6">
-            {!mostrarStocks ? (
-              <div>
-                {/**Cabecera */}
-                <div className="text-sm md:text-base w-full grid grid-cols-7 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
-                  <h1 className="p-4 text-center">Imagen</h1>
-                  <h1 className="p-4 text-center">Categoría</h1>
-                  <h1 className="p-4 text-center">Nombre</h1>
-                  <h1 className="p-4 text-center">Costo p/U</h1>
-                  <h1 className="p-4 text-center">Para elaborar</h1>
-                  <h1 className="p-4 text-center">Publicado</h1>
-                  <h1 className="p-4 text-center">Acciones</h1>
-                </div>
+          {loading ? (
+            <LoadingTable nombre="insumos" />
+          ) : (
+            <div className="w-full pb-6">
+              {!mostrarStocks ? (
+                <div>
+                  {/**Cabecera */}
+                  <div className="text-sm md:text-base w-full grid grid-cols-7 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+                    <h1 className="p-4 text-center">Imagen</h1>
+                    <h1 className="p-4 text-center">Categoría</h1>
+                    <h1 className="p-4 text-center">Nombre</h1>
+                    <h1 className="p-4 text-center">Costo p/U</h1>
+                    <h1 className="p-4 text-center">Para elaborar</h1>
+                    <h1 className="p-4 text-center">Publicado</h1>
+                    <h1 className="p-4 text-center">Acciones</h1>
+                  </div>
 
-                {/**Articulos */}
-                {articulosInsumosMostrados.length > 0 &&
-                  articulosInsumosMostrados.map((articulo, index) => {
-                    if (
-                      index < paginaSeleccionada * cantidadPorPagina &&
-                      index >= cantidadPorPagina * (paginaSeleccionada - 1)
-                    ) {
-                      return (
-                        <div
-                          key={articulo.id}
-                          className="text-sm md:text-base w-full grid grid-cols-7 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
-                        >
-                          <div className="p-4 flex items-center justify-center">
-                            <img
-                              className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                              src={String(articulo.imagenArticulo) || ""}
-                              alt={articulo.nombre}
-                            />
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <h3 className="text-gray-700 truncate">
-                              {articulo.subcategoria.categoria?.denominacion}
-                            </h3>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <h3 className="text-gray-700 truncate" title={articulo.nombre}>
-                              {articulo.nombre.slice(0, 13)}
-                              {articulo.nombre.length > 13 && "..."}
-                            </h3>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <h3 className="font-semibold text-emerald-600">
-                              ${articulo.precioCompra}/
-                              {articulo.unidadMedida.unidad.slice(0, 2)}
-                            </h3>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <div
-                              className={`${
-                                articulo.esParaElaborar
-                                  ? "bg-green-600"
-                                  : "bg-gray-500"
-                              } h-4 w-4 rounded-full shadow-sm`}
-                            ></div>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <div
-                              className={`${
-                                articulo.existe ? "bg-green-600" : "bg-gray-500"
-                              } h-4 w-4 rounded-full shadow-sm`}
-                            ></div>
-                          </div>
-                          <div className="p-4 flex items-center justify-center gap-1.5">
-                            <button
-                              onClick={() => setMostrarArticulo(articulo)}
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                              title="Ver detalles"
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src="/svg/LogoVer.svg"
-                                alt="Ver"
-                              />
-                            </button>
-                            <button 
-                              onClick={() => setFormInsumo(articulo)}
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                              title="Editar"
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src="/svg/LogoEditar.svg"
-                                alt="Editar"
-                              />
-                            </button>
-                            <button
-                              onClick={() => {
-                                borradoLogico(articulo);
-                              }}
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                              title={articulo.existe ? "Desactivar" : "Activar"}
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src={`/svg/${
-                                  articulo.existe
-                                    ? "LogoBorrar.svg"
-                                    : "LogoActivar.svg"
-                                }`}
-                                alt={articulo.existe ? "Desactivar" : "Activar"}
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    }
-                  })}
-              </div>
-            ) : (
-              <div>
-                {/**Cabecera */}
-                <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
-                  <h1 className="p-4 text-center">Imagen</h1>
-                  <h1 className="p-4 text-center">Nombre</h1>
-                  <h1 className="p-4 text-center">Cantidad</h1>
-                  <h1 className="p-4 text-center">Stock Suficiente</h1>
-                  <h1 className="p-4 text-center">Modificar Stock</h1>
-                </div>
-
-                {/**Articulos */}
-                {articulosInsumosMostrados.length > 0 &&
-                  articulosInsumosMostrados.map((articulo, index) => {
-                    if (
-                      index < paginaSeleccionada * cantidadPorPagina &&
-                      index >= cantidadPorPagina * (paginaSeleccionada - 1)
-                    ) {
-                      return (
-                        <div
-                          key={articulo.id}
-                          className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
-                        >
-                          <div className="p-4 flex items-center justify-center">
-                            <img
-                              className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                              src={String(articulo.imagenArticulo) || ""}
-                              alt={articulo.nombre}
-                            />
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <h3 className="text-gray-700 truncate" title={articulo.nombre}>
-                              {articulo.nombre.slice(0, 13)}
-                              {articulo.nombre.length > 13 && "..."}
-                            </h3>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <h3 className="font-semibold text-gray-700">
-                              {articulo.stockArticuloInsumo?.cantidad}{" "}
-                              {articulo.unidadMedida?.unidad}
-                              {articulo.unidadMedida?.unidad == "unidad" &&
-                                articulo.stockArticuloInsumo?.cantidad != 1 &&
-                                "es"}
-                            </h3>
-                          </div>
-                          <div className="p-4 flex items-center justify-center">
-                            <div
-                              className={`${
-                                articulo.stockArticuloInsumo?.cantidad >
-                                articulo.stockArticuloInsumo?.minStock
-                                  ? "bg-green-600"
-                                  : "bg-red-500"
-                              } h-4 w-4 rounded-full shadow-sm`}
-                            ></div>
-                          </div>
-                          <div className="p-4 flex items-center justify-center gap-1.5">
-                            <button
-                              title="Quitar stock"
-                              onClick={() =>
-                                setModificarStock({
-                                  articulo: articulo,
-                                  operacion: "quitar",
-                                })
-                              }
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src="/img/simboloMenos.png"
-                                alt="Quitar"
-                              />
-                            </button>
-                            <button
-                              title="Modificar cantidad minima"
-                              onClick={() =>
-                                setModificarStock({
-                                  articulo: articulo,
-                                  operacion: "minimo",
-                                })
-                              }
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src="/img/stockMin.png"
-                                alt="Stock mínimo"
-                              />
-                            </button>
-                            <button
-                              title="Agregar stock"
-                              onClick={() =>
-                                setModificarStock({
-                                  articulo: articulo,
-                                  operacion: "agregar",
-                                })
-                              }
-                              className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                            >
-                              <img
-                                className="h-7 w-7"
-                                src="/img/simboloMas.png"
-                                alt="Agregar"
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    }
-                  })}
-              </div>
-            )}
-
-            {/**Paginacion */}
-            <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
-              {/**Informacion articulos mostrados y totales */}
-              <div className="flex items-center">
-                <h4>
-                  {paginaSeleccionada * cantidadPorPagina -
-                    cantidadPorPagina +
-                    1}
-                  -
-                  {paginaSeleccionada * cantidadPorPagina <
-                  articulosInsumosMostrados.length
-                    ? paginaSeleccionada * cantidadPorPagina
-                    : articulosInsumosMostrados.length}{" "}
-                  de {articulosInsumosMostrados.length}
-                </h4>
-              </div>
-
-              {/**Control de paginado a traves de botones */}
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setPaginaSeleccionada(1)}
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
-                </button>
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
-                      if (paginaSeleccionada > 1) {
-                        return prev - 1;
-                      }
-                      return prev;
-                    })
-                  }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada((prev) => {
+                  {/**Articulos */}
+                  {articulosInsumosMostrados.length > 0 &&
+                    articulosInsumosMostrados.map((articulo, index) => {
                       if (
-                        paginaSeleccionada <
+                        index < paginaSeleccionada * cantidadPorPagina &&
+                        index >= cantidadPorPagina * (paginaSeleccionada - 1)
+                      ) {
+                        return (
+                          <div
+                            key={articulo.id}
+                            className="text-sm md:text-base w-full grid grid-cols-7 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
+                          >
+                            <div className="p-4 flex items-center justify-center">
+                              <img
+                                className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                src={String(articulo.imagenArticulo) || ""}
+                                alt={articulo.nombre}
+                              />
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3 className="text-gray-700 truncate">
+                                {articulo.subcategoria.categoria?.denominacion}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3
+                                className="text-gray-700 truncate"
+                                title={articulo.nombre}
+                              >
+                                {articulo.nombre.slice(0, 13)}
+                                {articulo.nombre.length > 13 && "..."}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3 className="font-semibold text-emerald-600">
+                                ${articulo.precioCompra}/
+                                {articulo.unidadMedida.unidad.slice(0, 2)}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <div
+                                className={`${
+                                  articulo.esParaElaborar
+                                    ? "bg-green-600"
+                                    : "bg-gray-500"
+                                } h-4 w-4 rounded-full shadow-sm`}
+                              ></div>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <div
+                                className={`${
+                                  articulo.existe
+                                    ? "bg-green-600"
+                                    : "bg-gray-500"
+                                } h-4 w-4 rounded-full shadow-sm`}
+                              ></div>
+                            </div>
+                            <div className="p-4 flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => setMostrarArticulo(articulo)}
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                                title="Ver detalles"
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/svg/LogoVer.svg"
+                                  alt="Ver"
+                                />
+                              </button>
+                              <button
+                                onClick={() => setFormInsumo(articulo)}
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                                title="Editar"
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/svg/LogoEditar.svg"
+                                  alt="Editar"
+                                />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  borradoLogico(articulo);
+                                }}
+                                className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                                  loadingCambio
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                                title={
+                                  articulo.existe ? "Desactivar" : "Activar"
+                                }
+                                disabled={loadingCambio}
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src={`/svg/${
+                                    articulo.existe
+                                      ? "LogoBorrar.svg"
+                                      : "LogoActivar.svg"
+                                  }`}
+                                  alt={
+                                    articulo.existe ? "Desactivar" : "Activar"
+                                  }
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+                    })}
+                </div>
+              ) : (
+                <div>
+                  {/**Cabecera */}
+                  <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+                    <h1 className="p-4 text-center">Imagen</h1>
+                    <h1 className="p-4 text-center">Nombre</h1>
+                    <h1 className="p-4 text-center">Cantidad</h1>
+                    <h1 className="p-4 text-center">Stock Suficiente</h1>
+                    <h1 className="p-4 text-center">Modificar Stock</h1>
+                  </div>
+
+                  {/**Articulos */}
+                  {articulosInsumosMostrados.length > 0 &&
+                    articulosInsumosMostrados.map((articulo, index) => {
+                      if (
+                        index < paginaSeleccionada * cantidadPorPagina &&
+                        index >= cantidadPorPagina * (paginaSeleccionada - 1)
+                      ) {
+                        return (
+                          <div
+                            key={articulo.id}
+                            className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
+                          >
+                            <div className="p-4 flex items-center justify-center">
+                              <img
+                                className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                src={String(articulo.imagenArticulo) || ""}
+                                alt={articulo.nombre}
+                              />
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3
+                                className="text-gray-700 truncate"
+                                title={articulo.nombre}
+                              >
+                                {articulo.nombre.slice(0, 13)}
+                                {articulo.nombre.length > 13 && "..."}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3 className="font-semibold text-gray-700">
+                                {articulo.stockArticuloInsumo?.cantidad}{" "}
+                                {articulo.unidadMedida?.unidad}
+                                {articulo.unidadMedida?.unidad == "unidad" &&
+                                  articulo.stockArticuloInsumo?.cantidad != 1 &&
+                                  "es"}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <div
+                                className={`${
+                                  articulo.stockArticuloInsumo?.cantidad >
+                                  articulo.stockArticuloInsumo?.minStock
+                                    ? "bg-green-600"
+                                    : "bg-red-500"
+                                } h-4 w-4 rounded-full shadow-sm`}
+                              ></div>
+                            </div>
+                            <div className="p-4 flex items-center justify-center gap-1.5">
+                              <button
+                                title="Quitar stock"
+                                onClick={() =>
+                                  setModificarStock({
+                                    articulo: articulo,
+                                    operacion: "quitar",
+                                  })
+                                }
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/img/simboloMenos.png"
+                                  alt="Quitar"
+                                />
+                              </button>
+                              <button
+                                title="Modificar cantidad minima"
+                                onClick={() =>
+                                  setModificarStock({
+                                    articulo: articulo,
+                                    operacion: "minimo",
+                                  })
+                                }
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/img/stockMin.png"
+                                  alt="Stock mínimo"
+                                />
+                              </button>
+                              <button
+                                title="Agregar stock"
+                                onClick={() =>
+                                  setModificarStock({
+                                    articulo: articulo,
+                                    operacion: "agregar",
+                                  })
+                                }
+                                className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/img/simboloMas.png"
+                                  alt="Agregar"
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+                    })}
+                </div>
+              )}
+
+              {/**Paginacion */}
+              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                {/**Informacion articulos mostrados y totales */}
+                <div className="flex items-center">
+                  <h4>
+                    {paginaSeleccionada * cantidadPorPagina -
+                      cantidadPorPagina +
+                      1}
+                    -
+                    {paginaSeleccionada * cantidadPorPagina <
+                    articulosInsumosMostrados.length
+                      ? paginaSeleccionada * cantidadPorPagina
+                      : articulosInsumosMostrados.length}{" "}
+                    de {articulosInsumosMostrados.length}
+                  </h4>
+                </div>
+
+                {/**Control de paginado a traves de botones */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaSeleccionada(1)}
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/PrimeraPagina.svg"
+                      alt="Primera"
+                    />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (paginaSeleccionada > 1) {
+                          return prev - 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/AnteriorPagina.svg"
+                      alt="Anterior"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada((prev) => {
+                        if (
+                          paginaSeleccionada <
+                          Math.ceil(
+                            articulosInsumosMostrados.length / cantidadPorPagina
+                          )
+                        ) {
+                          return prev + 1;
+                        }
+                        return prev;
+                      })
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/SiguientePagina.svg"
+                      alt="Siguiente"
+                    />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPaginaSeleccionada(
                         Math.ceil(
                           articulosInsumosMostrados.length / cantidadPorPagina
                         )
-                      ) {
-                        return prev + 1;
-                      }
-                      return prev;
-                    })
-                  }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setPaginaSeleccionada(
-                      Math.ceil(
-                        articulosInsumosMostrados.length / cantidadPorPagina
                       )
-                    )
-                  }
-                  className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                >
-                  <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
-                </button>
+                    }
+                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                  >
+                    <img
+                      className="h-8 w-8"
+                      src="/svg/UltimaPagina.svg"
+                      alt="Última"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/**Mostrar Insumo*/}

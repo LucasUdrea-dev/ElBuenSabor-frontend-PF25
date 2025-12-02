@@ -8,6 +8,7 @@ import {
 } from "../../../ts/Clases";
 import axios from "axios";
 import { usePedidosSocket } from "../../services/websocket/usePedidosSocket";
+import { LoadingTable } from "../../components/LoadingTable.tsx";
 
 const ESTADOS_COCINERO = [
   EstadosPedidosEnum.STANDBY,
@@ -23,6 +24,8 @@ export default function Cocinero() {
   const [pedidosMostrados, setPedidosMostrados] = useState<Pedido[]>([]);
   const [buscador, setBuscador] = useState("");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
+  const [loadingCambio, setLoadingCambio] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [filtroEstado, setFiltroEstado] = useState<
     "TODOS" | "STANDBY" | "PREPARING"
   >("TODOS");
@@ -37,7 +40,7 @@ export default function Cocinero() {
 
   const cargarPedidos = async () => {
     const URL = `${host}/api/pedidos/all`;
-
+    setLoading(true);
     try {
       const response = await axios.get(URL, axiosConfig);
       setPedidos(
@@ -47,6 +50,8 @@ export default function Cocinero() {
       );
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +64,7 @@ export default function Cocinero() {
     nuevoEstado: EstadosPedidosEnum
   ) => {
     const URL = `${host}/api/pedidos/${pedido.id}/estado?estado=${nuevoEstado}`;
+    setLoadingCambio(true);
 
     try {
       await axios.put(URL, "nada", axiosConfig);
@@ -68,6 +74,8 @@ export default function Cocinero() {
       }
     } catch (error) {
       alert("Error al cambiar el estado del pedido");
+    } finally {
+      setLoadingCambio(false);
     }
   };
 
@@ -165,7 +173,9 @@ export default function Cocinero() {
         <div className="bg-white w-full max-w-7xl mx-auto rounded-xl shadow-xl">
           {/**Titulo, filtros y buscador */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 border-b border-gray-200">
-            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">Cocina</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold font-lato text-gray-800">
+              Cocina
+            </h1>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center">
               {/**Filtros por estado como botones */}
@@ -219,182 +229,216 @@ export default function Cocinero() {
             </div>
           </div>
 
-          {/**Tabla CRUD pedidos */}
-          <div className="w-full pb-6">
-            {/**Cabecera */}
-            <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
-              <h1 className="p-4 text-center">Orden N°</h1>
-              <h1 className="p-4 text-center">Cliente</h1>
-              <h1 className="p-4 text-center">Envío</h1>
-              <h1 className="p-4 text-center">Tiempo Est.</h1>
-              <h1 className="p-4 text-center">Estado y Acciones</h1>
-            </div>
+          {loading ? (
+            <LoadingTable nombre="pedidos" />
+          ) : (
+            <div className="w-full pb-6">
+              {/**Cabecera */}
+              <div className="text-sm md:text-base w-full grid grid-cols-5 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+                <h1 className="p-4 text-center">Orden N°</h1>
+                <h1 className="p-4 text-center">Cliente</h1>
+                <h1 className="p-4 text-center">Envío</h1>
+                <h1 className="p-4 text-center">Tiempo Est.</h1>
+                <h1 className="p-4 text-center">Estado y Acciones</h1>
+              </div>
 
-            {/**Pedidos */}
-            {pedidosMostrados.length > 0 &&
-              pedidosMostrados.map((pedido, index) => {
-                if (
-                  index < paginaSeleccionada * cantidadPorPagina &&
-                  index >= cantidadPorPagina * (paginaSeleccionada - 1)
-                ) {
-                  return (
-                    <div
-                      key={pedido.id}
-                      className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
-                    >
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="font-semibold text-gray-800">
-                          #{pedido.id}
-                        </h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="text-gray-700">
-                          {pedido.usuario.nombre} {pedido.usuario.apellido}
-                        </h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="text-gray-700">
-                          {getTipoEnvioTexto(pedido.tipoEnvio.tipoDelivery)}
-                        </h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center">
-                        <h3 className="text-gray-700">{pedido.tiempoEstimado} min</h3>
-                      </div>
-                      <div className="p-4 flex items-center justify-center gap-2">
-                        <div
-                          className="text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium flex items-center justify-center shadow-md"
-                          style={{
-                            minWidth: "100px",
-                            backgroundColor: getColorEstado(
-                              pedido.estadoPedido.nombreEstado
-                            ),
-                          }}
-                        >
-                          {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
+              {/**Pedidos */}
+              {pedidosMostrados.length > 0 &&
+                pedidosMostrados.map((pedido, index) => {
+                  if (
+                    index < paginaSeleccionada * cantidadPorPagina &&
+                    index >= cantidadPorPagina * (paginaSeleccionada - 1)
+                  ) {
+                    return (
+                      <div
+                        key={pedido.id}
+                        className="text-sm md:text-base w-full grid grid-cols-5 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
+                      >
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="font-semibold text-gray-800">
+                            #{pedido.id}
+                          </h3>
                         </div>
-                        <div className="flex gap-1.5">
-                          <button
-                            onClick={() => abrirDetallePedido(pedido)}
-                            className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                            title="Ver detalles"
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="text-gray-700">
+                            {pedido.usuario.nombre} {pedido.usuario.apellido}
+                          </h3>
+                        </div>
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="text-gray-700">
+                            {getTipoEnvioTexto(pedido.tipoEnvio.tipoDelivery)}
+                          </h3>
+                        </div>
+                        <div className="p-4 flex items-center justify-center">
+                          <h3 className="text-gray-700">
+                            {pedido.tiempoEstimado} min
+                          </h3>
+                        </div>
+                        <div className="p-4 flex items-center justify-center gap-2">
+                          <div
+                            className="text-white px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium flex items-center justify-center shadow-md"
+                            style={{
+                              minWidth: "100px",
+                              backgroundColor: getColorEstado(
+                                pedido.estadoPedido.nombreEstado
+                              ),
+                            }}
                           >
-                            <img
-                              className="h-7 w-7"
-                              src="/svg/DetallePreparacion.svg"
-                              alt="Ver detalles"
-                            />
-                          </button>
-                          
-                          {pedido.estadoPedido.nombreEstado === EstadosPedidosEnum.PREPARING && (
+                            {getEstadoTexto(pedido.estadoPedido.nombreEstado)}
+                          </div>
+                          <div className="flex gap-1.5">
                             <button
-                              onClick={() => pausar(pedido)}
+                              onClick={() => abrirDetallePedido(pedido)}
                               className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                              title="Pausar"
+                              title="Ver detalles"
                             >
-                               <img
+                              <img
                                 className="h-7 w-7"
-                                src="/img/EstadoEspera.png" 
-                                alt="Pausar"
+                                src="/svg/DetallePreparacion.svg"
+                                alt="Ver detalles"
                               />
                             </button>
-                          )}
 
-                          <button
-                            onClick={() => avanzar(pedido)}
-                            className="hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg"
-                            title="Avanzar"
-                          >
-                            <img
-                              className="h-7 w-7"
-                              src="/svg/EstadoPositivo.svg"
-                              alt="Avanzar"
-                            />
-                          </button>
+                            {pedido.estadoPedido.nombreEstado ===
+                              EstadosPedidosEnum.PREPARING && (
+                              <button
+                                onClick={() => pausar(pedido)}
+                                className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                                  loadingCambio
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                                title="Pausar"
+                                disabled={loadingCambio}
+                              >
+                                <img
+                                  className="h-7 w-7"
+                                  src="/img/EstadoEspera.png"
+                                  alt="Pausar"
+                                />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => avanzar(pedido)}
+                              className={`hover:scale-110 transition-transform p-1 hover:bg-gray-200 rounded-lg ${
+                                loadingCambio
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              title="Avanzar"
+                              disabled={loadingCambio}
+                            >
+                              <img
+                                className="h-7 w-7"
+                                src="/svg/EstadoPositivo.svg"
+                                alt="Avanzar"
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                }
-              })}
+                    );
+                  }
+                })}
 
-            {/**Mensaje cuando no hay pedidos */}
-            {pedidosMostrados.length === 0 && (
-              <div className="text-base text-center py-12 text-gray-500 font-lato">
-                No se encontraron pedidos con los filtros aplicados
-              </div>
-            )}
-
-            {/**Paginacion */}
-            {pedidosMostrados.length > 0 && (
-              <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
-                {/**Informacion pedidos mostrados y totales */}
-                <div className="flex items-center">
-                  <h4>
-                    {paginaSeleccionada * cantidadPorPagina -
-                      cantidadPorPagina +
-                      1}
-                    -
-                    {paginaSeleccionada * cantidadPorPagina <
-                    pedidosMostrados.length
-                      ? paginaSeleccionada * cantidadPorPagina
-                      : pedidosMostrados.length}{" "}
-                    de {pedidosMostrados.length}
-                  </h4>
+              {/**Mensaje cuando no hay pedidos */}
+              {pedidosMostrados.length === 0 && (
+                <div className="text-base text-center py-12 text-gray-500 font-lato">
+                  No se encontraron pedidos con los filtros aplicados
                 </div>
+              )}
 
-                {/**Control de paginado a traves de botones */}
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setPaginaSeleccionada(1)}
-                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                  >
-                    <img className="h-8 w-8" src="/svg/PrimeraPagina.svg" alt="Primera" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      setPaginaSeleccionada((prev) => {
-                        if (paginaSeleccionada > 1) {
-                          return prev - 1;
-                        }
-                        return prev;
-                      })
-                    }
-                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                  >
-                    <img className="h-8 w-8" src="/svg/AnteriorPagina.svg" alt="Anterior" />
-                  </button>
+              {/**Paginacion */}
+              {pedidosMostrados.length > 0 && (
+                <div className="text-gray-600 flex items-center justify-between px-6 pt-6 gap-4 text-sm font-lato flex-wrap">
+                  {/**Informacion pedidos mostrados y totales */}
+                  <div className="flex items-center">
+                    <h4>
+                      {paginaSeleccionada * cantidadPorPagina -
+                        cantidadPorPagina +
+                        1}
+                      -
+                      {paginaSeleccionada * cantidadPorPagina <
+                      pedidosMostrados.length
+                        ? paginaSeleccionada * cantidadPorPagina
+                        : pedidosMostrados.length}{" "}
+                      de {pedidosMostrados.length}
+                    </h4>
+                  </div>
 
-                  <button
-                    onClick={() =>
-                      setPaginaSeleccionada((prev) => {
-                        if (
-                          paginaSeleccionada <
+                  {/**Control de paginado a traves de botones */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPaginaSeleccionada(1)}
+                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                    >
+                      <img
+                        className="h-8 w-8"
+                        src="/svg/PrimeraPagina.svg"
+                        alt="Primera"
+                      />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setPaginaSeleccionada((prev) => {
+                          if (paginaSeleccionada > 1) {
+                            return prev - 1;
+                          }
+                          return prev;
+                        })
+                      }
+                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                    >
+                      <img
+                        className="h-8 w-8"
+                        src="/svg/AnteriorPagina.svg"
+                        alt="Anterior"
+                      />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setPaginaSeleccionada((prev) => {
+                          if (
+                            paginaSeleccionada <
+                            Math.ceil(
+                              pedidosMostrados.length / cantidadPorPagina
+                            )
+                          ) {
+                            return prev + 1;
+                          }
+                          return prev;
+                        })
+                      }
+                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                    >
+                      <img
+                        className="h-8 w-8"
+                        src="/svg/SiguientePagina.svg"
+                        alt="Siguiente"
+                      />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setPaginaSeleccionada(
                           Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                        ) {
-                          return prev + 1;
-                        }
-                        return prev;
-                      })
-                    }
-                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                  >
-                    <img className="h-8 w-8" src="/svg/SiguientePagina.svg" alt="Siguiente" />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setPaginaSeleccionada(
-                        Math.ceil(pedidosMostrados.length / cantidadPorPagina)
-                      )
-                    }
-                    className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
-                  >
-                    <img className="h-8 w-8" src="/svg/UltimaPagina.svg" alt="Última" />
-                  </button>
+                        )
+                      }
+                      className="hover:scale-110 transition-transform p-1 hover:bg-gray-100 rounded"
+                    >
+                      <img
+                        className="h-8 w-8"
+                        src="/svg/UltimaPagina.svg"
+                        alt="Última"
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

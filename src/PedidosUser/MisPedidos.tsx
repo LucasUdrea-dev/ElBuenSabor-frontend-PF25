@@ -1,113 +1,142 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { host, Pedido, tiposEstadoPedido} from "../../ts/Clases";
-import PedidoComponent from './Pedido';
-import { useUser } from '../UserAuth/UserContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { EstadosPedidosEnum, host, Pedido } from "../../ts/Clases";
+import PedidoComponent from "./Pedido";
+import { useUser } from "../UserAuth/UserContext";
+import { usePedidosSocket } from "../services/websocket/usePedidosSocket";
+
+const ESTADOS_CLIENTE = [
+  EstadosPedidosEnum.PREPARING,
+  EstadosPedidosEnum.STANDBY,
+  EstadosPedidosEnum.CANCELLED,
+  EstadosPedidosEnum.REJECTED,
+  EstadosPedidosEnum.DELIVERED,
+  EstadosPedidosEnum.DELIVERING,
+  EstadosPedidosEnum.READY,
+  EstadosPedidosEnum.INCOMING,
+];
+
+const ESTADOS_PENDIENTES = [
+  EstadosPedidosEnum.INCOMING,
+  EstadosPedidosEnum.PREPARING,
+  EstadosPedidosEnum.STANDBY,
+  EstadosPedidosEnum.READY,
+  EstadosPedidosEnum.DELIVERING,
+];
 
 const MisPedidos: React.FC = () => {
-  const [tabActiva, setTabActiva] = useState<'pendientes' | 'pasadas'>('pendientes');
-  const [filtroFecha, setFiltroFecha] = useState<string>('');
+  const [tabActiva, setTabActiva] = useState<"pendientes" | "pasadas">(
+    "pendientes"
+  );
+  const [filtroFecha, setFiltroFecha] = useState<string>("");
   const [pedidosFiltrados, setPedidosFiltrados] = useState<Pedido[]>([]);
-  const [pedidosData, setPedidosData] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [sinPedidos, setSinPedidos] = useState<boolean>(false);
   const navigate = useNavigate();
   const { userSession } = useUser();
+  const { pedidos, setPedidos } = usePedidosSocket(
+    `/topic/usuarios/${userSession?.id_user}`,
+    ESTADOS_CLIENTE
+  );
 
   useEffect(() => {
     if (userSession?.id_user) {
-      cargarPedidosDesdeBackend()
+      cargarPedidosDesdeBackend();
     }
   }, [userSession?.id_user]);
 
   useEffect(() => {
     filtrarPedidos();
-  }, [tabActiva, filtroFecha, pedidosData]);
-
-
+  }, [tabActiva, filtroFecha, pedidos]);
 
   const cargarPedidosDesdeBackend = async () => {
     if (!userSession?.id_user) {
-      setError('No hay usuario logueado');
+      setError("No hay usuario logueado");
       setLoading(false);
       return;
     }
 
     try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(host+`/api/pedidos/usuario/${userSession.id_user}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const pedidosMapeados: Pedido[] = response.data.map((pedidoDTO: Pedido) => ({
-            ...pedidoDTO,
-            fecha: pedidoDTO.fecha ? pedidoDTO.fecha : new Date(),
-            tiempoEstimado: pedidoDTO.tiempoEstimado ? pedidoDTO.tiempoEstimado : undefined
-        }));
-        setPedidosData(pedidosMapeados);
-        setSinPedidos(false);
-        setLoading(false)
-    } catch (error: any) {
-        console.error("Error al cargar los pedidos:", error);
-        if (axios.isAxiosError(error)) {
-            if (error.response?.status === 401) {
-                setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                setSinPedidos(false);
-                // Opcional: redirigir al login
-                // navigate("/login");
-            } else if (error.response?.status === 404) {
-                // 404 significa que no hay pedidos, mostrar mensaje amigable
-                setSinPedidos(true);
-                setPedidosData([]);
-                setError(null);
-            } else {
-                setError('Error al cargar los pedidos. Intenta nuevamente.');
-                setSinPedidos(false);
-            }
-        } else {
-            setError('Error al cargar los pedidos. Intenta nuevamente.');
-            setSinPedidos(false);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        host + `/api/pedidos/usuario/${userSession.id_user}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-        setLoading(false);
+      );
+      const pedidosMapeados: Pedido[] = response.data.map(
+        (pedidoDTO: Pedido) => ({
+          ...pedidoDTO,
+          fecha: pedidoDTO.fecha ? pedidoDTO.fecha : new Date(),
+          tiempoEstimado: pedidoDTO.tiempoEstimado
+            ? pedidoDTO.tiempoEstimado
+            : undefined,
+        })
+      );
+      setPedidos(pedidosMapeados);
+      setSinPedidos(false);
+      setLoading(false);
+    } catch (error: any) {
+      console.error("Error al cargar los pedidos:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
+          setSinPedidos(false);
+          // Opcional: redirigir al login
+          // navigate("/login");
+        } else if (error.response?.status === 404) {
+          // 404 significa que no hay pedidos, mostrar mensaje amigable
+          setSinPedidos(true);
+          setPedidos([]);
+          setError(null);
+        } else {
+          setError("Error al cargar los pedidos. Intenta nuevamente.");
+          setSinPedidos(false);
+        }
+      } else {
+        setError("Error al cargar los pedidos. Intenta nuevamente.");
+        setSinPedidos(false);
+      }
+      setLoading(false);
     }
   };
 
-
   const filtrarPedidos = () => {
-    let pedidosFiltrados = pedidosData;
-    
-    const estadosPendientes: string[] = [
-      tiposEstadoPedido[0].nombreEstado,
-      tiposEstadoPedido[1].nombreEstado,
-      tiposEstadoPedido[4].nombreEstado
-    ]
+    let pedidosFiltrados = pedidos;
+
     // Filtrar por tab activa
-    if (tabActiva === 'pendientes') {
-      pedidosFiltrados = pedidosData.filter(pedido => 
-        estadosPendientes.includes(pedido.estadoPedido.nombreEstado)
+    if (tabActiva === "pendientes") {
+      pedidosFiltrados = pedidos.filter((pedido) =>
+        ESTADOS_PENDIENTES.includes(pedido.estadoPedido.nombreEstado)
       );
     } else {
-      pedidosFiltrados = pedidosData.filter(pedido => 
-        !estadosPendientes.includes(pedido.estadoPedido.nombreEstado)
+      pedidosFiltrados = pedidos.filter(
+        (pedido) =>
+          !ESTADOS_PENDIENTES.includes(pedido.estadoPedido.nombreEstado)
       );
     }
 
     if (filtroFecha) {
       const hoy = new Date();
-      const inicioSemana = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - hoy.getDay());
+      const inicioSemana = new Date(
+        hoy.getFullYear(),
+        hoy.getMonth(),
+        hoy.getDate() - hoy.getDay()
+      );
       const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-      
-      pedidosFiltrados = pedidosFiltrados.filter(pedido => {
+
+      pedidosFiltrados = pedidosFiltrados.filter((pedido) => {
         if (!pedido.fecha) return false;
         const fechaPedido = new Date(pedido.fecha);
-        
+
         switch (filtroFecha) {
-          case 'hoy':
+          case "hoy":
             return fechaPedido.toDateString() === hoy.toDateString();
-          case 'semana':
+          case "semana":
             return fechaPedido >= inicioSemana;
-          case 'mes':
+          case "mes":
             return fechaPedido >= inicioMes;
           default:
             return true;
@@ -118,49 +147,39 @@ const MisPedidos: React.FC = () => {
     setPedidosFiltrados(pedidosFiltrados);
   };
 
-
-
   const formatearFecha = (fecha: Date | undefined): string => {
-    if (!fecha) return '';
-    return new Date(fecha).toLocaleDateString('es-AR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    if (!fecha) return "";
+    return new Date(fecha).toLocaleDateString("es-AR", {
+      weekday: "long",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatearHora = (fecha: Date | undefined): string => {
-    if (!fecha) return '';
-    return new Date(fecha).toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit'
+    if (!fecha) return "";
+    return new Date(fecha).toLocaleTimeString("es-AR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
-  
 
   const getPedidosDeTabActual = () => {
-
-    const estadosPendientes: string[] = [
-      tiposEstadoPedido[0].nombreEstado,
-      tiposEstadoPedido[1].nombreEstado,
-      tiposEstadoPedido[4].nombreEstado,
-      tiposEstadoPedido[6].nombreEstado
-    ]
-
-    if (tabActiva === 'pendientes') {
-      return pedidosData.filter(pedido => 
-        estadosPendientes.includes(pedido.estadoPedido.nombreEstado)
+    if (tabActiva === "pendientes") {
+      return pedidos.filter((pedido) =>
+        ESTADOS_PENDIENTES.includes(pedido.estadoPedido.nombreEstado)
       );
     } else {
-      return pedidosData.filter(pedido => 
-        !estadosPendientes.includes(pedido.estadoPedido.nombreEstado)
+      return pedidos.filter(
+        (pedido) =>
+          !ESTADOS_PENDIENTES.includes(pedido.estadoPedido.nombreEstado)
       );
     }
   };
 
   const irACatalogo = () => {
-    navigate('/catalogo');
+    navigate("/catalogo");
   };
 
   const recargarPedidos = () => {
@@ -189,7 +208,7 @@ const MisPedidos: React.FC = () => {
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <p className="text-red-400 font-lato mb-4">{error}</p>
-              <button 
+              <button
                 onClick={recargarPedidos}
                 className="bg-[#D93F21] hover:bg-[#b9331a] px-4 py-2 rounded text-white font-lato transition-colors"
               >
@@ -208,15 +227,15 @@ const MisPedidos: React.FC = () => {
         <div className="bg-[#333333]/40 px-4 py-2">
           <div className="flex items-center justify-between">
             <h2 className="font-lato text-lg">Mis ordenes</h2>
-            
+
             {/* Mostrar dropdown si hay pedidos en la tab actual (sin considerar filtro de fecha) */}
             {getPedidosDeTabActual().length > 0 && (
               <div className="flex items-center space-x-4">
-                <button 
-                  onClick={()=>{
-                    setLoading(true)
-                    recargarPedidos()
-                    }}
+                <button
+                  onClick={() => {
+                    setLoading(true);
+                    recargarPedidos();
+                  }}
                   className="px-3 py-1 rounded text-sm font-lato
                   transition-all
                   ease-in-out
@@ -227,7 +246,7 @@ const MisPedidos: React.FC = () => {
                 >
                   <img src="./svg/refreshOrdenes.svg" alt="" />
                 </button>
-                <select 
+                <select
                   className="bg-[#444444] text-white px-4 py-2 rounded border border-[#555555] font-lato"
                   value={filtroFecha}
                   onChange={(e) => setFiltroFecha(e.target.value)}
@@ -243,20 +262,20 @@ const MisPedidos: React.FC = () => {
         </div>
 
         <div className="p-4">
-          {sinPedidos || pedidosData.length === 0 ? (
+          {sinPedidos || pedidos.length === 0 ? (
             /* Estado vacío - No hay pedidos */
             <div className="text-center p-6 rounded-xl bg-[#444444]">
               <p className="mb-4 font-lato text-lg">
-                {sinPedidos 
-                  ? "Aún no has realizado ningún pedido" 
+                {sinPedidos
+                  ? "Aún no has realizado ningún pedido"
                   : "Aun no has agregado ninguna orden"}
               </p>
               <p className="mb-6 text-gray-400 font-lato">
-                {sinPedidos 
-                  ? "¡Haz tu primer pedido y disfruta de nuestros deliciosos productos!" 
+                {sinPedidos
+                  ? "¡Haz tu primer pedido y disfruta de nuestros deliciosos productos!"
                   : "Explora nuestro catálogo y realiza tu primer pedido"}
               </p>
-              <button 
+              <button
                 onClick={irACatalogo}
                 className="bg-[#D93F21] hover:bg-[#b9331a] px-6 py-3 rounded text-white font-lato inline-block transition-colors text-lg"
               >
@@ -269,21 +288,21 @@ const MisPedidos: React.FC = () => {
               <div className="flex mb-6 border-b border-[#555555]">
                 <button
                   className={`px-4 py-2 font-lato ${
-                    tabActiva === 'pendientes' 
-                      ? 'text-white border-b-2 border-[#D93F21]' 
-                      : 'text-gray-400 hover:text-white'
+                    tabActiva === "pendientes"
+                      ? "text-white border-b-2 border-[#D93F21]"
+                      : "text-gray-400 hover:text-white"
                   }`}
-                  onClick={() => setTabActiva('pendientes')}
+                  onClick={() => setTabActiva("pendientes")}
                 >
                   Pendiente
                 </button>
                 <button
                   className={`px-4 py-2 font-lato ml-6 ${
-                    tabActiva === 'pasadas' 
-                      ? 'text-white border-b-2 border-[#D93F21]' 
-                      : 'text-gray-400 hover:text-white'
+                    tabActiva === "pasadas"
+                      ? "text-white border-b-2 border-[#D93F21]"
+                      : "text-gray-400 hover:text-white"
                   }`}
-                  onClick={() => setTabActiva('pasadas')}
+                  onClick={() => setTabActiva("pasadas")}
                 >
                   Órdenes pasadas
                 </button>
@@ -293,18 +312,23 @@ const MisPedidos: React.FC = () => {
               {pedidosFiltrados.length === 0 ? (
                 <div className="text-center p-6 rounded-xl bg-[#444444]">
                   <p className="text-gray-400 font-lato">
-                    {filtroFecha ? 
-                      `No hay órdenes ${filtroFecha === 'hoy' ? 'de hoy' : filtroFecha === 'semana' ? 'de esta semana' : 'de este mes'} en esta categoría` :
-                      'No hay órdenes en esta categoría'
-                    }
+                    {filtroFecha
+                      ? `No hay órdenes ${
+                          filtroFecha === "hoy"
+                            ? "de hoy"
+                            : filtroFecha === "semana"
+                            ? "de esta semana"
+                            : "de este mes"
+                        } en esta categoría`
+                      : "No hay órdenes en esta categoría"}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {pedidosFiltrados.map((pedido) => (
-                    <PedidoComponent 
-                      key={pedido.id} 
-                      pedido={pedido} 
+                    <PedidoComponent
+                      key={pedido.id}
+                      pedido={pedido}
                       tipo={tabActiva}
                       formatearFecha={formatearFecha}
                       formatearHora={formatearHora}

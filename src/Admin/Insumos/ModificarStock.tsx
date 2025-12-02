@@ -12,6 +12,7 @@ interface Props {
 
 export default function ModificarStock({ modificar, cerrarModal }: Props) {
   const [input, setInput] = useState("");
+  const [loadingSave, setLoadingSave] = useState(false);
 
   // Obtener token del localStorage
   const getToken = () => localStorage.getItem("token");
@@ -45,40 +46,41 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
       alert("No se puede modificar el stock: datos del artículo incompletos.");
       return;
     }
-
-    switch (modificar.operacion) {
-      case "quitar":
-        {
-          const cantidadActual =
-            modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
-          const cantidadAQuitar = Number(input);
-          if (cantidadActual < cantidadAQuitar) {
-            alert("La cantidad quitada no puede ser mayor a la disponible");
-            return;
-          }
-          modificar.articulo.stockArticuloInsumo.cantidad =
-            cantidadActual - cantidadAQuitar;
-        }
-        break;
-
-      case "agregar":
-        {
-          const cantidadActual =
-            modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
-          modificar.articulo.stockArticuloInsumo.cantidad =
-            cantidadActual + Number(input);
-        }
-        break;
-
-      case "minimo":
-        modificar.articulo.stockArticuloInsumo.minStock = Number(input);
-        break;
-
-      default:
-        break;
-    }
+    setLoadingSave(true);
 
     try {
+      switch (modificar.operacion) {
+        case "quitar":
+          {
+            const cantidadActual =
+              modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
+            const cantidadAQuitar = Number(input);
+            if (cantidadActual < cantidadAQuitar) {
+              alert("La cantidad quitada no puede ser mayor a la disponible");
+              return;
+            }
+            modificar.articulo.stockArticuloInsumo.cantidad =
+              cantidadActual - cantidadAQuitar;
+          }
+          break;
+
+        case "agregar":
+          {
+            const cantidadActual =
+              modificar.articulo.stockArticuloInsumo.cantidad ?? 0;
+            modificar.articulo.stockArticuloInsumo.cantidad =
+              cantidadActual + Number(input);
+          }
+          break;
+
+        case "minimo":
+          modificar.articulo.stockArticuloInsumo.minStock = Number(input);
+          break;
+
+        default:
+          break;
+      }
+
       let guardadoExitoso = await guardarArticuloInsumo(modificar.articulo);
 
       if (guardadoExitoso) {
@@ -86,6 +88,8 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
       }
     } catch (error) {
       alert("Error al intentar actualizar el stock");
+    } finally {
+      setLoadingSave(false);
     }
   };
 
@@ -212,9 +216,12 @@ export default function ModificarStock({ modificar, cerrarModal }: Props) {
                 onClick={() => {
                   input ? guardar() : () => {};
                 }}
-                className="bg-[#0A76E1] text-white w-2/3 py-4 text-xl rounded-4xl"
+                className={`bg-[#0A76E1] text-white w-2/3 py-4 text-xl rounded-4xl ${
+                  loadingSave ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={loadingSave}
               >
-                Guardar
+                {loadingSave ? "Guardando..." : "Guardar"}
               </button>
             </div>
           </div>

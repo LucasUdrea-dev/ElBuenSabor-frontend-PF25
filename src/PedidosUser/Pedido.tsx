@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Pedido, tiposEstadoPedido, host } from "../../ts/Clases";
+import { Pedido, host, EstadosPedidosEnum } from "../../ts/Clases";
 import DetallePedido from "./DetallePedido";
 
 interface PedidoProps {
@@ -23,22 +23,23 @@ const PedidoComponent: React.FC<PedidoProps> = ({
 
   const obtenerEstadoTexto = (estado: string): string => {
     switch (estado) {
-      case tiposEstadoPedido[6].nombreEstado:
+      case EstadosPedidosEnum.READY: // Antes tiposEstadoPedido[6]
+      case EstadosPedidosEnum.DELIVERING: // Antes tiposEstadoPedido[8]
         if (pedido.tipoEnvio.tipoDelivery === "DELIVERY") {
           return "En camino";
         }
         return "Para retirar";
-      case tiposEstadoPedido[5].nombreEstado:
+      case EstadosPedidosEnum.DELIVERED: // Antes tiposEstadoPedido[5]
         return "Entregado";
-      case tiposEstadoPedido[2].nombreEstado:
+      case EstadosPedidosEnum.CANCELLED: // Antes tiposEstadoPedido[2]
         return "Cancelado";
-      case tiposEstadoPedido[3].nombreEstado:
+      case EstadosPedidosEnum.REJECTED: // Antes tiposEstadoPedido[3]
         return "Rechazado";
-      case tiposEstadoPedido[4].nombreEstado:
+      case EstadosPedidosEnum.INCOMING: // Antes tiposEstadoPedido[4]
         return "Entrante";
-      case tiposEstadoPedido[1].nombreEstado:
+      case EstadosPedidosEnum.STANDBY: // Antes tiposEstadoPedido[1]
         return "En espera";
-      case tiposEstadoPedido[0].nombreEstado:
+      case EstadosPedidosEnum.PREPARING: // Antes tiposEstadoPedido[0]
         return "En preparacion";
       default:
         return "Desconocido";
@@ -47,19 +48,20 @@ const PedidoComponent: React.FC<PedidoProps> = ({
 
   const obtenerColorEstado = (estado: string): string => {
     switch (estado) {
-      case tiposEstadoPedido[0].nombreEstado: // En preparacion
-      case tiposEstadoPedido[6].nombreEstado: // 'En camino' o 'Para retirar'
+      case EstadosPedidosEnum.PREPARING:
+      case EstadosPedidosEnum.READY:
+      case EstadosPedidosEnum.DELIVERING:
         return "text-blue-600 bg-blue-100";
 
-      case tiposEstadoPedido[5].nombreEstado: //Entregado
+      case EstadosPedidosEnum.DELIVERED:
         return "text-green-600 bg-green-100";
 
-      case tiposEstadoPedido[2].nombreEstado: // Cancelado
-      case tiposEstadoPedido[3].nombreEstado: // Rechazado
+      case EstadosPedidosEnum.CANCELLED:
+      case EstadosPedidosEnum.REJECTED:
         return "text-red-600 bg-red-100";
 
-      case tiposEstadoPedido[1].nombreEstado: // En espera
-      case tiposEstadoPedido[4].nombreEstado: // Entrante
+      case EstadosPedidosEnum.STANDBY:
+      case EstadosPedidosEnum.INCOMING:
         return "text-gray-600 bg-gray-100";
 
       default:
