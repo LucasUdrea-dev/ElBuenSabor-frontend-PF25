@@ -374,7 +374,7 @@ export default function EditarPerfilUser() {
               ) : (
                 <img
                   //image de Cloudinary o default
-                  src={image || "../public/svg/imagenUsuario.svg"}
+                  src={image || "/svg/ImagenUsuario.svg"}
                   alt="Imagen de Usuario"
                   className="w-48 h-48 rounded-full object-cover shadow-lg ring-4 ring-white/10"
                 />
