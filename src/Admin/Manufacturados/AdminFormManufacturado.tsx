@@ -160,6 +160,12 @@ export default function AdminFormManufacturado({
     setIndexCategoria(1);
   };
 
+  const validarCantidades = () => {
+    return form.detalleInsumos.every(
+      (detalleInsumo) => detalleInsumo.cantidad && detalleInsumo.cantidad > 0
+    );
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
@@ -754,11 +760,17 @@ export default function AdminFormManufacturado({
                     Anterior
                   </button>
                   <button
-                    onClick={
-                      form.detalleInsumos.length >= 2
-                        ? siguienteSeccion
-                        : () => {}
-                    }
+                    onClick={() => {
+                      if (form.detalleInsumos.length >= 2) {
+                        if (validarCantidades()) {
+                          siguienteSeccion();
+                        } else {
+                          alert(
+                            "Todos los ingredientes deben tener una cantidad mayor a 0"
+                          );
+                        }
+                      }
+                    }}
                     className="bg-[#D93F21]"
                   >
                     Siguiente

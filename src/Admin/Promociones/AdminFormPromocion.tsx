@@ -62,6 +62,13 @@ export default function AdminFormPromocion({
     }
   };
 
+
+  const validarCantidades = () => {
+    return form.promocionArticuloList.every(
+      (detallePromo) => detallePromo.cantidad && detallePromo.cantidad > 0
+    );
+  };
+
   useEffect(() => {
     if (promocion) {
       setForm(promocion);
@@ -245,7 +252,7 @@ export default function AdminFormPromocion({
                         key={detallePromo.articulo?.id}
                         className="grid grid-cols-[2fr_1fr_1fr] items-center"
                       >
-                        <h3>{detallePromo.articulo?.nombre}</h3>
+                        <h3>{detallePromo.articulo?.nombre} (${detallePromo.articulo?.precio})</h3>
                         <input
                           value={
                             detallePromo.cantidad ? detallePromo.cantidad : ""
@@ -319,17 +326,15 @@ export default function AdminFormPromocion({
 
                 <div className="flex gap-5 *:p-2 *:rounded-4xl">
                   <button
-                    onClick={anteriorSeccion}
-                    className="bg-white text-black"
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    onClick={
-                      form.promocionArticuloList.length >= 2
-                        ? siguienteSeccion
-                        : () => {}
-                    }
+                    onClick={() => {
+                      if (form.promocionArticuloList.length >= 2) {
+                        if (validarCantidades()) {
+                          siguienteSeccion();
+                        } else {
+                          alert("Todos los artículos deben tener una cantidad mayor a 0");
+                        }
+                      }
+                    }}
                     className="bg-[#D93F21]"
                   >
                     Siguiente

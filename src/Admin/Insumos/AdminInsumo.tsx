@@ -200,10 +200,11 @@ export default function AdminInsumo() {
               {!mostrarStocks ? (
                 <div>
                   {/**Cabecera */}
-                  <div className="text-sm md:text-base w-full grid grid-cols-7 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
+                  <div className="text-sm md:text-base w-full grid grid-cols-8 bg-gray-50 border-b border-gray-200 font-lato font-semibold text-gray-700">
                     <h1 className="p-4 text-center">Imagen</h1>
                     <h1 className="p-4 text-center">Categoría</h1>
                     <h1 className="p-4 text-center">Nombre</h1>
+                    <h1 className="p-4 text-center">Precio Venta p/U</h1>
                     <h1 className="p-4 text-center">Costo p/U</h1>
                     <h1 className="p-4 text-center">Para elaborar</h1>
                     <h1 className="p-4 text-center">Publicado</h1>
@@ -220,7 +221,7 @@ export default function AdminInsumo() {
                         return (
                           <div
                             key={articulo.id}
-                            className="text-sm md:text-base w-full grid grid-cols-7 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
+                            className="text-sm md:text-base w-full grid grid-cols-8 border-b border-gray-100 hover:bg-gray-50 transition-colors font-lato"
                           >
                             <div className="p-4 flex items-center justify-center">
                               <img
@@ -241,6 +242,12 @@ export default function AdminInsumo() {
                               >
                                 {articulo.nombre.slice(0, 13)}
                                 {articulo.nombre.length > 13 && "..."}
+                              </h3>
+                            </div>
+                            <div className="p-4 flex items-center justify-center">
+                              <h3 className="font-semibold text-emerald-600">
+                                ${articulo.precio}/
+                                {articulo.unidadMedida.unidad.slice(0, 2)}
                               </h3>
                             </div>
                             <div className="p-4 flex items-center justify-center">
