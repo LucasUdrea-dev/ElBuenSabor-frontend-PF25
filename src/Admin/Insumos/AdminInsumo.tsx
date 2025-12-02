@@ -25,6 +25,7 @@ export default function AdminInsumo() {
     operacion: "",
   });
   const [buscador, setBuscador] = useState("");
+  const [filtroElaboracion, setFiltroElaboracion] = useState<"todos" | "elaborar" | "no_elaborar">("todos");
   const [paginaSeleccionada, setPaginaSeleccionada] = useState(1);
   const [mostrarArticulo, setMostrarArticulo] = useState<ArticuloInsumo | null>(
     null
@@ -117,9 +118,17 @@ export default function AdminInsumo() {
       );
     }
 
+    if (filtroElaboracion !== "todos") {
+      filtrado = filtrado.filter((articulo) =>
+        filtroElaboracion === "elaborar"
+          ? articulo.esParaElaborar
+          : !articulo.esParaElaborar
+      );
+    }
+
     setPaginaSeleccionada(1);
     setArticulosInsumosMostrados(filtrado);
-  }, [articulosInsumos, buscador]);
+  }, [articulosInsumos, buscador, filtroElaboracion]);
 
   return (
     <>
@@ -137,6 +146,36 @@ export default function AdminInsumo() {
             </h1>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-stretch sm:items-center">
+              <div className="relative">
+                <input
+                  onChange={(e) => setBuscador(e.target.value)}
+                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full"
+                  placeholder="Buscar..."
+                  type="text"
+                />
+                <img
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
+                  src="/svg/LupaBuscador.svg"
+                  alt="Buscar"
+                />
+              </div>
+
+              <div className="relative">
+                <select
+                  value={filtroElaboracion}
+                  onChange={(e) =>
+                    setFiltroElaboracion(
+                      e.target.value as "todos" | "elaborar" | "no_elaborar"
+                    )
+                  }
+                  className="bg-white text-gray-700 border border-gray-300 px-4 py-2.5 rounded-lg font-lato text-sm focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all shadow-sm cursor-pointer"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="elaborar">Para Elaborar</option>
+                  <option value="no_elaborar">No Elaborar</option>
+                </select>
+              </div>
+
               <button
                 onClick={() => setMostrarStocks((prev) => !prev)}
                 className="bg-[#D93F21] hover:bg-[#B8341B] text-white px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
@@ -151,20 +190,6 @@ export default function AdminInsumo() {
                 <h2>Agregar</h2>
                 <img className="h-4 w-4" src="/svg/Agregar.svg" alt="Agregar" />
               </button>
-
-              <div className="relative">
-                <input
-                  onChange={(e) => setBuscador(e.target.value)}
-                  className="bg-[#878787] text-white pl-10 pr-4 py-2 rounded-lg font-lato text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D93F21] transition-all w-full"
-                  placeholder="Buscar..."
-                  type="text"
-                />
-                <img
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 opacity-80"
-                  src="/svg/LupaBuscador.svg"
-                  alt="Buscar"
-                />
-              </div>
             </div>
           </div>
 
